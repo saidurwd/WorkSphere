@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Asset;
-use App\Models\GatePass;
-use App\Models\MaintenanceHistory;
-use App\Models\MaintenanceRequest;
+use App\Models\Meeting;
+use App\Models\MeetingActionItem;
+use App\Models\MeetingDecision;
+use App\Models\Obligation;
+use App\Models\ObligationType;
 use App\Models\Task;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -15,72 +16,34 @@ class DashboardController extends Controller
     public function __invoke(): View
     {
         $user = Auth::user();
-        $tasksQuery = Task::query();
 
-        if (! $this->canManageAllTasks($user)) {
+        $tasksQuery = Task::query();
+        if (! $this->canManageAll($user)) {
             $tasksQuery->where(function ($q) use ($user) {
                 $q->where('user_id', $user->id)
                     ->orWhere('responsible_user_id', $user->id);
             });
         }
 
-        $total = (clone $tasksQuery)->count();
-        $completed = (clone $tasksQuery)->where('status', 'completed')->count();
-        $pending = $total - $completed;
-
         $today = now()->startOfDay();
-        $tomorrow = $today->copy()->addDay();
         $weekEnd = $today->copy()->endOfWeek();
+        $tomorrow = $today->copy()->addDay();
 
-        $todayTasks = (clone $tasksQuery)
-            ->whereDate('due_date', $today)
-            ->orderBy('due_date', 'asc')
-            ->take(5)
-            ->get();
-        $overdueTasks = (clone $tasksQuery)
-            ->where('status', '!=', 'completed')
-            ->where('due_date', '<', $today)
-            ->orderBy('due_date', 'asc')
-            ->take(5)
-            ->get();
-        $completedTasks = (clone $tasksQuery)
-            ->where('status', 'completed')
-            ->latest('completed_at')
-            ->take(5)
-            ->get();
-        $upcomingTasks = (clone $tasksQuery)
-            ->where('status', '!=', 'completed')
-            ->whereBetween('due_date', [$tomorrow, $weekEnd])
-            ->orderBy('due_date', 'asc')
-            ->take(5)
-            ->get();
-        $highPriorityTasks = (clone $tasksQuery)
-            ->where('priority', 'high')
-            ->where('status', '!=', 'completed')
-            ->orderBy('due_date', 'asc')
-            ->take(5)
-            ->get();
+        $taskTotal = (clone $tasksQuery)->count();
+        $taskCompleted = (clone $tasksQuery)->where('status', 'completed')->count();
+        $taskPending = $taskTotal - $taskCompleted;
+        $taskOverdue = (clone $tasksQuery)->where('status', '!=', 'completed')->where('due_date', '<', $today)->count();
 
-        $mapTask = static function (Task $task): array {
-            return [
-                'title' => $task->title,
-                'subtitle' => 'Due '.$task->due_date->format('M d, Y'),
-                'url' => route('tasks.edit', $task),
-                'badge' => [
-                    'text' => ucfirst($task->priority),
-                    'class' => $task->priority === 'high'
-                        ? 'badge-danger'
-                        : ($task->priority === 'medium' ? 'badge-primary' : 'badge-secondary'),
-                ],
-            ];
-        };
+        $todayTasks = (clone $tasksQuery)->whereDate('due_date', $today)->orderBy('due_date')->limit(5)->get();
+        $overdueTasks = (clone $tasksQuery)->where('status', '!=', 'completed')->where('due_date', '<', $today)->orderBy('due_date')->limit(5)->get();
+        $upcomingTasks = (clone $tasksQuery)->where('status', '!=', 'completed')->whereBetween('due_date', [$tomorrow, $weekEnd])->orderBy('due_date')->limit(5)->get();
 
         $statusCounts = [
             ['status' => 'pending', 'label' => 'Pending', 'count' => (clone $tasksQuery)->where('status', 'pending')->count()],
             ['status' => 'in_progress', 'label' => 'In Progress', 'count' => (clone $tasksQuery)->where('status', 'in_progress')->count()],
-            ['status' => 'completed', 'label' => 'Completed', 'count' => $completed],
+            ['status' => 'completed', 'label' => 'Completed', 'count' => $taskCompleted],
         ];
-        $statusTotal = $statusCounts[0]['count'] + $statusCounts[1]['count'] + $statusCounts[2]['count'];
+        $statusTotal = array_sum(array_column($statusCounts, 'count'));
         $statusDonut = collect($statusCounts)->map(fn ($s) => [
             'label' => $s['label'],
             'count' => $s['count'],
@@ -92,9 +55,8 @@ class DashboardController extends Controller
             },
         ])->all();
 
-        $weekStart = $today->copy()->startOfWeek();
-        $weeklyBars = collect(range(0, 6))->map(function ($dayOffset) use ($tasksQuery, $weekStart) {
-            $date = $weekStart->copy()->addDays($dayOffset);
+        $weeklyBars = collect(range(0, 6))->map(function ($dayOffset) use ($tasksQuery, $today) {
+            $date = $today->copy()->startOfWeek()->addDays($dayOffset);
             $count = (clone $tasksQuery)->whereDate('created_at', $date)->count();
             $maxCount = max((clone $tasksQuery)->count(), 1);
 
@@ -110,7 +72,7 @@ class DashboardController extends Controller
             ['priority' => 'medium', 'label' => 'Medium', 'count' => (clone $tasksQuery)->where('priority', 'medium')->count()],
             ['priority' => 'low', 'label' => 'Low', 'count' => (clone $tasksQuery)->where('priority', 'low')->count()],
         ];
-        $priorityTotal = $priorityCounts[0]['count'] + $priorityCounts[1]['count'] + $priorityCounts[2]['count'];
+        $priorityTotal = array_sum(array_column($priorityCounts, 'count'));
         $priorityBars = collect($priorityCounts)->map(fn ($p) => [
             'label' => $p['label'],
             'value' => $p['count'],
@@ -122,180 +84,152 @@ class DashboardController extends Controller
             },
         ])->all();
 
-        $assetStatusRaw = Asset::query()
-            ->selectRaw('current_status, count(*) as total')
-            ->groupBy('current_status')
-            ->pluck('total', 'current_status');
-        $assetStatusCounts = [
-            ['status' => 'In Stock', 'label' => 'In Stock', 'count' => (int) ($assetStatusRaw['In Stock'] ?? 0)],
-            ['status' => 'Assigned', 'label' => 'Assigned', 'count' => (int) ($assetStatusRaw['Assigned'] ?? 0)],
-            ['status' => 'Under Repair', 'label' => 'Under Repair', 'count' => (int) ($assetStatusRaw['Under Repair'] ?? 0)],
-            ['status' => 'Spare', 'label' => 'Spare', 'count' => (int) ($assetStatusRaw['Spare'] ?? 0)],
-            ['status' => 'Disposed', 'label' => 'Disposed', 'count' => (int) ($assetStatusRaw['Disposed'] ?? 0)],
-        ];
-        $assetStatusTotal = array_sum(array_column($assetStatusCounts, 'count'));
-        $assetStatusDonut = collect($assetStatusCounts)->map(fn ($s) => [
-            'label' => $s['label'],
-            'count' => $s['count'],
-            'pct' => $assetStatusTotal > 0 ? (int) round($s['count'] / $assetStatusTotal * 100) : 0,
-            'color' => match ($s['status']) {
-                'In Stock' => 'var(--success)',
-                'Assigned' => 'var(--info)',
-                'Under Repair' => 'var(--warning)',
-                'Spare' => 'var(--primary)',
-                'Disposed' => 'var(--destructive)',
-            },
-        ])->all();
+        $meetingQuery = Meeting::query();
+        if (! $this->canManageAll($user)) {
+            $meetingQuery->where(function ($q) use ($user) {
+                $q->where('organizer_id', $user->id)
+                    ->orWhereHas('participants', function ($q2) use ($user) {
+                        $q2->where('user_id', $user->id);
+                    });
+            });
+        }
 
-        $assetCategoryBars = Asset::query()
-            ->join('asset_categories', 'assets.category_id', '=', 'asset_categories.id')
-            ->selectRaw('asset_categories.category_name, count(*) as total')
-            ->groupBy('asset_categories.category_name')
+        $thisMonth = now()->startOfMonth();
+        $meetingThisMonth = (clone $meetingQuery)->whereMonth('meeting_date', $thisMonth->month)->whereYear('meeting_date', $thisMonth->year)->count();
+        $meetingUpcoming = (clone $meetingQuery)->where('status', 'scheduled')->whereDate('meeting_date', '>=', $today)->count();
+        $meetingCompleted = (clone $meetingQuery)->where('status', 'completed')->count();
+        $pendingActions = MeetingActionItem::where('status', 'open')->count();
+        $overdueActions = MeetingActionItem::overdue()->count();
+        $actionsDueThisWeek = MeetingActionItem::where('status', '!=', 'completed')->where('status', '!=', 'cancelled')->whereBetween('due_date', [$today, $today->copy()->endOfWeek()])->count();
+        $myPendingActions = MeetingActionItem::where('assigned_to', $user->id)->where('status', '!=', 'completed')->where('status', '!=', 'cancelled')->with('meeting')->orderBy('due_date')->limit(5)->get();
+        $upcomingMeetings = (clone $meetingQuery)->where('status', 'scheduled')->whereDate('meeting_date', '>=', $today)->orderBy('meeting_date')->limit(5)->get();
+
+        $obligationQuery = Obligation::query();
+        if (! $this->canManageAll($user)) {
+            $obligationQuery->where(function ($q) use ($user) {
+                $q->where('owner_user_id', $user->id)
+                    ->orWhereHas('responsibilities', function ($q2) use ($user) {
+                        $q2->where('user_id', $user->id)->where('active', true);
+                    });
+            });
+        }
+
+        $obligationActive = (clone $obligationQuery)->where('status', 'active')->count();
+        $obligationDue7 = (clone $obligationQuery)->whereBetween('expiry_date', [$today, $today->copy()->addDays(7)])->count();
+        $obligationDue30 = (clone $obligationQuery)->whereBetween('expiry_date', [$today, $today->copy()->addDays(30)])->count();
+        $obligationExpired = (clone $obligationQuery)->where('expiry_date', '<', $today)->whereNotIn('status', ['renewed', 'cancelled', 'not_required', 'archived'])->count();
+        $obligationCritical = (clone $obligationQuery)->where('risk_level', 'critical')->count();
+        $obligationHighRisk = (clone $obligationQuery)->where('risk_level', 'high')->count();
+        $obligationRenewal = (clone $obligationQuery)->where('status', 'renewal_in_progress')->count();
+        $obligationPendingApproval = (clone $obligationQuery)->where('status', 'pending_approval')->count();
+
+        $upcomingObligations = (clone $obligationQuery)->orderBy('expiry_date', 'asc')->take(5)->get();
+        $criticalObligations = (clone $obligationQuery)->where('risk_level', 'critical')->orderBy('expiry_date', 'asc')->take(5)->get();
+        $expiredObligations = (clone $obligationQuery)->where('expiry_date', '<', $today)->whereNotIn('status', ['renewed', 'cancelled', 'not_required', 'archived'])->orderBy('expiry_date', 'asc')->take(5)->get();
+
+        $typeStats = ObligationType::query()
+            ->select('obligation_types.id', 'obligation_types.type_name')
+            ->selectRaw('COUNT(obligations.id) as total')
+            ->leftJoin('obligations', 'obligations.obligation_type_id', '=', 'obligation_types.id')
+            ->groupBy('obligation_types.id', 'obligation_types.type_name')
             ->orderByDesc('total')
-            ->limit(5)
+            ->limit(8)
             ->get();
-        $assetCategoryMax = $assetCategoryBars->max('total') ?: 1;
-        $assetCategoryBars = $assetCategoryBars->map(fn ($row) => [
-            'label' => $row->category_name,
+        $typeMax = $typeStats->max('total') ?: 1;
+        $typeBars = $typeStats->map(fn ($row) => [
+            'label' => $row->type_name,
             'value' => (int) $row->total,
-            'pct' => (int) round((int) $row->total / $assetCategoryMax * 100),
+            'pct' => (int) round((int) $row->total / $typeMax * 100),
             'color' => 'var(--info)',
         ])->all();
 
-        $gatePassChecked = GatePass::whereNotNull('checked_by')->where('checked_by', '<>', '')->count();
-        $gatePassPending = GatePass::count() - $gatePassChecked;
-        $gatePassStatusCounts = [
-            ['status' => 'checked', 'label' => 'Checked', 'count' => $gatePassChecked],
-            ['status' => 'pending', 'label' => 'Pending Check', 'count' => $gatePassPending],
-        ];
-        $gatePassStatusTotal = $gatePassChecked + $gatePassPending;
-        $gatePassStatusDonut = collect($gatePassStatusCounts)->map(fn ($s) => [
-            'label' => $s['label'],
-            'count' => $s['count'],
-            'pct' => $gatePassStatusTotal > 0 ? (int) round($s['count'] / $gatePassStatusTotal * 100) : 0,
-            'color' => match ($s['status']) {
-                'checked' => 'var(--success)',
-                'pending' => 'var(--warning)',
-            },
-        ])->all();
-
-        $gatePassWeekStart = $today->copy()->startOfWeek();
-        $gatePassWeeklyBars = collect(range(0, 6))->map(function ($dayOffset) use ($gatePassWeekStart) {
-            $date = $gatePassWeekStart->copy()->addDays($dayOffset);
-            $count = GatePass::whereDate('issue_date', $date)->count();
-            $maxCount = max(GatePass::count(), 1);
-
-            return [
-                'label' => $date->format('D'),
-                'value' => $count,
-                'pct' => (int) round($count / $maxCount * 100),
-            ];
-        })->all();
-
-        $maintenanceStatusRaw = MaintenanceRequest::query()
-            ->selectRaw('status, count(*) as total')
-            ->groupBy('status')
-            ->pluck('total', 'status');
-        $maintenanceStatusCounts = [
-            ['status' => 'open', 'label' => 'Open', 'count' => (int) ($maintenanceStatusRaw['open'] ?? 0)],
-            ['status' => 'in_progress', 'label' => 'In Progress', 'count' => (int) ($maintenanceStatusRaw['in_progress'] ?? 0)],
-            ['status' => 'resolved', 'label' => 'Resolved', 'count' => (int) ($maintenanceStatusRaw['resolved'] ?? 0)],
-            ['status' => 'closed', 'label' => 'Closed', 'count' => (int) ($maintenanceStatusRaw['closed'] ?? 0)],
-        ];
-        $maintenanceStatusTotal = array_sum(array_column($maintenanceStatusCounts, 'count'));
-        $maintenanceStatusDonut = collect($maintenanceStatusCounts)->map(fn ($s) => [
-            'label' => $s['label'],
-            'count' => $s['count'],
-            'pct' => $maintenanceStatusTotal > 0 ? (int) round($s['count'] / $maintenanceStatusTotal * 100) : 0,
-            'color' => match ($s['status']) {
-                'open' => 'var(--destructive)',
-                'in_progress' => 'var(--info)',
-                'resolved' => 'var(--success)',
-                'closed' => 'var(--muted-foreground)',
-            },
-        ])->all();
-
-        $maintenancePriorityCounts = MaintenanceRequest::query()
-            ->selectRaw('priority, count(*) as total')
-            ->groupBy('priority')
-            ->orderByDesc('total')
-            ->get();
-        $maintenancePriorityMax = $maintenancePriorityCounts->max('total') ?: 1;
-        $maintenancePriorityBars = $maintenancePriorityCounts->map(fn ($row) => [
-            'label' => $row->priority,
-            'value' => (int) $row->total,
-            'pct' => (int) round((int) $row->total / $maintenancePriorityMax * 100),
+        $priorityStats = Obligation::query()->select('priority')->selectRaw('COUNT(*) as total')->groupBy('priority')->get();
+        $priorityTotalObligation = $priorityStats->sum('total');
+        $priorityDonut = $priorityStats->map(fn ($row) => [
+            'label' => ucfirst($row->priority),
+            'count' => (int) $row->total,
+            'pct' => $priorityTotalObligation > 0 ? (int) round((int) $row->total / $priorityTotalObligation * 100) : 0,
             'color' => match ($row->priority) {
-                'Critical' => 'var(--destructive)',
-                'High' => 'var(--warning)',
-                'Medium' => 'var(--info)',
-                'Low' => 'var(--success)',
+                'critical' => 'var(--destructive)',
+                'high' => 'var(--warning)',
+                'medium' => 'var(--info)',
+                'low' => 'var(--success)',
             },
         ])->all();
 
-        $maintenanceWeekStart = $today->copy()->startOfWeek();
-        $maintenanceWeeklyBars = collect(range(0, 6))->map(function ($dayOffset) use ($maintenanceWeekStart) {
-            $date = $maintenanceWeekStart->copy()->addDays($dayOffset);
-            $count = MaintenanceHistory::whereDate('repair_date', $date)->count();
-            $maxCount = max(MaintenanceHistory::count(), 1);
+        $mapTask = static function (Task $task): array {
+            return [
+                'title' => $task->title,
+                'subtitle' => 'Due '.$task->due_date->format('M d, Y'),
+                'url' => route('tasks.edit', $task),
+                'badge' => [
+                    'text' => ucfirst($task->priority),
+                    'class' => $task->priority === 'high'
+                        ? 'badge-danger'
+                        : ($task->priority === 'medium' ? 'badge-primary' : 'badge-secondary'),
+                ],
+            ];
+        };
+
+        $mapObligation = static function (Obligation $o): array {
+            $remaining = $today->diffInDays($o->expiry_date, false);
+            $remainingText = $remaining < 0 ? 'Expired '.abs($remaining).' days ago' : ($remaining === 0 ? 'Expires today' : $remaining.' days remaining');
 
             return [
-                'label' => $date->format('D'),
-                'value' => $count,
-                'pct' => (int) round($count / $maxCount * 100),
+                'title' => $o->title,
+                'subtitle' => $remainingText,
+                'url' => route('obligations.show', $o),
+                'badge' => [
+                    'text' => ucfirst($o->risk_level),
+                    'class' => match ($o->risk_level) {
+                        'critical' => 'badge-danger',
+                        'high' => 'badge-warning',
+                        'medium' => 'badge-primary',
+                        'low' => 'badge-secondary',
+                    },
+                ],
             ];
-        })->all();
-
-        $vendorBars = MaintenanceHistory::query()
-            ->join('vendors', 'maintenance_history.vendor_id', '=', 'vendors.id')
-            ->selectRaw('vendors.vendor_name, count(*) as total')
-            ->groupBy('vendors.vendor_name')
-            ->orderByDesc('total')
-            ->limit(5)
-            ->get();
-        $vendorMax = $vendorBars->max('total') ?: 1;
-        $vendorBars = $vendorBars->map(fn ($row) => [
-            'label' => $row->vendor_name,
-            'value' => (int) $row->total,
-            'pct' => (int) round((int) $row->total / $vendorMax * 100),
-            'color' => 'var(--warning)',
-        ])->all();
+        };
 
         return view('dashboard.index', [
-            'total' => $total,
-            'completed' => $completed,
-            'pending' => $pending,
+            'taskTotal' => $taskTotal,
+            'taskCompleted' => $taskCompleted,
+            'taskPending' => $taskPending,
+            'taskOverdue' => $taskOverdue,
+            'meetingThisMonth' => $meetingThisMonth,
+            'meetingUpcoming' => $meetingUpcoming,
+            'meetingCompleted' => $meetingCompleted,
+            'pendingActions' => $pendingActions,
+            'overdueActions' => $overdueActions,
+            'actionsDueThisWeek' => $actionsDueThisWeek,
+            'obligationActive' => $obligationActive,
+            'obligationDue7' => $obligationDue7,
+            'obligationDue30' => $obligationDue30,
+            'obligationExpired' => $obligationExpired,
+            'obligationCritical' => $obligationCritical,
+            'obligationHighRisk' => $obligationHighRisk,
+            'obligationRenewal' => $obligationRenewal,
+            'obligationPendingApproval' => $obligationPendingApproval,
             'todayTasks' => $todayTasks->map($mapTask)->all(),
             'overdueTasks' => $overdueTasks->map($mapTask)->all(),
-            'completedTasks' => $completedTasks->map($mapTask)->all(),
             'upcomingTasks' => $upcomingTasks->map($mapTask)->all(),
-            'highPriorityTasks' => $highPriorityTasks->map($mapTask)->all(),
-            'viewAllTodayRoute' => route('tasks.index', ['due_date' => 'today']),
-            'viewAllOverdueRoute' => route('tasks.index'),
-            'viewAllCompletedRoute' => route('tasks.index', ['status' => 'completed']),
-            'viewAllUpcomingRoute' => route('tasks.index', ['due_date' => 'this_week']),
-            'viewAllHighPriorityRoute' => route('tasks.index', ['priority' => 'high']),
             'statusDonut' => $statusDonut,
             'statusTotal' => $statusTotal,
             'weeklyBars' => $weeklyBars,
             'priorityBars' => $priorityBars,
-            'assetStatusDonut' => $assetStatusDonut,
-            'assetStatusTotal' => $assetStatusTotal,
-            'assetCategoryBars' => $assetCategoryBars,
-            'gatePassStatusDonut' => $gatePassStatusDonut,
-            'gatePassStatusTotal' => $gatePassStatusTotal,
-            'gatePassWeeklyBars' => $gatePassWeeklyBars,
-            'maintenanceStatusDonut' => $maintenanceStatusDonut,
-            'maintenanceStatusTotal' => $maintenanceStatusTotal,
-            'maintenancePriorityBars' => $maintenancePriorityBars,
-            'maintenanceWeeklyBars' => $maintenanceWeeklyBars,
-            'vendorBars' => $vendorBars,
+            'upcomingMeetings' => $upcomingMeetings,
+            'myPendingActions' => $myPendingActions,
+            'upcomingObligations' => $upcomingObligations->map($mapObligation)->all(),
+            'criticalObligations' => $criticalObligations->map($mapObligation)->all(),
+            'expiredObligations' => $expiredObligations->map($mapObligation)->all(),
+            'typeBars' => $typeBars,
+            'priorityDonut' => $priorityDonut,
+            'priorityTotal' => $priorityTotalObligation,
         ]);
     }
 
-    private function canManageAllTasks(mixed $user): bool
+    private function canManageAll(mixed $user): bool
     {
-        return method_exists($user, 'hasRole')
-            && $user->hasRole('super-admin');
+        return method_exists($user, 'hasRole') && $user->hasRole('super-admin');
     }
 }
