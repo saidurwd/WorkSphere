@@ -98,7 +98,7 @@ class MeetingSeeder extends Seeder
                     'description' => fake()->paragraph(),
                     'assigned_to' => $users->random()->id,
                     'assigned_department_id' => $organizer->employee?->department_id,
-                    'priority' => fake()->randomElement(['low', 'normal', 'high', 'urgent']),
+                    'priority' => fake()->randomElement(['low', 'medium', 'high', 'critical']),
                     'start_date' => $meeting->meeting_date,
                     'due_date' => fake()->dateTimeBetween('now', '+2 weeks'),
                     'status' => fake()->randomElement(['open', 'in_progress', 'completed', 'on_hold']),
