@@ -20,6 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('obligations:process')->dailyAt('08:00');
         $schedule->command('actions:remind')->dailyAt('09:00');
         $schedule->command('actions:overdue')->dailyAt('09:30');
+        $schedule->command('tasks:remind')->dailyAt('09:00');
+        $schedule->command('tasks:overdue')->dailyAt('09:30');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

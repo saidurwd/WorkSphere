@@ -33,6 +33,7 @@ use App\Http\Controllers\ObligationReportController;
 use App\Http\Controllers\ObligationVendorController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskNotificationLogController;
 use App\Http\Controllers\TaskTransferController;
 use Illuminate\Support\Facades\Route;
 
@@ -78,6 +79,7 @@ Route::middleware(['web', 'auth'])->prefix('tasks')->name('tasks.')->group(funct
     Route::get('/', [TaskController::class, 'index'])->name('index');
     Route::get('/create', [TaskController::class, 'create'])->name('create');
     Route::post('/', [TaskController::class, 'store'])->name('store');
+    Route::get('/notification-logs', [TaskNotificationLogController::class, 'index'])->name('notification-logs.index');
     Route::get('/{task}', [TaskController::class, 'show'])->name('show');
     Route::get('/{task}/edit', [TaskController::class, 'edit'])->name('edit');
     Route::put('/{task}', [TaskController::class, 'update'])->name('update');

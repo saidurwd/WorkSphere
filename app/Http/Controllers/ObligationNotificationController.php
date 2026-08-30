@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\NotificationLog;
-use App\Models\Obligation;
 use Illuminate\View\View;
 
 class ObligationNotificationController extends Controller

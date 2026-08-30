@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\ObligationDocument;
-use App\Models\Obligation;
 use Illuminate\View\View;
 
 class ObligationDocumentListController extends Controller

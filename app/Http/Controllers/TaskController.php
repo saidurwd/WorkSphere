@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\TaskAssigned;
+use App\Events\TaskAssigned;
+use App\Events\TaskCompleted;
+use App\Events\TaskCreated;
+use App\Events\TaskUpdated;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class TaskController extends Controller
@@ -282,7 +284,7 @@ class TaskController extends Controller
 
         $task = Auth::user()->tasks()->create($validated);
 
-        $this->notifyAssignee($task, $task->responsibleUser, Auth::user());
+        event(new TaskCreated($task));
 
         return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
     }
@@ -323,9 +325,18 @@ class TaskController extends Controller
             $validated['attachment'] = $this->storeAttachment($request);
         }
 
+        $oldStatus = $task->status;
+        $oldResponsibleUserId = $task->responsible_user_id;
+
         $task->update($validated);
 
-        $this->notifyAssignee($task, $task->responsibleUser, Auth::user());
+        if ($oldStatus !== 'completed' && $task->status === 'completed') {
+            event(new TaskCompleted($task));
+        } elseif ($oldResponsibleUserId != $task->responsible_user_id) {
+            event(new TaskAssigned($task));
+        } else {
+            event(new TaskUpdated($task));
+        }
 
         return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
     }
@@ -357,17 +368,6 @@ class TaskController extends Controller
         $task->delete();
 
         return redirect()->route('tasks.index')->with('success', 'Task deleted successfully.');
-    }
-
-    private function notifyAssignee(Task $task, ?User $assignee, User $assigner): void
-    {
-        if (! $assignee || $assignee->id === $assigner->id) {
-            return;
-        }
-
-        $remarks = $task->remarks()->with('user')->latest()->get();
-
-        Mail::to($assignee)->send(new TaskAssigned($task, $assignee, $assigner, $remarks));
     }
 
     private function authorizeTask(Task $task): void
