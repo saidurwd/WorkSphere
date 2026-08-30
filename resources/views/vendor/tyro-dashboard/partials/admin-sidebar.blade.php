@@ -49,12 +49,6 @@
                 </svg>
                 Dashboard
             </a>
-            <a href="{{ route('dashboard.asset-management.index') }}" class="sidebar-link {{ request()->routeIs('dashboard.asset-management.*') ? 'active' : '' }}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4 8 4 8-4zm0 0l-8 4m8-4v10l-8 4m8-4l-8-4" />
-                </svg>
-                Asset Dashboard
-            </a>
             <a href="{{ route($dashboardRoute::name('profile')) }}" class="sidebar-link {{ request()->routeIs($dashboardRoute::pattern('profile*')) ? 'active' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
