@@ -1,10 +1,8 @@
 <?php
 
-use App\Http\Controllers\Api\DlrController as ApiDlrController;
 use App\Http\Controllers\AssetManagementController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseBackupController;
-use App\Http\Controllers\DlrController;
 use App\Http\Controllers\EstateStaffController;
 use App\Http\Controllers\GatePassController;
 use App\Http\Controllers\MeetingActionItemController;
@@ -142,18 +140,6 @@ Route::middleware(['web', 'auth', 'tyro-dashboard.admin'])
             ->name('database-backups.download');
         Route::delete('database-backups/{filename}', [DatabaseBackupController::class, 'destroy'])
             ->name('database-backups.destroy');
-
-        Route::get('dlr-sync', [DlrController::class, 'index'])
-            ->name('dlr-sync.index');
-        Route::post('dlr-sync/fetch', [DlrController::class, 'fetch'])
-            ->name('dlr-sync.fetch');
-        Route::post('dlr-sync', [DlrController::class, 'sync'])
-            ->name('dlr-sync.sync');
-        Route::get('dlr-sync/manage', [DlrController::class, 'manage'])
-            ->name('dlr-sync.manage');
-
-        Route::get('api/dlr/fetch', [ApiDlrController::class, 'fetch'])
-            ->name('api.dlr.fetch');
     });
 
 Route::middleware(['web', 'auth'])->prefix('meetings')->name('meetings.')->group(function () {
