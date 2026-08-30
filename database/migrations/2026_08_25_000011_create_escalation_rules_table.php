@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('escalation_rules')) {
+        if (! Schema::hasTable('escalation_rules')) {
             Schema::create('escalation_rules', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('obligation_type_id')->nullable()->constrained()->nullOnDelete();

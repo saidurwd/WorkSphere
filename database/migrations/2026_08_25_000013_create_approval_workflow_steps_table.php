@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('approval_workflow_steps')) {
+        if (! Schema::hasTable('approval_workflow_steps')) {
             Schema::create('approval_workflow_steps', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('approval_workflow_id')->constrained()->cascadeOnDelete();

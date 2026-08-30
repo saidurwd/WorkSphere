@@ -12,7 +12,7 @@ class MeetingModuleSeeder extends Seeder
             MeetingPermissionSeeder::class,
             MeetingTypeSeeder::class,
             MeetingTagSeeder::class,
-            //MeetingSeeder::class,
+            // MeetingSeeder::class,
         ]);
     }
 }

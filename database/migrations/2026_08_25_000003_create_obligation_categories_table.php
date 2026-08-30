@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('obligation_categories')) {
+        if (! Schema::hasTable('obligation_categories')) {
             Schema::create('obligation_categories', function (Blueprint $table) {
                 $table->id();
                 $table->string('category_name')->unique();
