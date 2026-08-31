@@ -4,15 +4,13 @@ namespace App\Mail;
 
 use App\Models\MeetingActionItem;
 use App\Models\User;
-use Illuminate\Mail\MailMessage;
+use Illuminate\Mail\Mailable;
 
-class ActionCompleted extends MailMessage
+class ActionCompleted extends Mailable
 {
-    public function __construct(public MeetingActionItem $actionItem, public User $user) {}
-
-    public function build()
+    public function __construct(public MeetingActionItem $actionItem, public User $user)
     {
-        return $this->subject('Action Completed: '.$this->actionItem->title)
+        $this->subject('Action Completed: '.$this->actionItem->title)
             ->view('emails.meetings.action_completed', [
                 'actionItem' => $this->actionItem,
                 'user' => $this->user,

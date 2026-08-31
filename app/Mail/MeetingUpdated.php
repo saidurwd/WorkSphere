@@ -4,15 +4,13 @@ namespace App\Mail;
 
 use App\Models\Meeting;
 use App\Models\User;
-use Illuminate\Mail\MailMessage;
+use Illuminate\Mail\Mailable;
 
-class MeetingUpdated extends MailMessage
+class MeetingUpdated extends Mailable
 {
-    public function __construct(public Meeting $meeting, public User $user) {}
-
-    public function build()
+    public function __construct(public Meeting $meeting, public User $user)
     {
-        return $this->subject('Meeting Updated: '.$this->meeting->title)
+        $this->subject('Meeting Updated: '.$this->meeting->title)
             ->view('emails.meetings.updated', [
                 'meeting' => $this->meeting,
                 'user' => $this->user,

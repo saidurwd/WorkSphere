@@ -4,15 +4,13 @@ namespace App\Mail;
 
 use App\Models\MeetingActionItem;
 use App\Models\User;
-use Illuminate\Mail\MailMessage;
+use Illuminate\Mail\Mailable;
 
-class ActionOverdue extends MailMessage
+class ActionOverdue extends Mailable
 {
-    public function __construct(public MeetingActionItem $actionItem, public User $user) {}
-
-    public function build()
+    public function __construct(public MeetingActionItem $actionItem, public User $user)
     {
-        return $this->subject('Overdue Action: '.$this->actionItem->title)
+        $this->subject('Overdue Action: '.$this->actionItem->title)
             ->view('emails.meetings.action_overdue', [
                 'actionItem' => $this->actionItem,
                 'user' => $this->user,
