@@ -53,7 +53,7 @@ class MeetingActionItemController extends Controller
 
     public function show(MeetingActionItem $actionItem): View
     {
-        $actionItem->load('meeting', 'assignedTo', 'assignedDepartment', 'task', 'remarks.user');
+        $actionItem->load('meeting', 'assignedTo', 'assignedDepartment', 'task');
 
         return view('meetings.action_items.show', compact('actionItem'));
     }
