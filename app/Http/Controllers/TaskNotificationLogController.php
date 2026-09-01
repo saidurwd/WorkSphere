@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\TaskNotificationLog;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class TaskNotificationLogController extends Controller
@@ -46,5 +48,62 @@ class TaskNotificationLogController extends Controller
             'logs' => $logs,
             'filters' => $filters,
         ]);
+    }
+
+    public function destroy(TaskNotificationLog $log): RedirectResponse
+    {
+        if (! $this->canManageAllLogs()) {
+            abort(403);
+        }
+
+        $log->delete();
+
+        return back()->with('success', 'Notification log deleted successfully.');
+    }
+
+    public function destroyAll(Request $request): RedirectResponse
+    {
+        if (! $this->canManageAllLogs()) {
+            abort(403);
+        }
+
+        $query = TaskNotificationLog::query();
+
+        if ($search = $request->string('search')->trim()->toString()) {
+            $search = "%{$search}%";
+            $query->where('subject', 'like', $search)
+                ->orWhere('message', 'like', $search)
+                ->orWhereHas('task', function ($q) use ($search) {
+                    $q->where('title', 'like', $search)
+                        ->orWhere('task_no', 'like', $search);
+                });
+        }
+
+        if ($status = $request->string('status')->toString()) {
+            $query->where('status', $status);
+        }
+
+        if ($channel = $request->string('channel')->toString()) {
+            $query->where('channel', $channel);
+        }
+
+        if ($notificationType = $request->string('notification_type')->toString()) {
+            $query->where('notification_type', $notificationType);
+        }
+
+        if ($taskId = $request->integer('task_id', 0)) {
+            $query->where('task_id', $taskId);
+        }
+
+        $count = $query->delete();
+
+        return redirect()->route('tasks.notification-logs.index')->with('success', "Deleted {$count} notification log(s).");
+    }
+
+    private function canManageAllLogs(): bool
+    {
+        $user = Auth::user();
+
+        return $user !== null && method_exists($user, 'hasRole') && $user->hasRole('super-admin');
     }
 }

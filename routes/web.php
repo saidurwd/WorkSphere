@@ -52,6 +52,8 @@ Route::middleware(['web', 'auth'])->prefix('obligations')->name('obligations.')-
     Route::get('/vendors', [ObligationVendorController::class, 'index'])->name('vendors');
     Route::get('/documents', [ObligationDocumentListController::class, 'index'])->name('documents');
     Route::get('/notifications', [ObligationNotificationController::class, 'index'])->name('notifications');
+    Route::delete('/notifications', [ObligationNotificationController::class, 'destroyAll'])->name('notifications.destroy-all');
+    Route::delete('/notifications/{notification}', [ObligationNotificationController::class, 'destroy'])->name('notifications.destroy');
 
     Route::get('/', [ObligationController::class, 'index'])->name('index');
     Route::get('/create', [ObligationController::class, 'create'])->name('create');
@@ -78,6 +80,8 @@ Route::middleware(['web', 'auth'])->prefix('tasks')->name('tasks.')->group(funct
     Route::get('/create', [TaskController::class, 'create'])->name('create');
     Route::post('/', [TaskController::class, 'store'])->name('store');
     Route::get('/notification-logs', [TaskNotificationLogController::class, 'index'])->name('notification-logs.index');
+    Route::delete('/notification-logs', [TaskNotificationLogController::class, 'destroyAll'])->name('notification-logs.destroy-all');
+    Route::delete('/notification-logs/{log}', [TaskNotificationLogController::class, 'destroy'])->name('notification-logs.destroy');
     Route::get('/{task}', [TaskController::class, 'show'])->name('show');
     Route::get('/{task}/edit', [TaskController::class, 'edit'])->name('edit');
     Route::put('/{task}', [TaskController::class, 'update'])->name('update');
@@ -175,6 +179,8 @@ Route::middleware(['web', 'auth'])->prefix('meetings')->name('meetings.')->group
     Route::get('/create', [MeetingController::class, 'create'])->name('create');
     Route::post('/', [MeetingController::class, 'store'])->name('store');
     Route::get('/notification-logs', [MeetingNotificationLogController::class, 'index'])->name('notification-logs.index');
+    Route::delete('/notification-logs', [MeetingNotificationLogController::class, 'destroyAll'])->name('notification-logs.destroy-all');
+    Route::delete('/notification-logs/{log}', [MeetingNotificationLogController::class, 'destroy'])->name('notification-logs.destroy');
     Route::get('/{meeting}', [MeetingController::class, 'show'])->name('show');
     Route::get('/{meeting}/print', [MeetingController::class, 'print'])->name('print');
     Route::get('/{meeting}/edit', [MeetingController::class, 'edit'])->name('edit');

@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\NotificationLog;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class ObligationNotificationController extends Controller
@@ -40,5 +43,57 @@ class ObligationNotificationController extends Controller
             'notifications' => $notifications,
             'filters' => $filters,
         ]);
+    }
+
+    public function destroy(NotificationLog $notification): RedirectResponse
+    {
+        if (! $this->canManageAllLogs()) {
+            abort(403);
+        }
+
+        $notification->delete();
+
+        return back()->with('success', 'Notification deleted successfully.');
+    }
+
+    public function destroyAll(Request $request): RedirectResponse
+    {
+        if (! $this->canManageAllLogs()) {
+            abort(403);
+        }
+
+        $query = NotificationLog::query();
+
+        if ($search = $request->string('search')->trim()->toString()) {
+            $search = "%{$search}%";
+            $query->where('subject', 'like', $search)
+                ->orWhereHas('obligation', function ($q) use ($search) {
+                    $q->where('obligation_no', 'like', $search)
+                        ->orWhere('title', 'like', $search);
+                });
+        }
+
+        if ($status = $request->string('status')->toString()) {
+            $query->where('status', $status);
+        }
+
+        if ($channel = $request->string('channel')->toString()) {
+            $query->where('channel', $channel);
+        }
+
+        if ($obligationId = $request->integer('obligation_id', 0)) {
+            $query->where('obligation_id', $obligationId);
+        }
+
+        $count = $query->delete();
+
+        return redirect()->route('obligations.notifications')->with('success', "Deleted {$count} notification(s).");
+    }
+
+    private function canManageAllLogs(): bool
+    {
+        $user = Auth::user();
+
+        return $user !== null && method_exists($user, 'hasRole') && $user->hasRole('super-admin');
     }
 }
