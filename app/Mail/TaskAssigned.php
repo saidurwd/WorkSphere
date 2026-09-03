@@ -20,8 +20,10 @@ class TaskAssigned extends Mailable
         public Task $task,
         public User $assignee,
         public User $assigner,
-        public $remarks = [],
-    ) {}
+        public $remarks = null,
+    ) {
+        $this->remarks = $task->remarks()->with('user')->latest()->get();
+    }
 
     /**
      * Get the message envelope.
@@ -29,7 +31,7 @@ class TaskAssigned extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'New Task Assigned: '.$this->task->title,
+            subject: 'New Task Assigned: ' . $this->task->title,
         );
     }
 
