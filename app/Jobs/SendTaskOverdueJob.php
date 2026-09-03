@@ -28,7 +28,6 @@ class SendTaskOverdueJob implements ShouldQueue
 
                 $notificationService->log(
                     $this->task,
-                    null,
                     $responsibleUser,
                     'EMAIL',
                     'task_overdue',
@@ -39,7 +38,6 @@ class SendTaskOverdueJob implements ShouldQueue
             } catch (\Throwable $e) {
                 $notificationService->log(
                     $this->task,
-                    null,
                     $responsibleUser,
                     'EMAIL',
                     'task_overdue',

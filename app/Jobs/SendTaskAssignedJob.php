@@ -30,7 +30,6 @@ class SendTaskAssignedJob implements ShouldQueue
 
                 $notificationService->log(
                     $this->task,
-                    null,
                     $assignee,
                     'EMAIL',
                     'task_assigned',
@@ -41,7 +40,6 @@ class SendTaskAssignedJob implements ShouldQueue
             } catch (\Throwable $e) {
                 $notificationService->log(
                     $this->task,
-                    null,
                     $assignee,
                     'EMAIL',
                     'task_assigned',

@@ -28,7 +28,6 @@ class SendTaskReminderJob implements ShouldQueue
 
                 $notificationService->log(
                     $this->task,
-                    null,
                     $responsibleUser,
                     'EMAIL',
                     'task_reminder',
@@ -39,7 +38,6 @@ class SendTaskReminderJob implements ShouldQueue
             } catch (\Throwable $e) {
                 $notificationService->log(
                     $this->task,
-                    null,
                     $responsibleUser,
                     'EMAIL',
                     'task_reminder',
