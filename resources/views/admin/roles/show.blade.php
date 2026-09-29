@@ -28,7 +28,7 @@
                         ['label' => 'Name', 'value' => $role->name],
                         ['label' => 'Slug', 'value' => $role->slug],
                         ['label' => 'Description', 'value' => $role->description ?? '—'],
-                        ['label' => 'Users Assigned', 'value' => $role->users_count],
+                        ['label' => 'Users Assigned', 'value' => $role->user_roles_count],
                         ['label' => 'Created', 'value' => $role->created_at?->format('M d, Y H:i')],
                         ['label' => 'Updated', 'value' => $role->updated_at?->format('M d, Y H:i')],
                     ]" />

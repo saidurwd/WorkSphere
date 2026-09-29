@@ -78,6 +78,7 @@ class RoleController extends Controller
 
     public function edit(Role $role): View
     {
+        $role->load('permissions');
         $permissions = Permission::query()->orderBy('permission_name')->get();
 
         return view('admin.roles.edit', [
