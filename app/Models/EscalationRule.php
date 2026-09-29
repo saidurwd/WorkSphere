@@ -2,14 +2,11 @@
 
 namespace App\Models;
 
-use HasinHayder\TyroDashboard\Concerns\HasCrud;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EscalationRule extends Model
 {
-    use HasCrud;
-
     protected $fillable = [
         'obligation_type_id',
         'days_before_expiry',

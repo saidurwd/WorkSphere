@@ -3,7 +3,7 @@
 @section('title', 'Task Transfers')
 
 @section('breadcrumb')
-<a href="{{ \HasinHayder\TyroDashboard\Support\DashboardRoute::name('index') }}">Dashboard</a>
+<a href="{{ 'dashboard.index' }}">Dashboard</a>
 <span class="breadcrumb-separator">/</span>
 <a href="{{ route('tasks.index') }}">Tasks</a>
 <span class="breadcrumb-separator">/</span>

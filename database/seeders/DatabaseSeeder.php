@@ -25,5 +25,6 @@ class DatabaseSeeder extends Seeder
         $this->call(FoundationSeeder::class);
         $this->call(ComplianceObligationSeeder::class);
         $this->call(MeetingModuleSeeder::class);
+        $this->call(ProjectPermissionSeeder::class);
     }
 }

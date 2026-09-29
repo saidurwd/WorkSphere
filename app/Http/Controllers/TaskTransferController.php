@@ -55,8 +55,8 @@ class TaskTransferController extends Controller
         $validated['transferred_by'] = $validated['transferred_by'] ?? $request->user()->id;
 
         if ($request->hasFile('file_attache')) {
-            $disk = config('tyro-dashboard.uploads.disk', 'public');
-            $directory = config('tyro-dashboard.uploads.directory', 'uploads');
+            $disk = config('uploads.disk');
+            $directory = config('uploads.directory');
             $validated['file_attache'] = $request->file('file_attache')->store($directory, $disk);
         }
 
@@ -73,7 +73,7 @@ class TaskTransferController extends Controller
 
     public function destroy(TaskTransfer $taskTransfer): RedirectResponse
     {
-        $disk = config('tyro-dashboard.uploads.disk', 'public');
+        $disk = config('uploads.disk');
 
         if ($taskTransfer->file_attache && Storage::disk($disk)->exists($taskTransfer->file_attache)) {
             Storage::disk($disk)->delete($taskTransfer->file_attache);

@@ -2,14 +2,11 @@
 
 namespace App\Models;
 
-use HasinHayder\TyroDashboard\Concerns\HasCrud;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MeetingType extends Model
 {
-    use HasCrud;
-
     protected $fillable = [
         'name',
         'code',

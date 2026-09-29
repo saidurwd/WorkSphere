@@ -9,7 +9,6 @@ class MeetingModuleSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            MeetingPermissionSeeder::class,
             MeetingTypeSeeder::class,
             MeetingTagSeeder::class,
             // MeetingSeeder::class,

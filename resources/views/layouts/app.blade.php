@@ -16,9 +16,6 @@
 </head>
 
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
-@php
-    $dashboardRoute = \App\Support\DashboardRoute::class;
-@endphp
 
 <div class="app-wrapper">
     <x-navbar />

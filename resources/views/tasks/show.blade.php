@@ -9,7 +9,7 @@ $statusAccent = $task->status === 'completed' ? 'var(--success)' : ($task->statu
 @section('title', 'Task Details')
 
 @section('breadcrumb')
-<a href="{{ route(\HasinHayder\TyroDashboard\Support\DashboardRoute::name('index')) }}">Dashboard</a>
+<a href="{{ route('dashboard.index') }}">Dashboard</a>
 <span class="breadcrumb-separator">/</span>
 <a href="{{ route('tasks.index') }}">Tasks</a>
 <span class="breadcrumb-separator">/</span>

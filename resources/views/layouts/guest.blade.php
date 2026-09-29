@@ -16,9 +16,6 @@
 </head>
 
 <body class="bg-body-tertiary">
-@php
-    $dashboardRoute = \App\Support\DashboardRoute::class;
-@endphp
 
 <div class="d-flex align-items-center justify-content-center min-vh-100 py-5">
     <div class="container">

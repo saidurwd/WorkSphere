@@ -3,7 +3,7 @@
 @section('title', 'Vendors')
 
 @section('breadcrumb')
-<a href="{{ route(\HasinHayder\TyroDashboard\Support\DashboardRoute::name('index')) }}">Dashboard</a>
+<a href="{{ route('dashboard.index') }}">Dashboard</a>
 <span class="breadcrumb-separator">/</span>
 <a href="{{ route('obligations.dashboard') }}">Obligations</a>
 <span class="breadcrumb-separator">/</span>

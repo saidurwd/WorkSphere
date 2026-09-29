@@ -2,14 +2,11 @@
 
 namespace App\Models;
 
-use HasinHayder\TyroDashboard\Concerns\HasCrud;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ObligationType extends Model
 {
-    use HasCrud;
-
     protected $fillable = [
         'type_name',
         'description',

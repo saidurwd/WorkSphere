@@ -1,5 +1,4 @@
 @php
-    $dashboardRoute = \App\Support\DashboardRoute::class;
     $user = auth()->user();
 @endphp
 
@@ -32,11 +31,11 @@
                     </a>
 
                     <div class="dropdown-menu dropdown-menu-end">
-                        <a class="dropdown-item" href="{{ route($dashboardRoute::name('profile')) }}">
-                            <i class="bi bi-person me-2"></i>Profile
+                        <a class="dropdown-item" href="{{ route('dashboard.index') }}">
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
                         </a>
                         <div class="dropdown-divider"></div>
-                        <form method="POST" action="{{ $dashboardRoute::logout() }}">
+                        <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="dropdown-item">
                                 <i class="bi bi-box-arrow-right me-2"></i>Sign out

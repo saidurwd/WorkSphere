@@ -9,11 +9,8 @@ use App\Models\EscalationRule;
 use App\Models\NotificationRule;
 use App\Models\ObligationCategory;
 use App\Models\ObligationType;
-use App\Models\Permission;
-use App\Models\RolePermission;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class ComplianceObligationSeeder extends Seeder
 {
@@ -27,7 +24,6 @@ class ComplianceObligationSeeder extends Seeder
         $this->seedNotificationRules();
         $this->seedEscalationRules();
         $this->seedApprovalWorkflows();
-        $this->seedPermissions();
     }
 
     private function seedCompanies(): void
@@ -198,36 +194,6 @@ class ComplianceObligationSeeder extends Seeder
 
             foreach ($steps as $step) {
                 ApprovalWorkflowStep::create(array_merge($step, ['approval_workflow_id' => $workflow->id]));
-            }
-        }
-    }
-
-    private function seedPermissions(): void
-    {
-        $permissions = [
-            'obligation.view',
-            'obligation.create',
-            'obligation.update',
-            'obligation.delete',
-            'obligation.assign',
-            'obligation.renew',
-            'obligation.approve',
-            'obligation.manage_documents',
-            'obligation.manage_rules',
-            'obligation.manage_settings',
-            'obligation.view_reports',
-            'obligation.view_all_departments',
-        ];
-
-        $roleId = DB::table('roles')->value('id');
-
-        if ($roleId) {
-            foreach ($permissions as $permissionName) {
-                $permission = Permission::firstOrCreate(['permission_name' => $permissionName]);
-                RolePermission::firstOrCreate([
-                    'role_id' => $roleId,
-                    'permission_id' => $permission->id,
-                ]);
             }
         }
     }

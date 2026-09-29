@@ -2,15 +2,12 @@
 
 namespace App\Models;
 
-use HasinHayder\TyroDashboard\Concerns\HasCrud;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class NotificationRule extends Model
 {
-    use HasCrud;
-
     protected $fillable = [
         'obligation_type_id',
         'days_before_expiry',

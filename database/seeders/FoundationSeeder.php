@@ -6,13 +6,10 @@ use App\Models\ActivityLog;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\Location;
-use App\Models\Permission;
-use App\Models\RolePermission;
 use App\Models\User;
 use App\Models\Vendor;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class FoundationSeeder extends Seeder
@@ -101,33 +98,8 @@ class FoundationSeeder extends Seeder
         });
 
         // ---------------------------------------------------------------
-        // Permissions, RolePermissions & Activity Logs
-        // Note: roles/user_roles are owned by Tyro's built-in RBAC.
+        // Activity Logs
         // ---------------------------------------------------------------
-        $permissionNames = [
-            'report.view',
-            'task.view', 'task.manage',
-            'user.manage', 'role.manage', 'privilege.manage',
-            'invitation.manage', 'system.manage', 'checkpoint.manage',
-            'database.backup', 'media.manage',
-            'activity.view', 'audit.view',
-        ];
-        $permissions = collect();
-        foreach ($permissionNames as $p) {
-            $permissions->push(Permission::create(['permission_name' => $p]));
-        }
-
-        // Link permissions to an existing role via the shared `roles` table.
-        $roleId = DB::table('roles')->value('id');
-        if ($roleId) {
-            foreach ($permissions as $permission) {
-                RolePermission::create([
-                    'role_id' => $roleId,
-                    'permission_id' => $permission->id,
-                ]);
-            }
-        }
-
         for ($i = 0; $i < 20; $i++) {
             ActivityLog::create([
                 'user_id' => User::inRandomOrder()->value('id'),

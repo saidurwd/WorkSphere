@@ -2,14 +2,11 @@
 
 namespace App\Models;
 
-use HasinHayder\TyroDashboard\Concerns\HasCrud;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class MeetingTag extends Model
 {
-    use HasCrud;
-
     protected $fillable = [
         'name',
         'color',

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use HasinHayder\TyroDashboard\Concerns\HasCrud;
 use Illuminate\Database\Eloquent\Attributes\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,8 +11,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[SoftDeletes]
 class Meeting extends Model
 {
-    use HasCrud;
-
     protected $fillable = [
         'meeting_no',
         'title',

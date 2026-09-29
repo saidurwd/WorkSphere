@@ -1,6 +1,5 @@
 @php
-    $dashboardRoute = \App\Support\DashboardRoute::class;
-    $isAdmin = auth()->user()?->hasAnyRole(config('tyro-dashboard.admin_roles', ['admin', 'super-admin'])) ?? false;
+    $isAdmin = auth()->user()?->hasAnyRole(config('authorization.admin_roles', [])) ?? false;
 @endphp
 
 <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
@@ -43,10 +42,6 @@
                             ['label' => 'Reports', 'icon' => 'bar-chart-line', 'route' => 'obligations.reports'],
                         ]],
                         ['label' => 'Administration', 'items' => [
-                            ['label' => 'Users', 'icon' => 'people', 'route' => $dashboardRoute::name('users.index'), 'admin' => true],
-                            ['label' => 'Roles', 'icon' => 'person-badge', 'route' => $dashboardRoute::name('roles.index'), 'admin' => true],
-                            ['label' => 'Privileges', 'icon' => 'key', 'route' => $dashboardRoute::name('privileges.index'), 'admin' => true],
-                            ['label' => 'Invitations', 'icon' => 'envelope', 'route' => $dashboardRoute::name('invitations.index'), 'admin' => true],
                             ['label' => 'Database Backups', 'icon' => 'database', 'route' => 'dashboard.database-backups.index', 'admin' => true],
                         ]],
                     ];
@@ -69,6 +64,7 @@
                         </ul>
                     </li>
                 @endforeach
+
             </ul>
         </nav>
     </div>
