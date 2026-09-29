@@ -2,207 +2,192 @@
 
 @section('title', 'Tasks')
 
-@section('breadcrumb')
-<a href="{{ route('dashboard.index') }}">Dashboard</a>
-<span class="breadcrumb-separator">/</span>
-<span>Tasks</span>
+@section('breadcrumb', [
+    ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+    ['label' => 'Tasks'],
+])
+
+@section('header-actions')
+    <x-btn :href="route('tasks.create')" icon="plus-lg">New Task</x-btn>
 @endsection
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Tasks</h1>
-            <p class="page-description">Manage your tasks and track progress.</p>
-        </div>
-        <div>
-            <a href="{{ route('tasks.create') }}" class="btn btn-primary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                New Task
-            </a>
-        </div>
-    </div>
-</div>
+    <x-page-header title="Tasks" subtitle="Manage your tasks and track progress." icon="check2-square" />
 
-<div class="card" style="margin-bottom: 1rem;">
-    <div class="card-body">
-        <form action="{{ route('tasks.index') }}" method="GET" id="filter-form">
-            <div class="filters-bar">
-                <div class="search-box">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <input type="search" name="search" class="form-input" placeholder="Search tasks..." value="{{ $filters['search'] ?? '' }}">
-                </div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <form action="{{ route('tasks.index') }}" method="GET">
+                <div class="row g-2 align-items-end">
+                    <div class="col-12 col-lg-4">
+                        <label for="filter-search" class="form-label">Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input id="filter-search" type="search" name="search" class="form-control"
+                                   placeholder="Search tasks..." value="{{ $filters['search'] ?? '' }}">
+                        </div>
+                    </div>
 
-                <div class="filter-group">
-                    <label class="filter-label">Status:</label>
-                    <select name="status" class="form-select" style="min-width: 150px;" onchange="document.getElementById('filter-form').submit()">
-                        <option value="">All Statuses</option>
-                        <option value="pending" {{ ($filters['status'] ?? '') === 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="in_progress" {{ ($filters['status'] ?? '') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                        <option value="completed" {{ ($filters['status'] ?? '') === 'completed' ? 'selected' : '' }}>Completed</option>
-                    </select>
-                </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <label for="filter-status" class="form-label">Status</label>
+                        <select id="filter-status" name="status" class="form-select">
+                            <option value="">All Statuses</option>
+                            <option value="pending" @selected(($filters['status'] ?? '') === 'pending')>Pending</option>
+                            <option value="in_progress" @selected(($filters['status'] ?? '') === 'in_progress')>In Progress</option>
+                            <option value="completed" @selected(($filters['status'] ?? '') === 'completed')>Completed</option>
+                        </select>
+                    </div>
 
-                <div class="filter-group">
-                    <label class="filter-label">Priority:</label>
-                    <select name="priority" class="form-select" style="min-width: 140px;" onchange="document.getElementById('filter-form').submit()">
-                        <option value="">All Priorities</option>
-                        <option value="low" {{ ($filters['priority'] ?? '') === 'low' ? 'selected' : '' }}>Low</option>
-                        <option value="medium" {{ ($filters['priority'] ?? '') === 'medium' ? 'selected' : '' }}>Medium</option>
-                        <option value="high" {{ ($filters['priority'] ?? '') === 'high' ? 'selected' : '' }}>High</option>
-                    </select>
-                </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <label for="filter-priority" class="form-label">Priority</label>
+                        <select id="filter-priority" name="priority" class="form-select">
+                            <option value="">All Priorities</option>
+                            <option value="low" @selected(($filters['priority'] ?? '') === 'low')>Low</option>
+                            <option value="medium" @selected(($filters['priority'] ?? '') === 'medium')>Medium</option>
+                            <option value="high" @selected(($filters['priority'] ?? '') === 'high')>High</option>
+                        </select>
+                    </div>
 
-                <div class="filter-group">
-                    <label class="filter-label">Responsible:</label>
-                    <select name="responsible_user_id" class="form-select" style="min-width: 180px;" onchange="document.getElementById('filter-form').submit()">
-                        <option value="">All Responsible Users</option>
-                        @foreach($users as $user)
-                            <option value="{{ $user->id }}" {{ (int) ($filters['responsible_user_id'] ?? 0) === $user->id ? 'selected' : '' }}>
-                                {{ $user->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <label for="filter-responsible" class="form-label">Responsible</label>
+                        <select id="filter-responsible" name="responsible_user_id" class="form-select">
+                            <option value="">All Users</option>
+                            @foreach ($users as $user)
+                                <option value="{{ $user->id }}" @selected((int) ($filters['responsible_user_id'] ?? 0) === $user->id)>
+                                    {{ $user->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                <div class="filter-group">
-                    <label class="filter-label">Due Date:</label>
-                    <select name="due_date" class="form-select" style="min-width: 150px;" onchange="document.getElementById('filter-form').submit()">
-                        <option value="">All Dates</option>
-                        <option value="today" {{ ($filters['due_date'] ?? '') === 'today' ? 'selected' : '' }}>Today</option>
-                        <option value="this_week" {{ ($filters['due_date'] ?? '') === 'this_week' ? 'selected' : '' }}>This Week</option>
-                        <option value="this_month" {{ ($filters['due_date'] ?? '') === 'this_month' ? 'selected' : '' }}>This Month</option>
-                        <option value="future" {{ ($filters['due_date'] ?? '') === 'future' ? 'selected' : '' }}>Future</option>
-                    </select>
-                </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <label for="filter-due-date" class="form-label">Due Date</label>
+                        <select id="filter-due-date" name="due_date" class="form-select">
+                            <option value="">All Dates</option>
+                            <option value="today" @selected(($filters['due_date'] ?? '') === 'today')>Today</option>
+                            <option value="this_week" @selected(($filters['due_date'] ?? '') === 'this_week')>This Week</option>
+                            <option value="this_month" @selected(($filters['due_date'] ?? '') === 'this_month')>This Month</option>
+                            <option value="future" @selected(($filters['due_date'] ?? '') === 'future')>Future</option>
+                        </select>
+                    </div>
 
-                <div class="filter-group">
-                    <label class="filter-label">Project:</label>
-                    <select name="project_id" class="form-select" style="min-width: 180px;" onchange="document.getElementById('filter-form').submit()">
-                        <option value="">All Projects</option>
-                        @foreach($projects as $project)
-                            <option value="{{ $project->id }}" {{ ($filters['project_id'] ?? '') === (string) $project->id ? 'selected' : '' }}>
-                                {{ $project->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <label for="filter-project" class="form-label">Project</label>
+                        <select id="filter-project" name="project_id" class="form-select">
+                            <option value="">All Projects</option>
+                            @foreach ($projects as $project)
+                                <option value="{{ $project->id }}" @selected(($filters['project_id'] ?? '') === (string) $project->id)>
+                                    {{ $project->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                <button type="submit" class="btn btn-secondary">Search</button>
+                    <div class="col-12 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel me-1"></i>Apply
+                        </button>
 
-                @if(!empty($filters['search']) || !empty($filters['status']) || !empty($filters['priority']) || !empty($filters['due_date']) || !empty($filters['responsible_user_id']) || !empty($filters['project_id']))
-                    <a href="{{ route('tasks.index') }}" class="btn btn-ghost">Clear</a>
-                @endif
-            </div>
-        </form>
-    </div>
-</div>
-
-<div class="card">
-    @if($tasks->count())
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Responsible</th>
-                        <th>Priority</th>
-                        <th>Status</th>
-                        <th>Due Date</th>
-                        <th style="text-align: right;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($tasks as $task)
-                    <tr>
-                        <td>
-                            <a href="{{ route('tasks.edit', $task) }}" style="text-decoration: none; color: inherit; font-weight: 500;">
-                                {{ $task->title }}
+                        @if (array_filter($filters))
+                            <a href="{{ route('tasks.index') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg me-1"></i>Clear
                             </a>
-                            @if($task->project)
-                                <div class="user-cell-email">{{ $task->project->name }}</div>
-                            @endif
-                            @if($task->taskTransfers->isNotEmpty())
-                                <div class="user-cell-email">Transferred Task</div>
-                            @endif
-                        </td>
-                        <td>
-                            @if($task->responsibleUser)
-                                <span style="font-weight: 500;">{{ $task->responsibleUser->name }}</span>
-                                <div class="user-cell-email">{{ $task->responsibleUser->email }}</div>
-                            @else
-                                <span style="color: var(--muted-foreground);">Unassigned</span>
-                            @endif
-                        </td>
-                        <td>
-                            <span class="badge {{ $task->priority === 'high' ? 'badge-danger' : ($task->priority === 'medium' ? 'badge-primary' : 'badge-secondary') }}">
-                                {{ ucfirst($task->priority) }}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="badge {{ $task->status === 'completed' ? 'badge-success' : ($task->status === 'in_progress' ? 'badge-primary' : 'badge-secondary') }}">
-                                {{ ucwords(str_replace('_', ' ', $task->status)) }}
-                            </span>
-                        </td>
-                        <td>{{ $task->due_date->format('M d, Y') }}</td>
-                        <td>
-                            <div class="action-buttons" style="justify-content: flex-end;">
-                                <a href="{{ route('tasks.show', $task) }}" class="action-btn" title="Details">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                </a>
-                                <a href="{{ route('task-transfers.index', ['task_id' => $task->id]) }}" class="action-btn" title="Transfer">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 3l4 4-4 4M7 21l-4-4 4-4M21 7H7m-4 10h14" />
-                                    </svg>
-                                </a>
-                                <a href="{{ route('tasks.edit', $task) }}" class="action-btn" title="Edit">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </a>
-                                <form action="{{ route('tasks.destroy', $task) }}" method="POST" style="display: inline;" id="delete-task-form-{{ $task->id }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="button" class="action-btn action-btn-danger" title="Delete" onclick="if (confirm('Are you sure you want to delete this task? This action cannot be undone.')) { document.getElementById('delete-task-form-{{ $task->id }}').submit(); }">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                        @endif
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title mb-0">Tasks</h3>
         </div>
 
-        @if($tasks->hasPages())
-        <div class="pagination">
-            {{ $tasks->links() }}
-        </div>
+        @if ($tasks->count())
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Title</th>
+                            <th scope="col">Responsible</th>
+                            <th scope="col">Priority</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Due Date</th>
+                            <th scope="col" class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($tasks as $task)
+                            <tr>
+                                <td>
+                                    <a href="{{ route('tasks.edit', $task) }}" class="fw-semibold text-decoration-none">
+                                        {{ $task->title }}
+                                    </a>
+
+                                    @if ($task->project)
+                                        <div class="small text-body-secondary">{{ $task->project->name }}</div>
+                                    @endif
+
+                                    @if ($task->taskTransfers->isNotEmpty())
+                                        <x-badge variant="info" icon="arrow-left-right">Transferred</x-badge>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if ($task->responsibleUser)
+                                        <x-user-cell :name="$task->responsibleUser->name" :email="$task->responsibleUser->email" :size="32" />
+                                    @else
+                                        <span class="text-body-secondary">Unassigned</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <x-badge :variant="match ($task->priority) {
+                                        'high' => 'danger',
+                                        'medium' => 'warning',
+                                        default => 'secondary',
+                                    }">{{ ucfirst($task->priority) }}</x-badge>
+                                </td>
+                                <td>
+                                    <x-badge :variant="match ($task->status) {
+                                        'completed' => 'success',
+                                        'in_progress' => 'primary',
+                                        default => 'secondary',
+                                    }">{{ ucwords(str_replace('_', ' ', $task->status)) }}</x-badge>
+                                </td>
+                                <td class="text-nowrap">{{ $task->due_date->format('M d, Y') }}</td>
+                                <td>
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <x-icon-btn :href="route('tasks.show', $task)" icon="eye" label="Details" />
+                                        <x-icon-btn :href="route('task-transfers.index', ['task_id' => $task->id])" icon="arrow-left-right" label="Transfer" />
+                                        <x-icon-btn :href="route('tasks.edit', $task)" icon="pencil" label="Edit" />
+
+                                        <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center"
+                                                    data-confirm="Are you sure you want to delete this task? This action cannot be undone."
+                                                    data-confirm-button="Delete" aria-label="Delete" title="Delete">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            @if ($tasks->hasPages())
+                <div class="card-footer">
+                    <x-pagination :paginator="$tasks" />
+                </div>
+            @endif
+        @else
+            <div class="card-body">
+                <x-empty-state icon="inbox" title="No tasks found" description="Get started by creating a new task.">
+                    <x-btn :href="route('tasks.create')" icon="plus-lg" size="sm">New Task</x-btn>
+                </x-empty-state>
+            </div>
         @endif
-    @else
-        <div class="empty-state">
-            <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-            </svg>
-            <h3 class="empty-state-title">No tasks found</h3>
-            <p class="empty-state-description">Get started by creating a new task.</p>
-            <a href="{{ route('tasks.create') }}" class="btn btn-primary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                New Task
-            </a>
-        </div>
-    @endif
-</div>
+    </div>
 @endsection

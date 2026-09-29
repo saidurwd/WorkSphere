@@ -1,17 +1,17 @@
 @props(['title' => null, 'description' => null, 'icon' => 'inbox', 'action' => null])
 
-<div {{ $attributes->merge(['class' => 'empty-state text-center py-5']) }}>
-    <i class="bi bi-{{ $icon }} empty-state-icon d-block mb-3"></i>
+<div {{ $attributes->merge(['class' => 'text-center py-5']) }}>
+    <i class="bi bi-{{ $icon }} display-4 text-body-secondary opacity-50 d-block mb-3"></i>
 
     @if ($title)
-        <p class="empty-state-title mb-1">{{ $title }}</p>
+        <h3 class="h6 mb-1">{{ $title }}</h3>
     @endif
 
     @if ($description)
-        <p class="empty-state-description mb-3">{{ $description }}</p>
+        <p class="text-body-secondary mb-3">{{ $description }}</p>
     @endif
 
     @if ($action)
-        {{ $action }}
+        <div class="d-flex justify-content-center gap-2">{{ $action }}</div>
     @endif
 </div>

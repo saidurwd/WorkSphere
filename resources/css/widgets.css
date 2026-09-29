@@ -1,0 +1,46 @@
+/*
+ * Project widgets layered on top of AdminLTE 4 + Bootstrap 5.3.
+ * Only genuinely project-specific styles belong here; anything Bootstrap or
+ * AdminLTE already provides must be used directly from markup instead.
+ */
+
+/* Initials avatar used in the header, sidebar and table user cells. */
+.user-image {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: var(--bs-primary);
+    color: var(--bs-primary-contrast-emphasis, #fff);
+    font-weight: 600;
+    line-height: 1;
+    text-align: center;
+    text-transform: uppercase;
+    user-select: none;
+    overflow: hidden;
+}
+
+[data-bs-theme='dark'] .user-image {
+    background-color: var(--bs-secondary-bg-subtle);
+    color: var(--bs-secondary-text-emphasis);
+}
+
+/* Long identifiers (references, file names) must not stretch table columns. */
+.text-break-all {
+    overflow-wrap: anywhere;
+}
+
+/* Print views reuse the AdminLTE shell but drop the chrome. */
+@media print {
+    .app-sidebar,
+    .app-header,
+    .app-footer,
+    .app-content-header,
+    .no-print {
+        display: none !important;
+    }
+
+    .app-main {
+        margin: 0 !important;
+    }
+}

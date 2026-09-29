@@ -18,13 +18,13 @@
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
 
 <div class="app-wrapper">
-    <x-navbar />
     <x-sidebar />
+    <x-navbar />
 
     <main class="app-main">
         <x-content-header />
 
-        <div class="app-content-header">
+        <div class="app-content">
             <div class="container-fluid">
                 <x-flash />
 
