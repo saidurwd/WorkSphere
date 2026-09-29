@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\AssetManagementController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\EstateStaffController;
@@ -123,9 +122,6 @@ Route::middleware(['web', 'auth'])->prefix('gate-passes')->name('gate-passes.')-
 
 Route::middleware(['web', 'auth'])->prefix('dashboard')->name('dashboard.')->group(function () {
     Route::get('/', [DashboardController::class, '__invoke'])->name('index');
-    Route::get('asset-management', [AssetManagementController::class, '__invoke'])
-        ->middleware(['tyro-dashboard.admin'])
-        ->name('asset-management.index');
 });
 
 Route::middleware(['web', 'auth'])->get('tyro-dashboard', function () {

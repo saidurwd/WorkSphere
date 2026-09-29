@@ -217,16 +217,6 @@
             @continue
             @endif
 
-            @php
-                if ($resource === 'maintenance_history' && $key === 'maintenance_request_id' && isset($options[$key])) {
-                    $currentId = old($key, $item->$key);
-                    $options[$key] = $options[$key]->filter(function ($request) use ($currentId) {
-                        return in_array($request->status, ['open', 'in_progress'], true)
-                            || $request->id == $currentId;
-                    });
-                }
-            @endphp
-
             @if($field['type'] === 'hidden')
             <input type="hidden" name="{{ $key }}" value="{{ old($key, $item->$key) }}">
             @continue
@@ -239,12 +229,6 @@
 
             <div class="form-group @if($isFullWidth) col-full @endif">
                 <label for="{{ $key }}" class="form-label">{{ $field['label'] }}</label>
-
-                @php
-                    if ($key === 'sub_category_id' && ! isset($options[$key])) {
-                        $options[$key] = \App\Models\AssetSubCategory::all();
-                    }
-                @endphp
 
                 @if($field['type'] === 'textarea')
                 <textarea name="{{ $key }}" id="{{ $key }}" class="form-input @error($key) is-invalid @enderror" rows="5" placeholder="{{ $field['placeholder'] ?? '' }}" {{ ($field['readonly'] ?? false) ? 'readonly' : '' }} @if(isset($field['attributes'])) @foreach($field['attributes'] as $attr => $value) {{ $attr }}="{{ $value }}" @endforeach @endif>{{ old($key, $item->$key) }}</textarea>

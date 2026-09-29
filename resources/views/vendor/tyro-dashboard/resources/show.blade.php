@@ -13,37 +13,11 @@
 @push('styles')
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
-@if($resource === 'assets')
-<style>
-    @media print {
-        body * {
-            visibility: hidden;
-        }
-        #printable-asset-card,
-        #printable-asset-card * {
-            visibility: visible;
-        }
-        #printable-asset-card {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            max-width: 100% !important;
-            border: none !important;
-            box-shadow: none !important;
-            margin: 0 !important;
-            padding: 1rem !important;
-        }
-    }
-</style>
-@endif
 @endpush
 
 @push('scripts')
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         @foreach($config['fields'] as $key => $field)
@@ -98,65 +72,6 @@
             })();
         @endif
         @endforeach
-
-        @if($resource === 'assets')
-        var assetTag = @json($item->asset_tag ?? '');
-        var assetName = @json($item->asset_name ?? '');
-        var categoryName = @json(optional($item->category)->category_name ?? '');
-
-        var assetCode = function () {
-            var payload = '';
-            if (assetTag) payload += 'Asset Tag: ' + assetTag;
-            if (assetName) {
-                payload += (payload ? ' | ' : '') + 'Asset Name: ' + assetName;
-            }
-            if (categoryName) {
-                payload += (payload ? ' | ' : '') + 'Category: ' + categoryName;
-            }
-            return payload;
-        };
-
-        var assetPayload = assetCode();
-
-        if (assetPayload && document.getElementById('barcode-' + assetTag)) {
-            try {
-                JsBarcode('#barcode-' + assetTag, assetPayload, {
-                    format: 'CODE128',
-                    width: 2,
-                    height: 60,
-                    displayValue: true,
-                    fontOptions: 'bold',
-                    font: 'monospace',
-                    fontSize: 14,
-                    margin: 4,
-                });
-            } catch (e) {
-                console.error('Barcode generation failed', e);
-            }
-        }
-
-        if (assetPayload && document.getElementById('qrcode-' + assetTag)) {
-            try {
-                new QRCode(document.getElementById('qrcode-' + assetTag), {
-                    text: assetPayload,
-                    width: 120,
-                    height: 120,
-                    colorDark: '#000000',
-                    colorLight: '#ffffff',
-                    correctLevel: QRCode.CorrectLevel.M,
-                });
-            } catch (e) {
-                console.error('QR code generation failed', e);
-            }
-        }
-
-        var printBtn = document.getElementById('print-asset-card-btn');
-        if (printBtn) {
-            printBtn.addEventListener('click', function () {
-                window.print();
-            });
-        }
-        @endif
     });
 </script>
 @endpush
@@ -181,41 +96,9 @@
                 <button type="button" class="btn btn-danger" onclick="if (confirm('Are you sure you want to delete this item?')) { document.getElementById('delete-resource-form').submit(); }">Delete</button>
             </form>
             @endif
-            @if($resource === 'assets')
-            <button type="button" class="btn btn-secondary" id="print-asset-card-btn">Print</button>
-            @endif
         </div>
     </div>
 </div>
-
-        @if($resource === 'assets')
-        <div class="card" id="printable-asset-card" style="border: 2px solid #d1d5db; border-radius: 28px; max-width: 420px; margin: 0 auto 1.5rem auto; padding: 1.25rem; font-family: 'Courier New', Courier, monospace; overflow: hidden;">
-            <div style="text-align: center; margin-bottom: 0.75rem;">
-                <div style="font-weight: bold; font-size: 1.05rem; letter-spacing: 0.5px;">{{ config('app.name', 'Organization') }}</div>
-            </div>
-
-            <div style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 0.75rem 0; margin-bottom: 0.75rem;">
-                <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.25rem;">
-                    <span>Asset ID:</span>
-                    <span style="font-weight: bold;">{{ $item->asset_tag }}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
-                    <span>Category:</span>
-                    <span>{{ optional($item->category)->category_name ?? '-' }}</span>
-                </div>
-            </div>
-
-            <div style="text-align: center; margin-bottom: 0.5rem; font-weight: bold; font-size: 0.85rem; text-transform: uppercase;">Barcode</div>
-            <div style="display: flex; justify-content: center; margin-bottom: 0.75rem;">
-                <svg id="barcode-{{ $item->asset_tag }}"></svg>
-            </div>
-
-            <div style="text-align: center; margin-bottom: 0.5rem; font-weight: bold; font-size: 0.85rem; text-transform: uppercase;">QR Code</div>
-            <div id="qrcode-{{ $item->asset_tag }}" style="display: flex; justify-content: center; margin-bottom: 0.75rem;"></div>
-
-            <div style="text-align: center; font-size: 0.8rem; color: #333;">{{ env('TYRO_DASHBOARD_APP_NAME', 'IT Helpdesk') }}</div>
-        </div>
-        @endif
 
 <div class="card">
     <div class="card-body">

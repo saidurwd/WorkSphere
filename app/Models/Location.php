@@ -25,11 +25,6 @@ class Location extends Model
             'hide_in_form' => true,
             'hide_in_index' => true,
         ],
-        'assets' => [
-            'type' => 'text',
-            'hide_in_form' => true,
-            'hide_in_index' => true,
-        ],
         'country' => [
             'type' => 'text',
             'label' => 'Country',
@@ -55,10 +50,5 @@ class Location extends Model
     public function employees(): HasMany
     {
         return $this->hasMany(Employee::class);
-    }
-
-    public function assets(): HasMany
-    {
-        return $this->hasMany(Asset::class);
     }
 }

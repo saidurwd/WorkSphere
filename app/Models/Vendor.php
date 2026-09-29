@@ -4,7 +4,6 @@ namespace App\Models;
 
 use HasinHayder\TyroDashboard\Concerns\HasCrud;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Vendor extends Model
 {
@@ -29,18 +28,6 @@ class Vendor extends Model
                 'inactive' => 'Inactive',
             ],
         ],
-        'assets' => [
-            'type' => 'text',
-            'hide_in_form' => true,
-            'hide_in_index' => true,
-            'hide_in_single_view' => true,
-        ],
-        'purchaseOrders' => [
-            'type' => 'text',
-            'hide_in_form' => true,
-            'hide_in_index' => true,
-            'hide_in_single_view' => true,
-        ],
     ];
 
     protected function casts(): array
@@ -48,15 +35,5 @@ class Vendor extends Model
         return [
             'status' => 'string',
         ];
-    }
-
-    public function assets(): HasMany
-    {
-        return $this->hasMany(Asset::class);
-    }
-
-    public function purchaseOrders(): HasMany
-    {
-        return $this->hasMany(PurchaseOrder::class);
     }
 }
