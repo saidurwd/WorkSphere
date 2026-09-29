@@ -81,4 +81,18 @@ class LoginRequest extends FormRequest
     {
         return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
     }
+
+    /**
+     * Record the rejected attempt so it shows up in login history and security events.
+     */
+    public function recordFailure(LoginLogService $loginLogs): void
+    {
+        $locked = RateLimiter::tooManyAttempts($this->throttleKey(), self::MAX_ATTEMPTS);
+
+        $loginLogs->recordFailure(
+            $this,
+            (string) $this->string('email'),
+            $locked ? LoginLog::LOCKED : LoginLog::FAILED,
+        );
+    }
 }

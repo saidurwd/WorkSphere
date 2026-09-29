@@ -2,11 +2,6 @@
 
 @section('title', 'Tasks')
 
-@section('breadcrumb', [
-    ['label' => 'Dashboard', 'url' => route('dashboard.index')],
-    ['label' => 'Tasks'],
-])
-
 @section('header-actions')
     <x-btn :href="route('tasks.create')" icon="plus-lg">New Task</x-btn>
 @endsection

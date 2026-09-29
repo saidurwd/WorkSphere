@@ -43,7 +43,7 @@
 </div>
 
 <div class="position-fixed bottom-0 end-0 p-3">
-    <x-theme-toggle />
+    <x-theme-toggle class="btn btn-outline-secondary border-0 shadow-sm d-inline-flex align-items-center justify-content-center" />
 </div>
 
 @stack('scripts')

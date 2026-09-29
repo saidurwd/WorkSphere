@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Meeting;
 use App\Models\MeetingActionItem;
-use App\Models\MeetingDecision;
 use App\Models\Obligation;
 use App\Models\ObligationType;
 use App\Models\Task;
@@ -49,9 +48,9 @@ class DashboardController extends Controller
             'count' => $s['count'],
             'pct' => $statusTotal > 0 ? (int) round($s['count'] / $statusTotal * 100) : 0,
             'color' => match ($s['status']) {
-                'pending' => 'var(--warning)',
-                'in_progress' => 'var(--info)',
-                'completed' => 'var(--success)',
+                'pending' => 'var(--bs-warning)',
+                'in_progress' => 'var(--bs-info)',
+                'completed' => 'var(--bs-success)',
             },
         ])->all();
 
@@ -78,9 +77,9 @@ class DashboardController extends Controller
             'value' => $p['count'],
             'pct' => $priorityTotal > 0 ? (int) round($p['count'] / $priorityTotal * 100) : 0,
             'color' => match ($p['priority']) {
-                'high' => 'var(--destructive)',
-                'medium' => 'var(--info)',
-                'low' => 'var(--success)',
+                'high' => 'var(--bs-danger)',
+                'medium' => 'var(--bs-info)',
+                'low' => 'var(--bs-success)',
             },
         ])->all();
 
@@ -140,7 +139,7 @@ class DashboardController extends Controller
             'label' => $row->type_name,
             'value' => (int) $row->total,
             'pct' => (int) round((int) $row->total / $typeMax * 100),
-            'color' => 'var(--info)',
+            'color' => 'var(--bs-info)',
         ])->all();
 
         $priorityStats = Obligation::query()->select('priority')->selectRaw('COUNT(*) as total')->groupBy('priority')->get();
@@ -150,10 +149,10 @@ class DashboardController extends Controller
             'count' => (int) $row->total,
             'pct' => $priorityTotalObligation > 0 ? (int) round((int) $row->total / $priorityTotalObligation * 100) : 0,
             'color' => match ($row->priority) {
-                'critical' => 'var(--destructive)',
-                'high' => 'var(--warning)',
-                'medium' => 'var(--info)',
-                'low' => 'var(--success)',
+                'critical' => 'var(--bs-danger)',
+                'high' => 'var(--bs-warning)',
+                'medium' => 'var(--bs-info)',
+                'low' => 'var(--bs-success)',
             },
         ])->all();
 
@@ -164,9 +163,9 @@ class DashboardController extends Controller
                 'url' => route('tasks.edit', $task),
                 'badge' => [
                     'text' => ucfirst($task->priority),
-                    'class' => $task->priority === 'high'
-                        ? 'badge-danger'
-                        : ($task->priority === 'medium' ? 'badge-primary' : 'badge-secondary'),
+                    'variant' => $task->priority === 'high'
+                        ? 'danger'
+                        : ($task->priority === 'medium' ? 'primary' : 'secondary'),
                 ],
             ];
         };
@@ -181,11 +180,11 @@ class DashboardController extends Controller
                 'url' => route('obligations.show', $o),
                 'badge' => [
                     'text' => ucfirst($o->risk_level),
-                    'class' => match ($o->risk_level) {
-                        'critical' => 'badge-danger',
-                        'high' => 'badge-warning',
-                        'medium' => 'badge-primary',
-                        'low' => 'badge-secondary',
+                    'variant' => match ($o->risk_level) {
+                        'critical' => 'danger',
+                        'high' => 'warning',
+                        'medium' => 'primary',
+                        'low' => 'secondary',
                     },
                 ],
             ];
@@ -225,6 +224,10 @@ class DashboardController extends Controller
             'typeBars' => $typeBars,
             'priorityDonut' => $priorityDonut,
             'priorityTotal' => $priorityTotalObligation,
+            'breadcrumbs' => [
+                ['label' => 'Home'],
+                ['label' => 'Dashboard'],
+            ],
         ]);
     }
 

@@ -79,6 +79,10 @@ class TaskController extends Controller
             'filters' => $filters,
             'users' => $users,
             'projects' => $projects,
+            'breadcrumbs' => [
+                ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+                ['label' => 'Tasks'],
+            ],
         ]);
     }
 
@@ -138,9 +142,9 @@ class TaskController extends Controller
                 'url' => route('tasks.edit', $task),
                 'badge' => [
                     'text' => ucfirst($task->priority),
-                    'class' => $task->priority === 'high'
-                        ? 'badge-danger'
-                        : ($task->priority === 'medium' ? 'badge-primary' : 'badge-secondary'),
+                    'variant' => $task->priority === 'high'
+                        ? 'danger'
+                        : ($task->priority === 'medium' ? 'primary' : 'secondary'),
                 ],
             ];
         };
@@ -156,9 +160,9 @@ class TaskController extends Controller
             'count' => $s['count'],
             'pct' => $statusTotal > 0 ? (int) round($s['count'] / $statusTotal * 100) : 0,
             'color' => match ($s['status']) {
-                'pending' => 'var(--warning)',
-                'in_progress' => 'var(--info)',
-                'completed' => 'var(--success)',
+                'pending' => 'var(--bs-warning)',
+                'in_progress' => 'var(--bs-info)',
+                'completed' => 'var(--bs-success)',
             },
         ])->all();
 
@@ -186,9 +190,9 @@ class TaskController extends Controller
             'value' => $p['count'],
             'pct' => $priorityTotal > 0 ? (int) round($p['count'] / $priorityTotal * 100) : 0,
             'color' => match ($p['priority']) {
-                'high' => 'var(--destructive)',
-                'medium' => 'var(--info)',
-                'low' => 'var(--success)',
+                'high' => 'var(--bs-danger)',
+                'medium' => 'var(--bs-info)',
+                'low' => 'var(--bs-success)',
             },
         ])->all();
 

@@ -1,5 +1,5 @@
 @php
-    $breadcrumbs = $__env->getSections()['breadcrumb'] ?? null;
+    $breadcrumbs = $breadcrumbs ?? ($__env->getSections()['breadcrumb'] ?? null);
     $isArray = is_array($breadcrumbs);
     $hasCrumbs = $isArray ? $breadcrumbs !== [] : filled($breadcrumbs);
     $hasActions = $__env->hasSection('header-actions');

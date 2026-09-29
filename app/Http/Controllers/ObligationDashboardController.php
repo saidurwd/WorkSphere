@@ -59,7 +59,7 @@ class ObligationDashboardController extends Controller
             'label' => $row->type_name,
             'value' => (int) $row->total,
             'pct' => (int) round((int) $row->total / $typeMax * 100),
-            'color' => 'var(--info)',
+            'color' => 'var(--bs-info)',
         ])->all();
 
         $priorityStats = Obligation::query()
@@ -74,10 +74,10 @@ class ObligationDashboardController extends Controller
             'count' => (int) $row->total,
             'pct' => $priorityTotal > 0 ? (int) round((int) $row->total / $priorityTotal * 100) : 0,
             'color' => match ($row->priority) {
-                'critical' => 'var(--destructive)',
-                'high' => 'var(--warning)',
-                'medium' => 'var(--info)',
-                'low' => 'var(--success)',
+                'critical' => 'var(--bs-danger)',
+                'high' => 'var(--bs-warning)',
+                'medium' => 'var(--bs-info)',
+                'low' => 'var(--bs-success)',
             },
         ])->all();
 
@@ -91,11 +91,11 @@ class ObligationDashboardController extends Controller
                 'url' => route('obligations.show', $o),
                 'badge' => [
                     'text' => ucfirst($o->risk_level),
-                    'class' => match ($o->risk_level) {
-                        'critical' => 'badge-danger',
-                        'high' => 'badge-warning',
-                        'medium' => 'badge-primary',
-                        'low' => 'badge-secondary',
+                    'variant' => match ($o->risk_level) {
+                        'critical' => 'danger',
+                        'high' => 'warning',
+                        'medium' => 'primary',
+                        'low' => 'secondary',
                     },
                 ],
             ];

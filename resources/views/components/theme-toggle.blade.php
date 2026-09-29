@@ -1,10 +1,11 @@
-<button
-    type="button"
-    class="nav-link btn btn-link border-0 shadow-none"
+<a
+    href="#"
+    role="button"
     x-data
-    @click="$store.theme.toggle()"
+    @click.prevent="$store.theme.toggle()"
     :aria-label="$store.theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
     :title="$store.theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+    {{ $attributes->merge(['class' => 'nav-link']) }}
 >
     <i class="bi" :class="$store.theme.value === 'dark' ? 'bi-sun' : 'bi-moon-stars'"></i>
-</button>
+</a>
