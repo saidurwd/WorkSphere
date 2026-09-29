@@ -1,0 +1,182 @@
+/*
+|--------------------------------------------------------------------------
+| Design tokens
+|--------------------------------------------------------------------------
+|
+| The brand palette that used to live in the Tyro Dashboard theme partial is
+| mapped here onto both the Bootstrap 5.3 custom properties (so AdminLTE and
+| Bootstrap components pick it up) and the legacy token names that the
+| existing screens still read through inline styles.
+|
+*/
+
+:root {
+    --radius: 0.5rem;
+
+    --app-background: #ffffff;
+    --app-foreground: #09090b;
+    --app-card: #ffffff;
+    --app-card-foreground: #09090b;
+    --app-popover: #ffffff;
+    --app-popover-foreground: #09090b;
+    --app-primary: #18181b;
+    --app-primary-foreground: #fafafa;
+    --app-secondary: #f4f4f5;
+    --app-secondary-foreground: #18181b;
+    --app-muted: #f4f4f5;
+    --app-muted-foreground: #71717a;
+    --app-accent: #f4f4f5;
+    --app-accent-foreground: #18181b;
+    --app-destructive: #ef4444;
+    --app-destructive-foreground: #fafafa;
+    --app-border: #e4e4e7;
+    --app-input: #e4e4e7;
+    --app-ring: #18181b;
+    --app-success: #22c55e;
+    --app-success-foreground: #ffffff;
+    --app-warning: #f59e0b;
+    --app-warning-foreground: #ffffff;
+    --app-info: #3b82f6;
+    --app-info-foreground: #ffffff;
+    --app-danger: #ef4444;
+
+    --app-sidebar: #ffffff;
+    --app-sidebar-foreground: #09090b;
+    --app-sidebar-accent: #f4f4f5;
+    --app-sidebar-accent-foreground: #18181b;
+    --app-sidebar-border: #e4e4e7;
+
+    /* Bootstrap 5.3 overrides */
+    --bs-body-bg: var(--app-background);
+    --bs-body-color: var(--app-foreground);
+    --bs-body-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --bs-border-color: var(--app-border);
+    --bs-border-radius: var(--radius);
+    --bs-border-radius-sm: calc(var(--radius) - 2px);
+    --bs-border-radius-lg: calc(var(--radius) + 2px);
+    --bs-primary: var(--app-primary);
+    --bs-primary-rgb: 24, 24, 27;
+    --bs-secondary: var(--app-secondary);
+    --bs-secondary-rgb: 244, 244, 245;
+    --bs-success: var(--app-success);
+    --bs-success-rgb: 34, 197, 94;
+    --bs-warning: var(--app-warning);
+    --bs-warning-rgb: 245, 158, 11;
+    --bs-info: var(--app-info);
+    --bs-info-rgb: 59, 130, 246;
+    --bs-danger: var(--app-danger);
+    --bs-danger-rgb: 239, 68, 68;
+    --bs-light: var(--app-secondary);
+    --bs-dark: var(--app-primary);
+    --bs-link-color: var(--app-foreground);
+    --bs-link-hover-color: var(--app-foreground);
+    --bs-emphasis-color: var(--app-foreground);
+    --bs-secondary-color: var(--app-muted-foreground);
+
+    /* Legacy token names used by inline styles in the existing screens */
+    --background: var(--app-background);
+    --foreground: var(--app-foreground);
+    --card: var(--app-card);
+    --card-foreground: var(--app-card-foreground);
+    --popover: var(--app-popover);
+    --popover-foreground: var(--app-popover-foreground);
+    --primary: var(--app-primary);
+    --primary-foreground: var(--app-primary-foreground);
+    --secondary: var(--app-secondary);
+    --secondary-foreground: var(--app-secondary-foreground);
+    --muted: var(--app-muted);
+    --muted-foreground: var(--app-muted-foreground);
+    --accent: var(--app-accent);
+    --accent-foreground: var(--app-accent-foreground);
+    --destructive: var(--app-destructive);
+    --destructive-foreground: var(--app-destructive-foreground);
+    --border: var(--app-border);
+    --input: var(--app-input);
+    --ring: var(--app-ring);
+    --success: var(--app-success);
+    --success-foreground: var(--app-success-foreground);
+    --warning: var(--app-warning);
+    --warning-foreground: var(--app-warning-foreground);
+    --info: var(--app-info);
+    --info-foreground: var(--app-info-foreground);
+    --danger: var(--app-danger);
+    --sidebar: var(--app-sidebar);
+    --sidebar-foreground: var(--app-sidebar-foreground);
+    --sidebar-primary: var(--app-foreground);
+    --sidebar-primary-foreground: var(--app-background);
+    --sidebar-accent: var(--app-sidebar-accent);
+    --sidebar-accent-foreground: var(--app-sidebar-accent-foreground);
+    --sidebar-border: var(--app-sidebar-border);
+    --text-primary: var(--app-foreground);
+    --text-secondary: var(--app-muted-foreground);
+    --card-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --card-shadow-hover: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+[data-bs-theme='dark'] {
+    --app-background: #09090b;
+    --app-foreground: #fafafa;
+    --app-card: #18181b;
+    --app-card-foreground: #fafafa;
+    --app-popover: #18181b;
+    --app-popover-foreground: #fafafa;
+    --app-primary: #fafafa;
+    --app-primary-foreground: #18181b;
+    --app-secondary: #27272a;
+    --app-secondary-foreground: #fafafa;
+    --app-muted: #27272a;
+    --app-muted-foreground: #a1a1aa;
+    --app-accent: #27272a;
+    --app-accent-foreground: #fafafa;
+    --app-destructive: #7f1d1d;
+    --app-destructive-foreground: #fafafa;
+    --app-border: #ffffff;
+    --app-input: #ffffff;
+    --app-ring: #d4d4d8;
+    --app-warning: #f59e0b;
+    --app-warning-foreground: #000000;
+    --app-danger: #f87171;
+
+    --app-sidebar: #18181b;
+    --app-sidebar-foreground: #fafafa;
+    --app-sidebar-accent: #27272a;
+    --app-sidebar-accent-foreground: #fafafa;
+    --app-sidebar-border: #27272a;
+
+    --bs-primary-rgb: 250, 250, 250;
+    --bs-primary-bg-subtle: #27272a;
+    --bs-primary-border-subtle: #3f3f46;
+    --bs-primary-text-emphasis: #fafafa;
+    --bs-link-color: #fafafa;
+    --bs-link-hover-color: #ffffff;
+    --bs-emphasis-color: #fafafa;
+    --bs-secondary-color: var(--app-muted-foreground);
+}
+
+/*
+ * Kept in sync with the theme class so styles that target the legacy `.dark`
+ * selector keep working next to Bootstrap's `data-bs-theme` attribute.
+ */
+html.dark {
+    color-scheme: dark;
+}
+
+body {
+    background-color: var(--app-muted);
+    color: var(--app-foreground);
+}
+
+.sidebar {
+    background-color: var(--app-sidebar);
+    border-right-color: var(--app-sidebar-border);
+}
+
+.sidebar-link {
+    color: var(--app-sidebar-foreground);
+}
+
+.sidebar-link:hover,
+.sidebar-link.active {
+    background-color: var(--app-sidebar-accent);
+    color: var(--app-sidebar-accent-foreground);
+}

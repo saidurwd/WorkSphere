@@ -13,7 +13,8 @@
         "hasinhayder/tyro-dashboard": "*",
         "laravel/framework": "^13.8",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^3.0"
+        "laravel/tinker": "^3.0",
+        "yajra/laravel-datatables": "^13.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

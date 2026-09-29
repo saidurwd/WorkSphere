@@ -1,4 +1,4 @@
-@extends('tyro-dashboard::layouts.admin')
+@extends('layouts.app')
 
 @section('title', 'Notifications')
 

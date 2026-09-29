@@ -104,6 +104,12 @@ Route::middleware(['web', 'auth'])->prefix('task-transfers')->name('task-transfe
 
 Route::middleware(['web', 'auth'])->prefix('dashboard')->name('dashboard.')->group(function () {
     Route::get('/', [DashboardController::class, '__invoke'])->name('index');
+
+    Route::get('ui-kit', function () {
+        abort_unless(app()->environment('local'), 404);
+
+        return view('ui-kit.index');
+    })->name('ui-kit');
 });
 
 Route::middleware(['web', 'auth'])->get('tyro-dashboard', function () {

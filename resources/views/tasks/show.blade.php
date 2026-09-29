@@ -1,4 +1,4 @@
-@extends('tyro-dashboard::layouts.admin')
+@extends('layouts.app')
 
 @php
 $priorityClass = $task->priority === 'high' ? 'badge-danger' : ($task->priority === 'medium' ? 'badge-primary' : 'badge-secondary');
