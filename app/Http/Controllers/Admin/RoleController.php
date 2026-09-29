@@ -13,16 +13,31 @@ class RoleController extends Controller
 {
     public function index(): View
     {
-        $roles = Role::query()->withCount('users')->orderBy('name')->paginate(20);
+        $roles = Role::query()->withCount('userRoles')->orderBy('name')->paginate(20);
 
-        return view('admin.roles.index', compact('roles'));
+        return view('admin.roles.index', [
+            'roles' => $roles,
+            'breadcrumbs' => [
+                ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+                ['label' => 'Administration'],
+                ['label' => 'Roles'],
+            ],
+        ]);
     }
 
     public function create(): View
     {
         $permissions = Permission::query()->orderBy('permission_name')->get();
 
-        return view('admin.roles.create', compact('permissions'));
+        return view('admin.roles.create', [
+            'permissions' => $permissions,
+            'breadcrumbs' => [
+                ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+                ['label' => 'Administration'],
+                ['label' => 'Roles', 'url' => route('admin.roles.index')],
+                ['label' => 'Create'],
+            ],
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -50,14 +65,31 @@ class RoleController extends Controller
     {
         $role->load('users', 'permissions');
 
-        return view('admin.roles.show', compact('role'));
+        return view('admin.roles.show', [
+            'role' => $role,
+            'breadcrumbs' => [
+                ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+                ['label' => 'Administration'],
+                ['label' => 'Roles', 'url' => route('admin.roles.index')],
+                ['label' => $role->name],
+            ],
+        ]);
     }
 
     public function edit(Role $role): View
     {
         $permissions = Permission::query()->orderBy('permission_name')->get();
 
-        return view('admin.roles.edit', compact('role', 'permissions'));
+        return view('admin.roles.edit', [
+            'role' => $role,
+            'permissions' => $permissions,
+            'breadcrumbs' => [
+                ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+                ['label' => 'Administration'],
+                ['label' => 'Roles', 'url' => route('admin.roles.index')],
+                ['label' => 'Edit'],
+            ],
+        ]);
     }
 
     public function update(Request $request, Role $role): RedirectResponse

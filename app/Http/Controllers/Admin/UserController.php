@@ -25,14 +25,29 @@ class UserController extends Controller
 
         $users = $query->latest()->paginate(20)->withQueryString();
 
-        return view('admin.users.index', compact('users'));
+        return view('admin.users.index', [
+            'users' => $users,
+            'breadcrumbs' => [
+                ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+                ['label' => 'Administration'],
+                ['label' => 'Users'],
+            ],
+        ]);
     }
 
     public function create(): View
     {
         $roles = Role::query()->orderBy('name')->get();
 
-        return view('admin.users.create', compact('roles'));
+        return view('admin.users.create', [
+            'roles' => $roles,
+            'breadcrumbs' => [
+                ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+                ['label' => 'Administration'],
+                ['label' => 'Users', 'url' => route('admin.users.index')],
+                ['label' => 'Create'],
+            ],
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -64,14 +79,31 @@ class UserController extends Controller
     {
         $user->load('roles.permissions', 'employee', 'responsibleTasks', 'projects');
 
-        return view('admin.users.show', compact('user'));
+        return view('admin.users.show', [
+            'user' => $user,
+            'breadcrumbs' => [
+                ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+                ['label' => 'Administration'],
+                ['label' => 'Users', 'url' => route('admin.users.index')],
+                ['label' => $user->name],
+            ],
+        ]);
     }
 
     public function edit(User $user): View
     {
         $roles = Role::query()->orderBy('name')->get();
 
-        return view('admin.users.edit', compact('user', 'roles'));
+        return view('admin.users.edit', [
+            'user' => $user,
+            'roles' => $roles,
+            'breadcrumbs' => [
+                ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+                ['label' => 'Administration'],
+                ['label' => 'Users', 'url' => route('admin.users.index')],
+                ['label' => 'Edit'],
+            ],
+        ]);
     }
 
     public function update(Request $request, User $user): RedirectResponse

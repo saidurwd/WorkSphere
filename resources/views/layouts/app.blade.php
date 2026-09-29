@@ -31,9 +31,9 @@
                 @yield('content')
             </div>
         </div>
-
-        <x-footer />
     </main>
+
+    <x-footer />
 </div>
 
 <x-confirm-dialog />
