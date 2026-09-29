@@ -134,13 +134,6 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
                                 </a>
-                            @if($resource === 'estate_staff')
-                            <a href="{{ route('estate-staff.print', $item->id) }}" class="btn btn-icon btn-ghost" title="Print" target="_blank">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6v-8z" />
-                                </svg>
-                            </a>
-                            @endif
                             @if(!($isReadonly ?? false))
                             <a href="{{ route($dashboardRoute::name('resources.edit'), [$resource, $item->id]) }}" class="btn btn-icon btn-ghost" title="Edit">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

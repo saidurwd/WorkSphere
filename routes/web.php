@@ -2,8 +2,6 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseBackupController;
-use App\Http\Controllers\EstateStaffController;
-use App\Http\Controllers\GatePassController;
 use App\Http\Controllers\MeetingActionItemController;
 use App\Http\Controllers\MeetingAgendaController;
 use App\Http\Controllers\MeetingAttachmentController;
@@ -102,22 +100,6 @@ Route::middleware(['web', 'auth'])->prefix('task-transfers')->name('task-transfe
     Route::get('/', [TaskTransferController::class, 'index'])->name('index');
     Route::post('/', [TaskTransferController::class, 'store'])->name('store');
     Route::delete('/{taskTransfer}', [TaskTransferController::class, 'destroy'])->name('destroy');
-});
-
-Route::middleware(['web', 'auth'])->prefix('estate-staff')->name('estate-staff.')->group(function () {
-    Route::get('/{estateStaff}/print', [EstateStaffController::class, 'print'])->name('print');
-    Route::get('/divisions', [EstateStaffController::class, 'divisions'])->name('divisions');
-});
-
-Route::middleware(['web', 'auth'])->prefix('gate-passes')->name('gate-passes.')->group(function () {
-    Route::get('/', [GatePassController::class, 'index'])->name('index');
-    Route::get('/create', [GatePassController::class, 'create'])->name('create');
-    Route::post('/', [GatePassController::class, 'store'])->name('store');
-    Route::get('/dashboard', [GatePassController::class, 'dashboard'])->name('dashboard');
-    Route::get('/{gatePass}/print', [GatePassController::class, 'print'])->name('print');
-    Route::get('/{gatePass}/edit', [GatePassController::class, 'edit'])->name('edit');
-    Route::put('/{gatePass}', [GatePassController::class, 'update'])->name('update');
-    Route::delete('/{gatePass}', [GatePassController::class, 'destroy'])->name('destroy');
 });
 
 Route::middleware(['web', 'auth'])->prefix('dashboard')->name('dashboard.')->group(function () {

@@ -42,71 +42,6 @@
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
 <script>
-    function initializeEstateStaffDependentDropdowns() {
-        var estateSelect = document.getElementById('estate_id');
-        var divisionSelect = document.getElementById('division_id');
-
-        if (!estateSelect || !divisionSelect) {
-            console.warn('[EstateStaff] Estate or Division select not found');
-            return;
-        }
-
-        var divisionsUrl = '{{ $estateStaffDivisionsUrl ?? '' }}';
-        var selectedEstateId = '{{ $estateStaffSelectedEstateId ?? old('estate_id') ?? '' }}';
-        var selectedDivisionId = '{{ $estateStaffSelectedDivisionId ?? old('division_id') ?? '' }}';
-
-        if (!divisionsUrl) {
-            console.error('[EstateStaff] divisionsUrl is empty. View composer may not have run.');
-            return;
-        }
-
-        function logDebug(message) {
-            console.log('[EstateStaff] ' + message);
-        }
-
-        function populateDivisions(estateId, preserveSelected) {
-            divisionSelect.innerHTML = '<option value="">Select Division</option>';
-
-            if (!estateId) {
-                logDebug('No estate selected, clearing divisions');
-                return;
-            }
-
-            logDebug('Fetching divisions for estate: ' + estateId + ' from ' + (divisionsUrl + '?estate_id=' + encodeURIComponent(estateId)));
-
-            fetch(divisionsUrl + '?estate_id=' + encodeURIComponent(estateId))
-                .then(function (response) {
-                    logDebug('Response status: ' + response.status);
-                    if (!response.ok) {
-                        throw new Error('HTTP error! status: ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(function (divisions) {
-                    logDebug('Received divisions: ' + JSON.stringify(divisions));
-                    divisions.forEach(function (division) {
-                        var option = document.createElement('option');
-                        option.value = division.id;
-                        option.textContent = division.division_name_eng;
-                        if (preserveSelected && division.id == selectedDivisionId) {
-                            option.selected = true;
-                        }
-                        divisionSelect.appendChild(option);
-                    });
-                })
-                .catch(function (error) {
-                    logDebug('Error fetching divisions: ' + error.message);
-                    divisionSelect.innerHTML = '<option value="">Select Division</option>';
-                });
-        }
-
-        estateSelect.addEventListener('change', function () {
-            populateDivisions(estateSelect.value, false);
-        });
-
-        populateDivisions(estateSelect.value, !!selectedEstateId);
-    }
-
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function () {
             @foreach($config['fields'] as $key => $field)
@@ -161,40 +96,6 @@
                 })();
             @endif
             @endforeach
-
-            var categorySelect = document.getElementById('category_id');
-            var subCategorySelect = document.getElementById('sub_category_id');
-
-            function filterSubCategories() {
-                if (!categorySelect || !subCategorySelect) return;
-                var categoryId = categorySelect.value;
-                var subOptions = subCategorySelect.querySelectorAll('option[data-category-id]');
-                if (categoryId) {
-                    subOptions.forEach(function (opt) { opt.style.display = 'none'; });
-                    subOptions.forEach(function (opt) {
-                        if (opt.getAttribute('data-category-id') === categoryId) {
-                            opt.style.display = '';
-                        }
-                    });
-                    if (!subCategorySelect.querySelector('option[data-category-id="' + categoryId + '"][value="' + subCategorySelect.value + '"]')) {
-                        subCategorySelect.value = '';
-                    }
-                    subCategorySelect.disabled = false;
-                } else {
-                    subOptions.forEach(function (opt) { opt.style.display = ''; });
-                    subCategorySelect.value = '';
-                    subCategorySelect.disabled = false;
-                }
-            }
-
-            if (categorySelect) {
-                categorySelect.addEventListener('change', filterSubCategories);
-                filterSubCategories();
-            }
-
-            @if($resource === 'estate_staff')
-            initializeEstateStaffDependentDropdowns();
-            @endif
         });
     } else {
         @foreach($config['fields'] as $key => $field)
@@ -249,40 +150,6 @@
             })();
         @endif
         @endforeach
-
-        var categorySelect = document.getElementById('category_id');
-        var subCategorySelect = document.getElementById('sub_category_id');
-
-        function filterSubCategories() {
-            if (!categorySelect || !subCategorySelect) return;
-            var categoryId = categorySelect.value;
-            var subOptions = subCategorySelect.querySelectorAll('option[data-category-id]');
-            if (categoryId) {
-                subOptions.forEach(function (opt) { opt.style.display = 'none'; });
-                subOptions.forEach(function (opt) {
-                    if (opt.getAttribute('data-category-id') === categoryId) {
-                        opt.style.display = '';
-                    }
-                });
-                if (!subCategorySelect.querySelector('option[data-category-id="' + categoryId + '"][value="' + subCategorySelect.value + '"]')) {
-                    subCategorySelect.value = '';
-                }
-                subCategorySelect.disabled = false;
-            } else {
-                subOptions.forEach(function (opt) { opt.style.display = ''; });
-                subCategorySelect.value = '';
-                subCategorySelect.disabled = false;
-            }
-        }
-
-        if (categorySelect) {
-            categorySelect.addEventListener('change', filterSubCategories);
-            filterSubCategories();
-        }
-
-        @if($resource === 'estate_staff')
-        initializeEstateStaffDependentDropdowns();
-        @endif
     }
 </script>
 @endpush

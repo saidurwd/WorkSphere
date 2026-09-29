@@ -107,7 +107,6 @@ class FoundationSeeder extends Seeder
         $permissionNames = [
             'report.view',
             'task.view', 'task.manage',
-            'residence.view', 'residence.manage',
             'user.manage', 'role.manage', 'privilege.manage',
             'invitation.manage', 'system.manage', 'checkpoint.manage',
             'database.backup', 'media.manage',
