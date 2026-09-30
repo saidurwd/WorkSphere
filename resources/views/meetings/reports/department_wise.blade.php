@@ -12,18 +12,11 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Department Performance</h1>
-            <p class="page-description">Action item performance by department.</p>
-        </div>
-    </div>
-</div>
+<x-page-header title="Department Performance" subtitle="Action item performance by department." />
 
 <div class="card">
     @if($report->count())
-        <div class="table-container">
+        <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
@@ -42,10 +35,10 @@
                         <td>{{ $row->total }}</td>
                         <td>{{ $row->completed }}</td>
                         <td>{{ $row->pending }}</td>
-                        <td><span class="badge {{ $row->overdue > 0 ? 'badge-danger' : 'badge-secondary' }}">{{ $row->overdue }}</span></td>
+                        <td><span class="badge {{ $row->overdue > 0 ? 'text-bg-danger' : 'text-bg-secondary' }}">{{ $row->overdue }}</span></td>
                         <td>
                             @php $completion = $row->total > 0 ? round(($row->completed / $row->total) * 100) : 0; @endphp
-                            <span class="badge {{ $completion >= 80 ? 'badge-success' : ($completion >= 50 ? 'badge-warning' : 'badge-danger') }}">{{ $completion }}%</span>
+                            <span class="badge {{ $completion >= 80 ? 'text-bg-success' : ($completion >= 50 ? 'badge-warning' : 'text-bg-danger') }}">{{ $completion }}%</span>
                         </td>
                     </tr>
                     @endforeach

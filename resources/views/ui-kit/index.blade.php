@@ -28,11 +28,11 @@
         <div class="card">
             <div class="card-header"><h2 class="card-title mb-0">Stat cards</h2></div>
             <div class="card-body">
-                <div class="stats-grid mb-0">
-                    <x-stat-card title="Total Tasks" :value="128" icon="check2-square" color="primary" description="Across all owners" />
-                    <x-stat-card title="In Progress" :value="42" icon="arrow-repeat" color="info" />
-                    <x-stat-card title="Overdue" :value="7" icon="exclamation-triangle" color="danger" />
-                    <x-stat-card title="Completed" :value="79" icon="check2-all" color="success" />
+                <div class="row row-cols-1 row-cols-md-3 g-3 mb-0">
+                    <x-stat class="col" title="Total Tasks" :value="128" icon="check2-square" variant="primary" description="Across all owners" />
+                    <x-stat class="col" title="In Progress" :value="42" icon="arrow-repeat" variant="info" />
+                    <x-stat class="col" title="Overdue" :value="7" icon="exclamation-triangle" variant="danger" />
+                    <x-stat class="col" title="Completed" :value="79" icon="check2-all" variant="success" />
                 </div>
             </div>
         </div>
@@ -113,9 +113,9 @@
                                     <td>Sample record {{ $index + 1 }}</td>
                                     <td><x-badge :variant="$index === 2 ? 'danger' : 'success'">{{ $index === 2 ? 'Overdue' : 'Active' }}</x-badge></td>
                                     <td class="text-end">
-                                        <div class="action-buttons justify-content-end">
-                                            <button type="button" class="action-btn" title="Edit"><i class="bi bi-pencil"></i></button>
-                                            <button type="button" class="action-btn action-btn-danger" title="Delete" data-confirm="Delete {{ $reference }}?"><i class="bi bi-trash3"></i></button>
+                                        <div class="d-flex align-items-center gap-1 justify-content-end">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center justify-content-center" title="Edit"><i class="bi bi-pencil"></i></button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center" title="Delete" data-confirm="Delete {{ $reference }}?"><i class="bi bi-trash3"></i></button>
                                         </div>
                                     </td>
                                 </tr>

@@ -11,14 +11,7 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Meeting Reports</h1>
-            <p class="page-description">Analyze meetings, actions, and decisions.</p>
-        </div>
-    </div>
-</div>
+<x-page-header title="Meeting Reports" subtitle="Analyze meetings, actions, and decisions." />
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
     <a href="{{ route('meetings.reports.meetings') }}" class="card" style="text-decoration: none; color: inherit; transition: transform 0.15s ease;">

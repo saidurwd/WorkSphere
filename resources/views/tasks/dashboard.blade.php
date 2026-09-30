@@ -9,26 +9,19 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Task Dashboard</h1>
-            <p class="page-description">Overview of your task management.</p>
-        </div>
-    </div>
+<x-page-header title="Task Dashboard" subtitle="Overview of your task management." />
+
+<div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
+    <x-stat class="col" label="Total Tasks" value="{{ $total }}" variant="primary" />
+    <x-stat class="col" label="Completed Tasks" value="{{ $completed }}" variant="success" />
+    <x-stat class="col" label="Pending Tasks" value="{{ $pending }}" variant="warning" />
 </div>
 
-<div class="stats-grid">
-    <x-stat label="Total Tasks" value="{{ $total }}" variant="primary" />
-    <x-stat label="Completed Tasks" value="{{ $completed }}" variant="success" />
-    <x-stat label="Pending Tasks" value="{{ $pending }}" variant="warning" />
-</div>
-
-<div class="grid-2" style="margin-bottom: 1.5rem;">
-    <div class="card">
+<div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+    <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Task Status</h3>
-            <span class="badge badge-secondary">Donut chart</span>
+            <span class="badge text-bg-secondary">Donut chart</span>
         </div>
         <div class="card-body">
             <div style="display: grid; grid-template-columns: 140px 1fr; gap: 1.25rem; align-items: center;">
@@ -72,10 +65,10 @@
         </div>
     </div>
 
-    <div class="card">
+    <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Weekly Tasks</h3>
-            <span class="badge badge-secondary">Bar chart</span>
+            <span class="badge text-bg-secondary">Bar chart</span>
         </div>
         <div class="card-body">
             <div style="display:flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1rem;">
@@ -101,11 +94,11 @@
     </div>
 </div>
 
-<div class="grid-2" style="margin-bottom: 1.5rem;">
-    <div class="card">
+<div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+    <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Priority Distribution</h3>
-            <span class="badge badge-secondary">Horizontal bars</span>
+            <span class="badge text-bg-secondary">Horizontal bars</span>
         </div>
         <div class="card-body">
             <div style="display:flex; flex-direction: column; gap: 0.875rem;">
@@ -124,10 +117,10 @@
         </div>
     </div>
 
-    <div class="card">
+    <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Tasks by Project</h3>
-            <span class="badge badge-secondary">Horizontal bars</span>
+            <span class="badge text-bg-secondary">Horizontal bars</span>
         </div>
         <div class="card-body">
             <div style="display:flex; flex-direction: column; gap: 0.875rem;">
@@ -147,7 +140,7 @@
     </div>
 </div>
 
-<div class="grid-2">
+<div class="row row-cols-1 row-cols-md-2 g-3">
     <x-detail-card
         title="Today's Tasks"
         :items="$todayTasks"
@@ -178,7 +171,7 @@
     />
 </div>
 
-<div class="grid-2" style="margin-top: 1.5rem;">
+<div class="row row-cols-1 row-cols-md-2 g-3">
     <x-detail-card
         title="High-Priority Tasks"
         :items="$highPriorityTasks"

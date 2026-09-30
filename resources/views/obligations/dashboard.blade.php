@@ -10,35 +10,27 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Obligations Dashboard</h1>
-            <p class="page-description">Overview of compliance obligations and renewals.</p>
-        </div>
-        <div>
-            <a href="{{ route('obligations.index') }}" class="btn btn-secondary">View All Obligations</a>
-        </div>
-    </div>
+<x-page-header title="Obligations Dashboard" subtitle="Overview of compliance obligations and renewals.">
+    <x-btn :href="route('obligations.index')" variant="secondary">View All Obligations</x-btn>
+</x-page-header>
+
+<div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
+    <x-stat class="col" label="Active Obligations" value="{{ $active }}" variant="primary" />
+    <x-stat class="col" label="Due Within 7 Days" value="{{ $dueWithin7Days }}" variant="warning" />
+    <x-stat class="col" label="Due Within 30 Days" value="{{ $dueWithin30Days }}" variant="info" />
+    <x-stat class="col" label="Expired" value="{{ $expired }}" variant="destructive" />
+    <x-stat class="col" label="Critical Risk" value="{{ $critical }}" variant="destructive" />
+    <x-stat class="col" label="High Risk" value="{{ $highRisk }}" variant="warning" />
+    <x-stat class="col" label="Renewal In Progress" value="{{ $renewalInProgress }}" variant="info" />
+    <x-stat class="col" label="Pending Approval" value="{{ $pendingApproval }}" variant="primary" />
+    <x-stat class="col" label="Overdue Tasks" value="{{ $overdueTasks }}" variant="destructive" />
 </div>
 
-<div class="stats-grid">
-    <x-stat label="Active Obligations" value="{{ $active }}" variant="primary" />
-    <x-stat label="Due Within 7 Days" value="{{ $dueWithin7Days }}" variant="warning" />
-    <x-stat label="Due Within 30 Days" value="{{ $dueWithin30Days }}" variant="info" />
-    <x-stat label="Expired" value="{{ $expired }}" variant="destructive" />
-    <x-stat label="Critical Risk" value="{{ $critical }}" variant="destructive" />
-    <x-stat label="High Risk" value="{{ $highRisk }}" variant="warning" />
-    <x-stat label="Renewal In Progress" value="{{ $renewalInProgress }}" variant="info" />
-    <x-stat label="Pending Approval" value="{{ $pendingApproval }}" variant="primary" />
-    <x-stat label="Overdue Tasks" value="{{ $overdueTasks }}" variant="destructive" />
-</div>
-
-<div class="grid-2" style="margin-bottom: 1.5rem;">
-    <div class="card">
+<div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+    <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Obligations by Type</h3>
-            <span class="badge badge-secondary">Horizontal bars</span>
+            <span class="badge text-bg-secondary">Horizontal bars</span>
         </div>
         <div class="card-body">
             <div style="display:flex; flex-direction: column; gap: 0.875rem;">
@@ -57,10 +49,10 @@
         </div>
     </div>
 
-    <div class="card">
+    <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Priority Distribution</h3>
-            <span class="badge badge-secondary">Donut chart</span>
+            <span class="badge text-bg-secondary">Donut chart</span>
         </div>
         <div class="card-body">
             <div style="display: grid; grid-template-columns: 140px 1fr; gap: 1.25rem; align-items: center;">
@@ -105,8 +97,8 @@
     </div>
 </div>
 
-<div class="grid-2" style="margin-bottom: 1.5rem;">
-    <div class="card">
+<div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+    <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Upcoming Obligations</h3>
         </div>
@@ -136,7 +128,7 @@
         </div>
     </div>
 
-    <div class="card">
+    <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Critical Obligations</h3>
         </div>

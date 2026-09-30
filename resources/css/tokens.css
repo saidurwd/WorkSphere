@@ -166,17 +166,3 @@ body {
     color: var(--app-foreground);
 }
 
-.sidebar {
-    background-color: var(--app-sidebar);
-    border-right-color: var(--app-sidebar-border);
-}
-
-.sidebar-link {
-    color: var(--app-sidebar-foreground);
-}
-
-.sidebar-link:hover,
-.sidebar-link.active {
-    background-color: var(--app-sidebar-accent);
-    color: var(--app-sidebar-accent-foreground);
-}

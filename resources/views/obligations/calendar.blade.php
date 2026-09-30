@@ -15,14 +15,7 @@
 @endpush
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Obligations Calendar</h1>
-            <p class="page-description">View expiry dates, task due dates, and renewal schedules.</p>
-        </div>
-    </div>
-</div>
+<x-page-header title="Obligations Calendar" subtitle="View expiry dates, task due dates, and renewal schedules." />
 
 <div class="card">
     <div class="card-body">

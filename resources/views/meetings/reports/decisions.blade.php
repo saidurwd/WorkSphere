@@ -12,27 +12,18 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Decision Register</h1>
-            <p class="page-description">Browse meeting decisions.</p>
-        </div>
-    </div>
-</div>
+<x-page-header title="Decision Register" subtitle="Browse meeting decisions." />
 
 <div class="card" style="margin-bottom: 1rem;">
     <div class="card-body">
         <form action="{{ route('meetings.reports.decisions') }}" method="GET">
-            <div class="filters-bar">
-                <div class="search-box">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <input type="search" name="search" class="form-input" placeholder="Search decisions..." value="{{ request('search') }}">
+            <div class="d-flex flex-wrap align-items-center gap-3">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="search" name="search" class="form-control" placeholder="Search decisions..." value="{{ request('search') }}">
                 </div>
-                <div class="filter-group">
-                    <label class="filter-label">Type:</label>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="form-label">Type:</label>
                     <select name="decision_type" class="form-select" style="min-width: 180px;">
                         <option value="">All Types</option>
                         <option value="approved" {{ request('decision_type') === 'approved' ? 'selected' : '' }}>Approved</option>
@@ -49,7 +40,7 @@
 
 <div class="card">
     @if($decisions->count())
-        <div class="table-container">
+        <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>

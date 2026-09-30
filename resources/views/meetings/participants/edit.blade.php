@@ -12,14 +12,7 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Edit Participant</h1>
-            <p class="page-description">Update participant details.</p>
-        </div>
-    </div>
-</div>
+<x-page-header title="Edit Participant" subtitle="Update participant details." />
 
 <div class="card">
     <div class="card-body">
@@ -57,7 +50,7 @@
 
             <div style="margin-top: 1.5rem;">
                 <label class="form-label">Remarks</label>
-                <textarea name="remarks" class="form-input" rows="2">{{ old('remarks', $participant->remarks) }}</textarea>
+                <textarea name="remarks" class="form-control" rows="2">{{ old('remarks', $participant->remarks) }}</textarea>
             </div>
 
             <div style="display: flex; gap: 0.75rem; margin-top: 2rem;">

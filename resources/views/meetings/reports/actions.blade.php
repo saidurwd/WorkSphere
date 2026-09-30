@@ -12,21 +12,14 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Action Item Report</h1>
-            <p class="page-description">Track action item progress.</p>
-        </div>
-    </div>
-</div>
+<x-page-header title="Action Item Report" subtitle="Track action item progress." />
 
 <div class="card" style="margin-bottom: 1rem;">
     <div class="card-body">
         <form action="{{ route('meetings.reports.actions') }}" method="GET">
-            <div class="filters-bar">
-                <div class="filter-group">
-                    <label class="filter-label">Meeting:</label>
+            <div class="d-flex flex-wrap align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <label class="form-label">Meeting:</label>
                     <select name="meeting_id" class="form-select" style="min-width: 180px;">
                         <option value="">All Meetings</option>
                         @foreach($meetings as $meeting)
@@ -34,8 +27,8 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="filter-group">
-                    <label class="filter-label">Assigned To:</label>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="form-label">Assigned To:</label>
                     <select name="assigned_to" class="form-select" style="min-width: 180px;">
                         <option value="">All Users</option>
                         @foreach($users as $user)
@@ -43,8 +36,8 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="filter-group">
-                    <label class="filter-label">Department:</label>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="form-label">Department:</label>
                     <select name="department_id" class="form-select" style="min-width: 180px;">
                         <option value="">All Departments</option>
                         @foreach($departments as $department)
@@ -60,7 +53,7 @@
 
 <div class="card">
     @if($actions->count())
-        <div class="table-container">
+        <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>

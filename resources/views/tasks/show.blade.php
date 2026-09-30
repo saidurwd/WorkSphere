@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
 @php
-$priorityClass = $task->priority === 'high' ? 'badge-danger' : ($task->priority === 'medium' ? 'badge-primary' : 'badge-secondary');
-$statusClass = $task->status === 'completed' ? 'badge-success' : ($task->status === 'in_progress' ? 'badge-primary' : 'badge-secondary');
+$priorityClass = $task->priority === 'high' ? 'text-bg-danger' : ($task->priority === 'medium' ? 'badge-primary' : 'text-bg-secondary');
+$statusClass = $task->status === 'completed' ? 'text-bg-success' : ($task->status === 'in_progress' ? 'badge-primary' : 'text-bg-secondary');
 $statusAccent = $task->status === 'completed' ? 'var(--success)' : ($task->status === 'in_progress' ? 'var(--info)' : ($task->status === 'pending' ? 'var(--warning)' : 'var(--primary)'));
 @endphp
 
@@ -17,30 +17,11 @@ $statusAccent = $task->status === 'completed' ? 'var(--success)' : ($task->statu
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            <a href="{{ route('tasks.index') }}" class="btn btn-ghost" title="Back to Tasks">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-            </a>
-            <div>
-                <h1 class="page-title">{{ $task->title }}</h1>
-                <p class="page-description">Task details and remarks.</p>
-            </div>
-        </div>
-        <div style="display: flex; gap: 0.5rem;">
-            <a href="{{ route('task-transfers.index', ['task_id' => $task->id]) }}" class="btn btn-secondary" title="Transfer">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 3l4 4-4 4M7 21l-4-4 4-4M21 7H7m-4 10h14" />
-                </svg>
-                Transfer
-            </a>
-            <a href="{{ route('tasks.edit', $task) }}" class="btn btn-primary">Edit</a>
-        </div>
-    </div>
-</div>
+<x-page-header :title="$task->title" subtitle="Task details and remarks.">
+    <x-btn :href="route('tasks.index')" variant="secondary" icon="arrow-left" title="Back to Tasks" />
+    <x-btn :href="route('task-transfers.index', ['task_id' => $task->id])" variant="secondary" icon="arrow-left-right" title="Transfer" />
+    <x-btn :href="route('tasks.edit', $task)">Edit</x-btn>
+</x-page-header>
 
 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; align-items: start;">
 
@@ -83,7 +64,7 @@ $statusAccent = $task->status === 'completed' ? 'var(--success)' : ($task->statu
                     <span class="badge {{ $priorityClass }}">{{ ucfirst($task->priority) }} Priority</span>
                     <span class="badge {{ $statusClass }}">{{ ucwords(str_replace('_', ' ', $task->status)) }}</span>
                     @if($task->isOverdue())
-                    <span class="badge badge-danger">Overdue</span>
+                    <span class="badge text-bg-danger">Overdue</span>
                     @endif
                 </div>
             </div>
@@ -196,7 +177,7 @@ $statusAccent = $task->status === 'completed' ? 'var(--success)' : ($task->statu
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title">Transfer History</h2>
-                <span class="badge badge-secondary">{{ $task->taskTransfers->count() }} Transfer(s)</span>
+                <span class="badge text-bg-secondary">{{ $task->taskTransfers->count() }} Transfer(s)</span>
             </div>
             <div class="card-body" style="padding: 0;">
                 @if($task->taskTransfers->isNotEmpty())
@@ -241,13 +222,7 @@ $statusAccent = $task->status === 'completed' ? 'var(--success)' : ($task->statu
                     @endforeach
                 </div>
                 @else
-                <div class="empty-state" style="padding: 2.5rem 0;">
-                    <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 48px; height: 48px; margin: 0 auto;">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 3l4 4-4 4M7 21l-4-4 4-4M21 7H7m-4 10h14" />
-                    </svg>
-                    <h3 class="empty-state-title">No transfers yet</h3>
-                    <p class="empty-state-description">This task has not been transferred.</p>
-                </div>
+                <x-empty-state title="No transfers yet" description="This task has not been transferred." />
                 @endif
             </div>
         </div>

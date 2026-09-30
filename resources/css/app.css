@@ -1,7 +1,9 @@
-@import 'bootstrap/dist/css/bootstrap.css';
-@import 'bootstrap-icons/font/bootstrap-icons.css';
+/* AdminLTE 4 bundles Bootstrap 5.3 in its own stylesheet (admin-lte@4.9.1
+   peer-depends on bootstrap ^5.3.8), so importing bootstrap.css here as well
+   would ship the whole framework twice and let the two copies drift. */
 @import 'admin-lte/dist/css/adminlte.css';
+
+@import 'bootstrap-icons/font/bootstrap-icons.css';
 
 @import './tokens.css';
 @import './widgets.css';
-@import './compat.css';

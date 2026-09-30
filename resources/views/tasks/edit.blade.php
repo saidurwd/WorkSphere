@@ -11,25 +11,10 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Edit Task</h1>
-            <p class="page-description">Update task details.</p>
-        </div>
-        <div style="display: flex; gap: 0.5rem;">
-            <a href="{{ route('task-transfers.index', ['task_id' => $task->id]) }}" class="btn btn-secondary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 3l4 4-4 4M7 21l-4-4 4-4M21 7H7m-4 10h14" />
-                </svg>
-                Transfer
-            </a>
-            <button type="button" class="btn btn-primary" onclick="openRemarkModal()">
-                Add Remarks
-            </button>
-        </div>
-    </div>
-</div>
+<x-page-header title="Edit Task" subtitle="Update task details.">
+    <x-btn :href="route('task-transfers.index', ['task_id' => $task->id])" variant="secondary" icon="arrow-left-right">Transfer</x-btn>
+    <button type="button" class="btn btn-primary" onclick="openRemarkModal()">Add Remarks</button>
+</x-page-header>
 
 <div class="card">
     <div class="card-body">
@@ -38,46 +23,46 @@
             @method('PUT')
 
             <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
-                <div class="form-group" style="flex: 0 0 calc(50% - 0.5rem);">
-                    <label for="title" class="form-label">Title <span class="text-red-500">*</span></label>
-                    <input type="text" name="title" id="title" class="form-input" value="{{ old('title', $task->title) }}" required>
-                    @error('title') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                <div class="mb-3" style="flex: 0 0 calc(50% - 0.5rem);">
+                    <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
+                    <input type="text" name="title" id="title" class="form-control" value="{{ old('title', $task->title) }}" required>
+                    @error('title') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="form-group" style="flex: 0 0 calc(50% - 0.5rem);">
-                    <label for="priority" class="form-label">Priority <span class="text-red-500">*</span></label>
+                <div class="mb-3" style="flex: 0 0 calc(50% - 0.5rem);">
+                    <label for="priority" class="form-label">Priority <span class="text-danger">*</span></label>
                     <select name="priority" id="priority" class="form-select" required>
                         <option value="low" {{ old('priority', $task->priority) === 'low' ? 'selected' : '' }}>Low</option>
                         <option value="medium" {{ old('priority', $task->priority) === 'medium' ? 'selected' : '' }}>Medium</option>
                         <option value="high" {{ old('priority', $task->priority) === 'high' ? 'selected' : '' }}>High</option>
                     </select>
-                    @error('priority') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    @error('priority') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="form-group" style="flex: 0 0 100%;">
+                <div class="mb-3" style="flex: 0 0 100%;">
                     <label for="description" class="form-label">Description</label>
-                    <textarea name="description" id="description" class="form-textarea" rows="4">{{ old('description', $task->description) }}</textarea>
-                    @error('description') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    <textarea name="description" id="description" class="form-control" rows="4">{{ old('description', $task->description) }}</textarea>
+                    @error('description') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="form-group" style="flex: 0 0 calc(50% - 0.5rem);">
-                    <label for="status" class="form-label">Status <span class="text-red-500">*</span></label>
+                <div class="mb-3" style="flex: 0 0 calc(50% - 0.5rem);">
+                    <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
                     <select name="status" id="status" class="form-select" required>
                         <option value="pending" {{ old('status', $task->status) === 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="in_progress" {{ old('status', $task->status) === 'in_progress' ? 'selected' : '' }}>In Progress</option>
                         <option value="completed" {{ old('status', $task->status) === 'completed' ? 'selected' : '' }}>Completed</option>
                     </select>
-                    @error('status') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    @error('status') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="form-group" style="flex: 0 0 calc(50% - 0.5rem);">
-                    <label for="due_date" class="form-label">Due Date <span class="text-red-500">*</span></label>
-                    <input type="date" name="due_date" id="due_date" class="form-input" value="{{ old('due_date', $task->due_date->format('Y-m-d')) }}" required>
-                    @error('due_date') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                <div class="mb-3" style="flex: 0 0 calc(50% - 0.5rem);">
+                    <label for="due_date" class="form-label">Due Date <span class="text-danger">*</span></label>
+                    <input type="date" name="due_date" id="due_date" class="form-control" value="{{ old('due_date', $task->due_date->format('Y-m-d')) }}" required>
+                    @error('due_date') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="form-group" style="flex: 0 0 calc(50% - 0.5rem);">
-                    <label for="responsible_user_id" class="form-label">Responsible User <span class="text-red-500">*</span></label>
+                <div class="mb-3" style="flex: 0 0 calc(50% - 0.5rem);">
+                    <label for="responsible_user_id" class="form-label">Responsible User <span class="text-danger">*</span></label>
                     <select name="responsible_user_id" id="responsible_user_id" class="form-select" required>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}" {{ old('responsible_user_id', $task->responsible_user_id) == $user->id ? 'selected' : '' }}>
@@ -85,10 +70,10 @@
                             </option>
                         @endforeach
                     </select>
-                    @error('responsible_user_id') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    @error('responsible_user_id') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="form-group" style="flex: 0 0 calc(50% - 0.5rem);">
+                <div class="mb-3" style="flex: 0 0 calc(50% - 0.5rem);">
                     <label for="project_id" class="form-label">Project</label>
                     <select name="project_id" id="project_id" class="form-select">
                         <option value="">No Project</option>
@@ -98,21 +83,21 @@
                             </option>
                         @endforeach
                     </select>
-                    @error('project_id') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    @error('project_id') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="form-group" style="flex: 0 0 100%;">
+                <div class="mb-3" style="flex: 0 0 100%;">
                     <label for="attachment" class="form-label">Attachment</label>
-                    <input type="file" name="attachment" id="attachment" class="form-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt">
-                    <p class="text-sm mt-1" style="color: var(--muted-foreground);">Maximum file size: 10MB. Allowed: PDF, Word, Excel, images, text.</p>
+                    <input type="file" name="attachment" id="attachment" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt">
+                    <p class="small mt-1" style="color: var(--muted-foreground);">Maximum file size: 10MB. Allowed: PDF, Word, Excel, images, text.</p>
                     @if($task->attachment)
-                        <p class="text-sm mt-1">
-                            <a href="{{ asset('storage/' . $task->attachment) }}" target="_blank" class="text-blue-600 underline">
+                        <p class="small mt-1">
+                            <a href="{{ asset('storage/' . $task->attachment) }}" target="_blank" class="text-primary text-decoration-underline">
                                 {{ basename($task->attachment) }}
                             </a>
                         </p>
                     @endif
-                    @error('attachment') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    @error('attachment') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div style="flex: 0 0 100%; display: flex; gap: 0.75rem; margin-top: 0.5rem;">
@@ -139,8 +124,8 @@
                     </div>
                     <p style="margin: 0; color: var(--foreground);">{{ $remark->remark }}</p>
                     @if($remark->attachment)
-                        <p class="text-sm mt-2">
-                            <a href="{{ asset('storage/' . $remark->attachment) }}" target="_blank" class="text-blue-600 underline">
+                        <p class="small mt-2">
+                            <a href="{{ asset('storage/' . $remark->attachment) }}" target="_blank" class="text-primary text-decoration-underline">
                                 {{ basename($remark->attachment) }}
                             </a>
                         </p>
@@ -164,16 +149,16 @@
         <div class="card-body">
             <form action="{{ route('tasks.remarks.store', $task) }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <div class="form-group">
-                    <label for="remark" class="form-label">Remark <span class="text-red-500">*</span></label>
-                    <textarea name="remark" id="remark" class="form-textarea" rows="4" required></textarea>
-                    @error('remark') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                <div class="mb-3">
+                    <label for="remark" class="form-label">Remark <span class="text-danger">*</span></label>
+                    <textarea name="remark" id="remark" class="form-control" rows="4" required></textarea>
+                    @error('remark') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="remark_attachment" class="form-label">Attachment</label>
-                    <input type="file" name="remark_attachment" id="remark_attachment" class="form-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt">
-                    <p class="text-sm mt-1" style="color: var(--muted-foreground);">Maximum file size: 10MB. Allowed: PDF, Word, Excel, images, text.</p>
-                    @error('remark_attachment') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    <input type="file" name="remark_attachment" id="remark_attachment" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt">
+                    <p class="small mt-1" style="color: var(--muted-foreground);">Maximum file size: 10MB. Allowed: PDF, Word, Excel, images, text.</p>
+                    @error('remark_attachment') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1rem;">
                     <button type="button" class="btn btn-secondary" onclick="closeRemarkModal()">Cancel</button>

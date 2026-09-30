@@ -12,14 +12,7 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">{{ $actionItem->title }}</h1>
-            <p class="page-description">Action item details and linked task.</p>
-        </div>
-    </div>
-</div>
+<x-page-header title="{{ $actionItem->title }}" subtitle="Action item details and linked task." />
 
 <div class="card" style="margin-bottom: 1.5rem;">
     <div class="card-body">

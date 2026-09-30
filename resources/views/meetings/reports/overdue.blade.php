@@ -12,18 +12,11 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Overdue Actions</h1>
-            <p class="page-description">Action items that are past due.</p>
-        </div>
-    </div>
-</div>
+<x-page-header title="Overdue Actions" subtitle="Action items that are past due." />
 
 <div class="card">
     @if($overdue->count())
-        <div class="table-container">
+        <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
@@ -44,7 +37,7 @@
                         <td>{{ $item->assignedTo->name ?? 'N/A' }}</td>
                         <td>{{ $item->assignedDepartment->department_name ?? 'N/A' }}</td>
                         <td>{{ $item->due_date->format('M d, Y') }}</td>
-                        <td><span class="badge badge-danger">{{ now()->startOfDay()->diffInDays($item->due_date) }} days</span></td>
+                        <td><span class="badge text-bg-danger">{{ now()->startOfDay()->diffInDays($item->due_date) }} days</span></td>
                         <td>
                             @if($item->task)
                             <a href="{{ route('tasks.show', $item->task) }}">{{ $item->task->task_no ?? 'Task #'.$item->task->id }}</a>
@@ -58,13 +51,7 @@
             </table>
         </div>
     @else
-        <div class="empty-state">
-            <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <h3 class="empty-state-title">No overdue actions</h3>
-            <p class="empty-state-description">All action items are on track.</p>
-        </div>
+        <x-empty-state title="No overdue actions" description="All action items are on track." />
     @endif
 </div>
 @endsection

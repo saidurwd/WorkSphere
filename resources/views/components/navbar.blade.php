@@ -33,7 +33,7 @@
     $unreadCount = $recentNotifications->count();
 @endphp
 
-<nav class="app-header navbar navbar-expand-md navbar-light bg-body">
+<nav class="app-header navbar navbar-expand-md bg-body">
     <div class="container-fluid">
         <ul class="navbar-nav me-auto">
             <li class="nav-item">

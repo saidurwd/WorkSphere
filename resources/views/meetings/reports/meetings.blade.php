@@ -12,29 +12,22 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Meeting Summary Report</h1>
-            <p class="page-description">View meeting history and status.</p>
-        </div>
-    </div>
-</div>
+<x-page-header title="Meeting Summary Report" subtitle="View meeting history and status." />
 
 <div class="card" style="margin-bottom: 1rem;">
     <div class="card-body">
         <form action="{{ route('meetings.reports.meetings') }}" method="GET">
-            <div class="filters-bar">
-                <div class="filter-group">
-                    <label class="filter-label">Date From:</label>
-                    <input type="date" name="date_from" class="form-input" value="{{ $filters['date_from'] ?? '' }}" style="min-width: 150px;">
+            <div class="d-flex flex-wrap align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <label class="form-label">Date From:</label>
+                    <input type="date" name="date_from" class="form-control" value="{{ $filters['date_from'] ?? '' }}" style="min-width: 150px;">
                 </div>
-                <div class="filter-group">
-                    <label class="filter-label">Date To:</label>
-                    <input type="date" name="date_to" class="form-input" value="{{ $filters['date_to'] ?? '' }}" style="min-width: 150px;">
+                <div class="d-flex align-items-center gap-2">
+                    <label class="form-label">Date To:</label>
+                    <input type="date" name="date_to" class="form-control" value="{{ $filters['date_to'] ?? '' }}" style="min-width: 150px;">
                 </div>
-                <div class="filter-group">
-                    <label class="filter-label">Type:</label>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="form-label">Type:</label>
                     <select name="meeting_type_id" class="form-select" style="min-width: 180px;">
                         <option value="">All Types</option>
                         @foreach($types as $type)
@@ -42,8 +35,8 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="filter-group">
-                    <label class="filter-label">Department:</label>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="form-label">Department:</label>
                     <select name="department_id" class="form-select" style="min-width: 180px;">
                         <option value="">All Departments</option>
                         @foreach($departments as $department)
@@ -59,7 +52,7 @@
 
 <div class="card">
     @if($meetings->count())
-        <div class="table-container">
+        <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>

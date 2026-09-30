@@ -11,14 +11,7 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Edit Meeting</h1>
-            <p class="page-description">Update meeting details.</p>
-        </div>
-    </div>
-</div>
+<x-page-header title="Edit Meeting" subtitle="Update meeting details." />
 
 <div class="card">
     <div class="card-body">
@@ -29,7 +22,7 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
                 <div>
                     <label class="form-label">Meeting Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="title" class="form-input @error('title') is-invalid @enderror" value="{{ old('title', $meeting->title) }}" required>
+                    <input type="text" name="title" class="form-control @error('title') is-invalid @enderror" value="{{ old('title', $meeting->title) }}" required>
                     @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
@@ -79,25 +72,25 @@
 
                 <div>
                     <label class="form-label">Location</label>
-                    <input type="text" name="location" class="form-input @error('location') is-invalid @enderror" value="{{ old('location', $meeting->location) }}">
+                    <input type="text" name="location" class="form-control @error('location') is-invalid @enderror" value="{{ old('location', $meeting->location) }}">
                     @error('location')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div>
                     <label class="form-label">Meeting Date <span style="color: var(--danger);">*</span></label>
-                    <input type="date" name="meeting_date" class="form-input @error('meeting_date') is-invalid @enderror" value="{{ old('meeting_date', $meeting->meeting_date->format('Y-m-d')) }}" required>
+                    <input type="date" name="meeting_date" class="form-control @error('meeting_date') is-invalid @enderror" value="{{ old('meeting_date', $meeting->meeting_date->format('Y-m-d')) }}" required>
                     @error('meeting_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div>
                     <label class="form-label">Start Time <span style="color: var(--danger);">*</span></label>
-                    <input type="time" name="start_time" class="form-input @error('start_time') is-invalid @enderror" value="{{ old('start_time', $meeting->start_time->format('H:i')) }}" required>
+                    <input type="time" name="start_time" class="form-control @error('start_time') is-invalid @enderror" value="{{ old('start_time', $meeting->start_time->format('H:i')) }}" required>
                     @error('start_time')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div>
                     <label class="form-label">End Time <span style="color: var(--danger);">*</span></label>
-                    <input type="time" name="end_time" class="form-input @error('end_time') is-invalid @enderror" value="{{ old('end_time', $meeting->end_time->format('H:i')) }}" required>
+                    <input type="time" name="end_time" class="form-control @error('end_time') is-invalid @enderror" value="{{ old('end_time', $meeting->end_time->format('H:i')) }}" required>
                     @error('end_time')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
@@ -114,12 +107,12 @@
 
             <div style="margin-top: 1.5rem;">
                 <label class="form-label">Description</label>
-                <textarea name="description" class="form-input" rows="3">{{ old('description', $meeting->description) }}</textarea>
+                <textarea name="description" class="form-control" rows="3">{{ old('description', $meeting->description) }}</textarea>
             </div>
 
             <div style="margin-top: 1.5rem;">
                 <label class="form-label">Agenda</label>
-                <textarea name="agenda" class="form-input" rows="4">{{ old('agenda', $meeting->agenda) }}</textarea>
+                <textarea name="agenda" class="form-control" rows="4">{{ old('agenda', $meeting->agenda) }}</textarea>
             </div>
 
             <div style="display: flex; gap: 0.75rem; margin-top: 2rem;">

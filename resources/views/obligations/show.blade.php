@@ -11,47 +11,29 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">{{ $obligation->obligation_no }}</h1>
-            <p class="page-description">{{ $obligation->title }}</p>
-        </div>
-        <div style="display: flex; gap: 0.75rem;">
-            <a href="{{ route('obligations.edit', $obligation) }}" class="btn btn-secondary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                Edit
-            </a>
-            <a href="{{ route('obligations.renew.create', $obligation) }}" class="btn btn-primary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Renew
-            </a>
-        </div>
-    </div>
-</div>
+<x-page-header :title="$obligation->obligation_no" :subtitle="$obligation->title">
+    <x-btn :href="route('obligations.edit', $obligation)" variant="secondary" icon="pencil">Edit</x-btn>
+    <x-btn :href="route('obligations.renew.create', $obligation)" icon="arrow-repeat">Renew</x-btn>
+</x-page-header>
 
 @php
     $remaining = now()->startOfDay()->diffInDays($obligation->expiry_date, false);
     $riskBadge = match ($obligation->risk_level) {
-        'critical' => 'badge-danger',
+        'critical' => 'text-bg-danger',
         'high' => 'badge-warning',
         'medium' => 'badge-primary',
-        'low' => 'badge-secondary',
+        'low' => 'text-bg-secondary',
     };
     $priorityBadge = match ($obligation->priority) {
-        'critical' => 'badge-danger',
+        'critical' => 'text-bg-danger',
         'high' => 'badge-warning',
         'medium' => 'badge-primary',
-        'low' => 'badge-secondary',
+        'low' => 'text-bg-secondary',
     };
 @endphp
 
-<div class="grid-2" style="margin-bottom: 1.5rem;">
-    <div class="card">
+<div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+    <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Basic Information</h3>
         </div>
@@ -93,7 +75,7 @@
         </div>
     </div>
 
-    <div class="card">
+    <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Ownership & Dates</h3>
         </div>
@@ -134,8 +116,8 @@
     </div>
 </div>
 
-<div class="grid-2" style="margin-bottom: 1.5rem;">
-    <div class="card">
+<div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+    <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Status & Priority</h3>
         </div>
@@ -143,7 +125,7 @@
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                 <div style="display: flex; justify-content: space-between;">
                     <span style="color: var(--muted-foreground);">Status</span>
-                    <span class="badge badge-secondary">{{ ucwords(str_replace('_', ' ', $obligation->status)) }}</span>
+                    <span class="badge text-bg-secondary">{{ ucwords(str_replace('_', ' ', $obligation->status)) }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
                     <span style="color: var(--muted-foreground);">Priority</span>
@@ -169,7 +151,7 @@
         </div>
     </div>
 
-    <div class="card">
+    <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Financial Information</h3>
         </div>
@@ -207,7 +189,7 @@
         <form action="{{ route('obligations.documents.store', $obligation) }}" method="POST" enctype="multipart/form-data" style="margin-bottom: 1rem;">
             @csrf
             <div style="display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap;">
-                <div class="form-group" style="margin-bottom: 0;">
+                <div class="mb-3" style="margin-bottom: 0;">
                     <label class="form-label">Document Type</label>
                     <select name="document_type" class="form-select">
                         <option value="CONTRACT">Contract</option>
@@ -222,17 +204,17 @@
                         <option value="OTHER">Other</option>
                     </select>
                 </div>
-                <div class="form-group" style="margin-bottom: 0;">
+                <div class="mb-3" style="margin-bottom: 0;">
                     <label class="form-label">File</label>
-                    <input type="file" name="file" class="form-input" required>
+                    <input type="file" name="file" class="form-control" required>
                 </div>
-                <div class="form-group" style="margin-bottom: 0;">
+                <div class="mb-3" style="margin-bottom: 0;">
                     <label class="form-label">Document Date</label>
-                    <input type="date" name="document_date" class="form-input">
+                    <input type="date" name="document_date" class="form-control">
                 </div>
-                <div class="form-group" style="margin-bottom: 0;">
+                <div class="mb-3" style="margin-bottom: 0;">
                     <label class="form-label">Expiry Date</label>
-                    <input type="date" name="expiry_date" class="form-input">
+                    <input type="date" name="expiry_date" class="form-control">
                 </div>
                 <button type="submit" class="btn btn-primary">Upload</button>
             </div>
@@ -257,7 +239,7 @@
                         <td>{{ $document->uploader->name ?? 'N/A' }}</td>
                         <td>{{ $document->created_at->format('M d, Y') }}</td>
                         <td style="text-align: right;">
-                            <a href="{{ Storage::url($document->file_path) }}" class="action-btn" title="Download" target="_blank">
+                            <a href="{{ Storage::url($document->file_path) }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center justify-content-center" title="Download" target="_blank">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                 </svg>
@@ -265,7 +247,7 @@
                             <form action="{{ route('obligations.documents.destroy', [$obligation, $document]) }}" method="POST" style="display: inline;" id="delete-doc-{{ $document->id }}">
                                 @csrf
                                 @method('DELETE')
-                                <button type="button" class="action-btn action-btn-danger" title="Delete" onclick="if (confirm('Delete this document?')) { document.getElementById('delete-doc-{{ $document->id }}').submit(); }">
+                                <button type="button" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center" title="Delete" onclick="if (confirm('Delete this document?')) { document.getElementById('delete-doc-{{ $document->id }}').submit(); }">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
@@ -282,8 +264,8 @@
     </div>
 </div>
 
-<div class="grid-2" style="margin-bottom: 1.5rem;">
-    <div class="card">
+<div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+    <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Renewal History</h3>
         </div>
@@ -317,7 +299,7 @@
         </div>
     </div>
 
-    <div class="card">
+    <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Responsibilities</h3>
         </div>

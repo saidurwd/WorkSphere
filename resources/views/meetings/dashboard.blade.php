@@ -10,14 +10,7 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Meeting Dashboard</h1>
-            <p class="page-description">Overview of meetings and action items.</p>
-        </div>
-    </div>
-</div>
+<x-page-header title="Meeting Dashboard" subtitle="Overview of meetings and action items." />
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
     <div class="card">

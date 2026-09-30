@@ -11,14 +11,7 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Obligations Reports</h1>
-            <p class="page-description">Analytics and performance reports.</p>
-        </div>
-    </div>
-</div>
+<x-page-header title="Obligations Reports" subtitle="Analytics and performance reports." />
 
 <div class="card" style="margin-bottom: 1.5rem;">
     <div class="card-header">
@@ -48,8 +41,8 @@
     </div>
 </div>
 
-<div class="grid-2" style="margin-bottom: 1.5rem;">
-    <div class="card">
+<div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+    <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Department Report</h3>
         </div>
@@ -81,7 +74,7 @@
         </div>
     </div>
 
-    <div class="card">
+    <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Vendor Report</h3>
         </div>
@@ -158,10 +151,10 @@
                     @foreach($riskReport as $obligation)
                     @php
                         $riskBadge = match ($obligation->risk_level) {
-                            'critical' => 'badge-danger',
+                            'critical' => 'text-bg-danger',
                             'high' => 'badge-warning',
                             'medium' => 'badge-primary',
-                            'low' => 'badge-secondary',
+                            'low' => 'text-bg-secondary',
                         };
                     @endphp
                     <tr>
@@ -169,7 +162,7 @@
                         <td>{{ $obligation->title }}</td>
                         <td>{{ $obligation->expiry_date->format('M d, Y') }}</td>
                         <td><span class="badge {{ $riskBadge }}">{{ ucfirst($obligation->risk_level) }}</span></td>
-                        <td><span class="badge badge-secondary">{{ ucfirst($obligation->priority) }}</span></td>
+                        <td><span class="badge text-bg-secondary">{{ ucfirst($obligation->priority) }}</span></td>
                     </tr>
                     @endforeach
                 </tbody>

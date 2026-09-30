@@ -24,22 +24,9 @@
     }
 </style>
 
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Task Transfers</h1>
-            <p class="page-description">Reassign tasks between users and keep a transfer history.</p>
-        </div>
-        <div>
-            <a href="{{ route('tasks.index') }}" class="btn btn-secondary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 17l-5-5 5-5M18 12H6" />
-                </svg>
-                Back to Tasks
-            </a>
-        </div>
-    </div>
-</div>
+<x-page-header title="Task Transfers" subtitle="Reassign tasks between users and keep a transfer history.">
+    <x-btn :href="route('tasks.index')" variant="secondary" icon="arrow-left">Back to Tasks</x-btn>
+</x-page-header>
 
 <div class="card" style="margin-bottom: 1.5rem;">
     <div class="card-body">
@@ -48,8 +35,8 @@
             @csrf
 
             <div class="transfer-grid">
-                <div class="form-group">
-                    <label for="task_id" class="form-label">Task <span class="text-red-500">*</span></label>
+                <div class="mb-3">
+                    <label for="task_id" class="form-label">Task <span class="text-danger">*</span></label>
                     <select name="task_id" id="task_id" class="form-select" required>
                         <option value="">Select Task</option>
                         @foreach($tasks as $task)
@@ -58,10 +45,10 @@
                             </option>
                         @endforeach
                     </select>
-                    @error('task_id') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    @error('task_id') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="from_user_id" class="form-label">From User</label>
                     <select name="from_user_id" id="from_user_id" class="form-select">
                         <option value="">Current Responsible</option>
@@ -71,11 +58,11 @@
                             </option>
                         @endforeach
                     </select>
-                    @error('from_user_id') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    @error('from_user_id') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="form-group">
-                    <label for="to_user_id" class="form-label">To User <span class="text-red-500">*</span></label>
+                <div class="mb-3">
+                    <label for="to_user_id" class="form-label">To User <span class="text-danger">*</span></label>
                     <select name="to_user_id" id="to_user_id" class="form-select" required>
                         <option value="">Select User</option>
                         @foreach($users as $user)
@@ -84,44 +71,44 @@
                             </option>
                         @endforeach
                     </select>
-                    @error('to_user_id') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    @error('to_user_id') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="transfer_date" class="form-label">Transfer Date</label>
-                    <input type="date" name="transfer_date" id="transfer_date" class="form-input"
+                    <input type="date" name="transfer_date" id="transfer_date" class="form-control"
                         value="{{ old('transfer_date', now()->toDateString()) }}">
-                    @error('transfer_date') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    @error('transfer_date') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="file_title" class="form-label">File Title</label>
-                    <input type="text" name="file_title" id="file_title" class="form-input"
+                    <input type="text" name="file_title" id="file_title" class="form-control"
                         placeholder="Attachment title" value="{{ old('file_title') }}">
-                    @error('file_title') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    @error('file_title') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="file_attache" class="form-label">File Attachment</label>
-                    <input type="file" name="file_attache" id="file_attache" class="form-input"
+                    <input type="file" name="file_attache" id="file_attache" class="form-control"
                         accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.jpg,.jpeg,.png,.gif">
-                    <span class="user-cell-email">Max 10MB. Allowed: pdf, doc, xls, ppt, txt, zip, images.</span>
-                    @error('file_attache') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    <span class="small text-body-secondary">Max 10MB. Allowed: pdf, doc, xls, ppt, txt, zip, images.</span>
+                    @error('file_attache') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="reason" class="form-label">Reason <span class="text-red-500">*</span></label>
-                <textarea name="reason" id="reason" class="form-textarea" rows="3" required
+            <div class="mb-3">
+                <label for="reason" class="form-label">Reason <span class="text-danger">*</span></label>
+                <textarea name="reason" id="reason" class="form-control" rows="3" required
                     placeholder="Why is this task being transferred?">{{ old('reason') }}</textarea>
-                @error('reason') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                @error('reason') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
             </div>
 
-            <div class="form-group">
+            <div class="mb-3">
                 <label for="remarks" class="form-label">Remarks</label>
-                <textarea name="remarks" id="remarks" class="form-textarea" rows="2"
+                <textarea name="remarks" id="remarks" class="form-control" rows="2"
                     placeholder="Optional remarks from the receiver">{{ old('remarks') }}</textarea>
-                @error('remarks') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                @error('remarks') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">

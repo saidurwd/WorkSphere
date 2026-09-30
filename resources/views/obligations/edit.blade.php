@@ -11,14 +11,7 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Edit Obligation</h1>
-            <p class="page-description">{{ $obligation->obligation_no }} - {{ $obligation->title }}</p>
-        </div>
-    </div>
-</div>
+<x-page-header title="Edit Obligation" subtitle="{{ $obligation->obligation_no }} - {{ $obligation->title }}" />
 
 <div class="card">
     <div class="card-body">
@@ -26,16 +19,16 @@
             @csrf
             @method('PUT')
 
-            <div class="grid-2" style="margin-bottom: 1.5rem;">
-                <div class="form-group">
+            <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                <div class="col mb-3">
                     <label class="form-label">Title <span style="color: var(--destructive);">*</span></label>
-                    <input type="text" name="title" class="form-input" value="{{ old('title', $obligation->title) }}" required>
+                    <input type="text" name="title" class="form-control" value="{{ old('title', $obligation->title) }}" required>
                     @error('title') <span style="color: var(--destructive); font-size: 0.875rem;">{{ $message }}</span> @enderror
                 </div>
             </div>
 
-            <div class="grid-2" style="margin-bottom: 1.5rem;">
-                <div class="form-group">
+            <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                <div class="col mb-3">
                     <label class="form-label">Obligation Type <span style="color: var(--destructive);">*</span></label>
                     <select name="obligation_type_id" class="form-select" required>
                         <option value="">Select Type</option>
@@ -48,7 +41,7 @@
                     @error('obligation_type_id') <span style="color: var(--destructive); font-size: 0.875rem;">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="form-group">
+                <div class="col mb-3">
                     <label class="form-label">Category <span style="color: var(--destructive);">*</span></label>
                     <select name="category_id" class="form-select" required>
                         <option value="">Select Category</option>
@@ -62,8 +55,8 @@
                 </div>
             </div>
 
-            <div class="grid-2" style="margin-bottom: 1.5rem;">
-                <div class="form-group">
+            <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                <div class="col mb-3">
                     <label class="form-label">Company <span style="color: var(--destructive);">*</span></label>
                     <select name="company_id" class="form-select" required>
                         <option value="">Select Company</option>
@@ -76,7 +69,7 @@
                     @error('company_id') <span style="color: var(--destructive); font-size: 0.875rem;">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="form-group">
+                <div class="col mb-3">
                     <label class="form-label">Department <span style="color: var(--destructive);">*</span></label>
                     <select name="department_id" class="form-select" required>
                         <option value="">Select Department</option>
@@ -90,8 +83,8 @@
                 </div>
             </div>
 
-            <div class="grid-2" style="margin-bottom: 1.5rem;">
-                <div class="form-group">
+            <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                <div class="col mb-3">
                     <label class="form-label">Location</label>
                     <select name="location_id" class="form-select">
                         <option value="">Select Location</option>
@@ -104,7 +97,7 @@
                     @error('location_id') <span style="color: var(--destructive); font-size: 0.875rem;">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="form-group">
+                <div class="col mb-3">
                     <label class="form-label">Vendor</label>
                     <select name="vendor_id" class="form-select">
                         <option value="">Select Vendor</option>
@@ -118,8 +111,8 @@
                 </div>
             </div>
 
-            <div class="grid-2" style="margin-bottom: 1.5rem;">
-                <div class="form-group">
+            <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                <div class="col mb-3">
                     <label class="form-label">Owner <span style="color: var(--destructive);">*</span></label>
                     <select name="owner_user_id" class="form-select" required>
                         <option value="">Select Owner</option>
@@ -132,7 +125,7 @@
                     @error('owner_user_id') <span style="color: var(--destructive); font-size: 0.875rem;">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="form-group">
+                <div class="col mb-3">
                     <label class="form-label">Backup Owner</label>
                     <select name="backup_user_id" class="form-select">
                         <option value="">Select Backup Owner</option>
@@ -146,8 +139,8 @@
                 </div>
             </div>
 
-            <div class="grid-2" style="margin-bottom: 1.5rem;">
-                <div class="form-group">
+            <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                <div class="col mb-3">
                     <label class="form-label">Reviewer</label>
                     <select name="reviewer_user_id" class="form-select">
                         <option value="">Select Reviewer</option>
@@ -160,7 +153,7 @@
                     @error('reviewer_user_id') <span style="color: var(--destructive); font-size: 0.875rem;">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="form-group">
+                <div class="col mb-3">
                     <label class="form-label">Approver</label>
                     <select name="approver_user_id" class="form-select">
                         <option value="">Select Approver</option>
@@ -174,22 +167,22 @@
                 </div>
             </div>
 
-            <div class="grid-2" style="margin-bottom: 1.5rem;">
-                <div class="form-group">
+            <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                <div class="col mb-3">
                     <label class="form-label">Start Date <span style="color: var(--destructive);">*</span></label>
-                    <input type="date" name="start_date" class="form-input" value="{{ old('start_date', $obligation->start_date->format('Y-m-d')) }}" required>
+                    <input type="date" name="start_date" class="form-control" value="{{ old('start_date', $obligation->start_date->format('Y-m-d')) }}" required>
                     @error('start_date') <span style="color: var(--destructive); font-size: 0.875rem;">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="form-group">
+                <div class="col mb-3">
                     <label class="form-label">Expiry Date <span style="color: var(--destructive);">*</span></label>
-                    <input type="date" name="expiry_date" class="form-input" value="{{ old('expiry_date', $obligation->expiry_date->format('Y-m-d')) }}" required>
+                    <input type="date" name="expiry_date" class="form-control" value="{{ old('expiry_date', $obligation->expiry_date->format('Y-m-d')) }}" required>
                     @error('expiry_date') <span style="color: var(--destructive); font-size: 0.875rem;">{{ $message }}</span> @enderror
                 </div>
             </div>
 
-            <div class="grid-2" style="margin-bottom: 1.5rem;">
-                <div class="form-group">
+            <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                <div class="col mb-3">
                     <label class="form-label">Priority <span style="color: var(--destructive);">*</span></label>
                     <select name="priority" class="form-select" required>
                         <option value="low" {{ old('priority', $obligation->priority) === 'low' ? 'selected' : '' }}>Low</option>
@@ -200,7 +193,7 @@
                     @error('priority') <span style="color: var(--destructive); font-size: 0.875rem;">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="form-group">
+                <div class="col mb-3">
                     <label class="form-label">Risk Level <span style="color: var(--destructive);">*</span></label>
                     <select name="risk_level" class="form-select" required>
                         <option value="low" {{ old('risk_level', $obligation->risk_level) === 'low' ? 'selected' : '' }}>Low</option>
@@ -212,8 +205,8 @@
                 </div>
             </div>
 
-            <div class="grid-2" style="margin-bottom: 1.5rem;">
-                <div class="form-group">
+            <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                <div class="col mb-3">
                     <label class="form-label">Status <span style="color: var(--destructive);">*</span></label>
                     <select name="status" class="form-select" required>
                         @foreach(['active','upcoming','action_required','renewal_in_progress','pending_approval','purchase_in_progress','renewed','expired','cancelled','not_required','archived'] as $status)
@@ -225,21 +218,21 @@
                     @error('status') <span style="color: var(--destructive); font-size: 0.875rem;">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="form-group">
+                <div class="col mb-3">
                     <label class="form-label">Currency</label>
-                    <input type="text" name="currency" class="form-input" value="{{ old('currency', $obligation->currency) }}" maxlength="3">
+                    <input type="text" name="currency" class="form-control" value="{{ old('currency', $obligation->currency) }}" maxlength="3">
                     @error('currency') <span style="color: var(--destructive); font-size: 0.875rem;">{{ $message }}</span> @enderror
                 </div>
             </div>
 
-            <div class="grid-2" style="margin-bottom: 1.5rem;">
-                <div class="form-group">
+            <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                <div class="col mb-3">
                     <label class="form-label">Estimated Cost</label>
-                    <input type="number" name="estimated_cost" class="form-input" value="{{ old('estimated_cost', $obligation->estimated_cost) }}" step="0.01" min="0">
+                    <input type="number" name="estimated_cost" class="form-control" value="{{ old('estimated_cost', $obligation->estimated_cost) }}" step="0.01" min="0">
                     @error('estimated_cost') <span style="color: var(--destructive); font-size: 0.875rem;">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="form-group">
+                <div class="col mb-3">
                     <label class="form-label">Recurrence Type</label>
                     <select name="recurrence_type" class="form-select">
                         <option value="">None</option>
@@ -251,14 +244,14 @@
                 </div>
             </div>
 
-            <div class="grid-2" style="margin-bottom: 1.5rem;">
-                <div class="form-group">
+            <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                <div class="col mb-3">
                     <label class="form-label">Recurrence Interval</label>
-                    <input type="number" name="recurrence_interval" class="form-input" value="{{ old('recurrence_interval', $obligation->recurrence_interval) }}" min="1">
+                    <input type="number" name="recurrence_interval" class="form-control" value="{{ old('recurrence_interval', $obligation->recurrence_interval) }}" min="1">
                     @error('recurrence_interval') <span style="color: var(--destructive); font-size: 0.875rem;">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="form-group" style="display: flex; gap: 1.5rem; align-items: center; padding-top: 2rem;">
+                <div class="col mb-3" style="display: flex; gap: 1.5rem; align-items: center; padding-top: 2rem;">
                     <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
                         <input type="checkbox" name="renewal_required" value="1" {{ old('renewal_required', $obligation->renewal_required) ? 'checked' : '' }}>
                         <span>Renewal Required</span>
@@ -270,15 +263,15 @@
                 </div>
             </div>
 
-            <div class="form-group" style="margin-bottom: 1.5rem;">
+            <div class="mb-3" style="margin-bottom: 1.5rem;">
                 <label class="form-label">Description</label>
-                <textarea name="description" class="form-input" rows="3">{{ old('description', $obligation->description) }}</textarea>
+                <textarea name="description" class="form-control" rows="3">{{ old('description', $obligation->description) }}</textarea>
                 @error('description') <span style="color: var(--destructive); font-size: 0.875rem;">{{ $message }}</span> @enderror
             </div>
 
-            <div class="form-group" style="margin-bottom: 1.5rem;">
+            <div class="mb-3" style="margin-bottom: 1.5rem;">
                 <label class="form-label">Notes</label>
-                <textarea name="notes" class="form-input" rows="3">{{ old('notes', $obligation->notes) }}</textarea>
+                <textarea name="notes" class="form-control" rows="3">{{ old('notes', $obligation->notes) }}</textarea>
                 @error('notes') <span style="color: var(--destructive); font-size: 0.875rem;">{{ $message }}</span> @enderror
             </div>
 

@@ -11,42 +11,28 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">{{ $meeting->title }}</h1>
-            <p class="page-description">{{ $meeting->meeting_no }} &middot; {{ $meeting->meeting_date->format('M d, Y') }} &middot; {{ $meeting->start_time->format('H:i') }} - {{ $meeting->end_time->format('H:i') }}</p>
-        </div>
-        <div style="display: flex; gap: 0.5rem;">
-            @if($meeting->status === 'scheduled')
-                <form action="{{ route('meetings.start', $meeting) }}" method="POST" style="display: inline;">
-                    @csrf
-                    <button type="submit" class="btn btn-primary">Start Meeting</button>
-                </form>
-            @endif
-            @if($meeting->status === 'in_progress')
-                <form action="{{ route('meetings.complete', $meeting) }}" method="POST" style="display: inline;">
-                    @csrf
-                    <button type="submit" class="btn btn-primary">Complete Meeting</button>
-                </form>
-            @endif
-            @if(!in_array($meeting->status, ['completed', 'cancelled']))
-                <form action="{{ route('meetings.cancel', $meeting) }}" method="POST" style="display: inline;" onsubmit="return confirm('Cancel this meeting?')">
-                    @csrf
-                    <button type="submit" class="btn btn-danger">Cancel</button>
-                </form>
-            @endif
-            <a href="{{ route('meetings.edit', $meeting) }}" class="btn btn-secondary">Edit</a>
-            <a href="{{ route('meetings.print', $meeting) }}" target="_blank" class="btn btn-secondary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 1rem; height: 1rem; margin-right: 0.5rem;">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1.5M3 21v-1.5M21 3v1.5M21 21v-1.5M6.75 6.75h12M6.75 17.25h12M3 12h18" />
-                </svg>
-                Print
-            </a>
-        </div>
-    </div>
-</div>
+<x-page-header :title="$meeting->title" :subtitle="$meeting->meeting_no.' &middot; '.$meeting->meeting_date->format('M d, Y').' &middot; '.$meeting->start_time->format('H:i').' - '.$meeting->end_time->format('H:i')">
+    @if($meeting->status === 'scheduled')
+        <form action="{{ route('meetings.start', $meeting) }}" method="POST" class="d-inline">
+            @csrf
+            <button type="submit" class="btn btn-primary">Start Meeting</button>
+        </form>
+    @endif
+    @if($meeting->status === 'in_progress')
+        <form action="{{ route('meetings.complete', $meeting) }}" method="POST" class="d-inline">
+            @csrf
+            <button type="submit" class="btn btn-primary">Complete Meeting</button>
+        </form>
+    @endif
+    @if(!in_array($meeting->status, ['completed', 'cancelled']))
+        <form action="{{ route('meetings.cancel', $meeting) }}" method="POST" class="d-inline" onsubmit="return confirm('Cancel this meeting?')">
+            @csrf
+            <button type="submit" class="btn btn-danger">Cancel</button>
+        </form>
+    @endif
+    <x-btn :href="route('meetings.edit', $meeting)" variant="secondary">Edit</x-btn>
+    <x-btn :href="route('meetings.print', $meeting)" variant="secondary" icon="printer" target="_blank">Print</x-btn>
+</x-page-header>
 
 <div class="card" style="margin-bottom: 1.5rem;">
     <div class="card-body">
@@ -93,7 +79,7 @@
     </div>
     <div class="card-body">
         @if($meeting->agendas->isNotEmpty())
-            <div class="table-container">
+            <div class="table-responsive">
                 <table class="table">
                     <thead>
                         <tr>
@@ -118,7 +104,7 @@
                             <td>{{ $agenda->presentedBy->name ?? 'N/A' }}</td>
                             <td>{{ $agenda->estimated_minutes ?? 'N/A' }}</td>
                             <td>
-                                <span class="badge {{ $agenda->status === 'completed' ? 'badge-success' : ($agenda->status === 'in_progress' ? 'badge-primary' : 'badge-secondary') }}">
+                                <span class="badge {{ $agenda->status === 'completed' ? 'text-bg-success' : ($agenda->status === 'in_progress' ? 'badge-primary' : 'text-bg-secondary') }}">
                                     {{ ucwords(str_replace('_', ' ', $agenda->status)) }}
                                 </span>
                             </td>
@@ -152,7 +138,7 @@
     </div>
     <div class="card-body">
         @if($meeting->decisions->isNotEmpty())
-            <div class="table-container">
+            <div class="table-responsive">
                 <table class="table">
                     <thead>
                         <tr>
@@ -178,10 +164,10 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="badge badge-secondary">{{ ucwords(str_replace('_', ' ', $decision->decision_type)) }}</span>
+                                <span class="badge text-bg-secondary">{{ ucwords(str_replace('_', ' ', $decision->decision_type)) }}</span>
                             </td>
                             <td>
-                                <span class="badge {{ $decision->decision_status === 'active' ? 'badge-success' : ($decision->decision_status === 'cancelled' ? 'badge-danger' : 'badge-secondary') }}">
+                                <span class="badge {{ $decision->decision_status === 'active' ? 'text-bg-success' : ($decision->decision_status === 'cancelled' ? 'text-bg-danger' : 'text-bg-secondary') }}">
                                     {{ ucwords($decision->decision_status) }}
                                 </span>
                             </td>
@@ -210,28 +196,25 @@
 </div>
 
 <!-- Add Decision Modal -->
-<div class="modal-overlay" id="addDecisionModal">
-    <div class="modal">
+<div class="modal fade" id="addDecisionModal" tabindex="-1" aria-labelledby="addDecisionModal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
         <div class="modal-header">
-            <h3 class="modal-title">Add Decision</h3>
-            <button type="button" class="modal-close" onclick="closeModal('addDecisionModal')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
+                <h5 class="modal-title" id="addDecisionModal-label">Add Decision</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
         <form action="{{ route('meetings.decisions.store', $meeting) }}" method="POST">
             @csrf
             <div class="modal-body">
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="decision_no" class="form-label">Decision # <span style="color: var(--danger);">*</span></label>
-                    <input type="number" name="decision_no" id="decision_no" class="form-input" value="{{ old('decision_no', $meeting->decisions->count() + 1) }}" min="1" required>
+                    <input type="number" name="decision_no" id="decision_no" class="form-control" value="{{ old('decision_no', $meeting->decisions->count() + 1) }}" min="1" required>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="decision_title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="decision_title" id="decision_title" class="form-input" value="{{ old('decision_title') }}" required>
+                    <input type="text" name="decision_title" id="decision_title" class="form-control" value="{{ old('decision_title') }}" required>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="decision_type" class="form-label">Type <span style="color: var(--danger);">*</span></label>
                     <select name="decision_type" id="decision_type" class="form-select">
                         <option value="approved" {{ old('decision_type') === 'approved' ? 'selected' : '' }}>Approved</option>
@@ -241,7 +224,7 @@
                         <option value="further_discussion_required" {{ old('decision_type') === 'further_discussion_required' ? 'selected' : '' }}>Further Discussion Required</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="decision_status" class="form-label">Status <span style="color: var(--danger);">*</span></label>
                     <select name="decision_status" id="decision_status" class="form-select">
                         <option value="active" {{ old('decision_status') === 'active' ? 'selected' : '' }}>Active</option>
@@ -249,7 +232,7 @@
                         <option value="cancelled" {{ old('decision_status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="approved_by" class="form-label">Approved By</label>
                     <select name="approved_by" id="approved_by" class="form-select">
                         <option value="">Select Approver</option>
@@ -258,55 +241,53 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="decision_date" class="form-label">Decision Date</label>
-                    <input type="date" name="decision_date" id="decision_date" class="form-input" value="{{ old('decision_date') }}">
+                    <input type="date" name="decision_date" id="decision_date" class="form-control" value="{{ old('decision_date') }}">
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="effective_date" class="form-label">Effective Date</label>
-                    <input type="date" name="effective_date" id="effective_date" class="form-input" value="{{ old('effective_date') }}">
+                    <input type="date" name="effective_date" id="effective_date" class="form-control" value="{{ old('effective_date') }}">
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="decision_description" class="form-label">Description</label>
-                    <textarea name="decision_description" id="decision_description" class="form-textarea" rows="3">{{ old('decision_description') }}</textarea>
+                    <textarea name="decision_description" id="decision_description" class="form-control" rows="3">{{ old('decision_description') }}</textarea>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="remarks" class="form-label">Remarks</label>
-                    <textarea name="remarks" id="remarks" class="form-textarea" rows="2">{{ old('remarks') }}</textarea>
+                    <textarea name="remarks" id="remarks" class="form-control" rows="2">{{ old('remarks') }}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('addDecisionModal')">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" class="btn btn-primary">Add Decision</button>
             </div>
         </form>
+        </div>
     </div>
-</div>
+</div></div>
 
 <!-- Edit Decision Modal -->
-<div class="modal-overlay" id="editDecisionModal">
-    <div class="modal">
+<div class="modal fade" id="editDecisionModal" tabindex="-1" aria-labelledby="editDecisionModal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
         <div class="modal-header">
-            <h3 class="modal-title">Edit Decision</h3>
-            <button type="button" class="modal-close" onclick="closeModal('editDecisionModal')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
+                <h5 class="modal-title" id="editDecisionModal-label">Edit Decision</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
         <form id="editDecisionForm" method="POST">
             @csrf
             @method('PUT')
             <div class="modal-body">
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_decision_no" class="form-label">Decision # <span style="color: var(--danger);">*</span></label>
-                    <input type="number" name="decision_no" id="edit_decision_no" class="form-input" min="1" required>
+                    <input type="number" name="decision_no" id="edit_decision_no" class="form-control" min="1" required>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_decision_title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="decision_title" id="edit_decision_title" class="form-input" required>
+                    <input type="text" name="decision_title" id="edit_decision_title" class="form-control" required>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_decision_type" class="form-label">Type <span style="color: var(--danger);">*</span></label>
                     <select name="decision_type" id="edit_decision_type" class="form-select">
                         <option value="approved">Approved</option>
@@ -316,7 +297,7 @@
                         <option value="further_discussion_required">Further Discussion Required</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_decision_status" class="form-label">Status <span style="color: var(--danger);">*</span></label>
                     <select name="decision_status" id="edit_decision_status" class="form-select">
                         <option value="active">Active</option>
@@ -324,7 +305,7 @@
                         <option value="cancelled">Cancelled</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_approved_by" class="form-label">Approved By</label>
                     <select name="approved_by" id="edit_approved_by" class="form-select">
                         <option value="">Select Approver</option>
@@ -333,30 +314,31 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_decision_date" class="form-label">Decision Date</label>
-                    <input type="date" name="decision_date" id="edit_decision_date" class="form-input">
+                    <input type="date" name="decision_date" id="edit_decision_date" class="form-control">
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_effective_date" class="form-label">Effective Date</label>
-                    <input type="date" name="effective_date" id="edit_effective_date" class="form-input">
+                    <input type="date" name="effective_date" id="edit_effective_date" class="form-control">
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_decision_description" class="form-label">Description</label>
-                    <textarea name="decision_description" id="edit_decision_description" class="form-textarea" rows="3"></textarea>
+                    <textarea name="decision_description" id="edit_decision_description" class="form-control" rows="3"></textarea>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_remarks" class="form-label">Remarks</label>
-                    <textarea name="remarks" id="edit_remarks" class="form-textarea" rows="2"></textarea>
+                    <textarea name="remarks" id="edit_remarks" class="form-control" rows="2"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('editDecisionModal')">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" class="btn btn-primary">Update Decision</button>
             </div>
         </form>
+        </div>
     </div>
-</div>
+</div></div>
 
 <div class="card" style="margin-bottom: 1.5rem;">
     <div class="card-header">
@@ -365,7 +347,7 @@
     </div>
     <div class="card-body">
         @if($meeting->actionItems->isNotEmpty())
-            <div class="table-container">
+            <div class="table-responsive">
                 <table class="table">
                     <thead>
                         <tr>
@@ -394,14 +376,14 @@
                             <td>{{ $item->assignedDepartment->department_name ?? 'N/A' }}</td>
                             <td>{{ $item->due_date ? $item->due_date->format('M d, Y') : 'N/A' }}</td>
                             <td>
-                                <span class="badge badge-secondary">{{ ucwords($item->priority) }}</span>
+                                <span class="badge text-bg-secondary">{{ ucwords($item->priority) }}</span>
                             </td>
                             <td>
-                                <span class="badge {{ $item->status === 'completed' ? 'badge-success' : ($item->status === 'in_progress' ? 'badge-primary' : 'badge-secondary') }}">
+                                <span class="badge {{ $item->status === 'completed' ? 'text-bg-success' : ($item->status === 'in_progress' ? 'badge-primary' : 'text-bg-secondary') }}">
                                     {{ ucwords(str_replace('_', ' ', $item->status)) }}
                                 </span>
                                 @if($item->isOverdue())
-                                <span class="badge badge-danger" style="margin-left: 0.25rem;">Overdue</span>
+                                <span class="badge text-bg-danger" style="margin-left: 0.25rem;">Overdue</span>
                                 @endif
                             </td>
                             <td>
@@ -410,7 +392,7 @@
                                         <a href="{{ route('tasks.show', $item->task) }}" style="font-weight: 500; text-decoration: none;">
                                             {{ $item->task->task_no ?? ('Task #'.$item->task->id) }}
                                         </a>
-                                        <span class="badge {{ $item->task->status === 'completed' ? 'badge-success' : ($item->task->status === 'in_progress' ? 'badge-primary' : 'badge-secondary') }}">
+                                        <span class="badge {{ $item->task->status === 'completed' ? 'text-bg-success' : ($item->task->status === 'in_progress' ? 'badge-primary' : 'text-bg-secondary') }}">
                                             {{ ucwords(str_replace('_', ' ', $item->task->status)) }}
                                         </span>
                                     </div>
@@ -452,32 +434,29 @@
 </div>
 
 <!-- Add Action Item Modal -->
-<div class="modal-overlay" id="addActionItemModal">
-    <div class="modal">
+<div class="modal fade" id="addActionItemModal" tabindex="-1" aria-labelledby="addActionItemModal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
         <div class="modal-header">
-            <h3 class="modal-title">Add Action Item</h3>
-            <button type="button" class="modal-close" onclick="closeModal('addActionItemModal')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
+                <h5 class="modal-title" id="addActionItemModal-label">Add Action Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
         <form action="{{ route('meetings.action-items.store', $meeting) }}" method="POST">
             @csrf
             <div class="modal-body">
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="action_no" class="form-label">Action # <span style="color: var(--danger);">*</span></label>
-                    <input type="number" name="action_no" id="action_no" class="form-input" value="{{ old('action_no', $meeting->actionItems->count() + 1) }}" min="1" required>
+                    <input type="number" name="action_no" id="action_no" class="form-control" value="{{ old('action_no', $meeting->actionItems->count() + 1) }}" min="1" required>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="title" id="title" class="form-input" value="{{ old('title') }}" required>
+                    <input type="text" name="title" id="title" class="form-control" value="{{ old('title') }}" required>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="description" class="form-label">Description</label>
-                    <textarea name="description" id="description" class="form-textarea" rows="3">{{ old('description') }}</textarea>
+                    <textarea name="description" id="description" class="form-control" rows="3">{{ old('description') }}</textarea>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="assigned_to" class="form-label">Assigned To</label>
                     <select name="assigned_to" id="assigned_to" class="form-select">
                         <option value="">Select Assignee</option>
@@ -486,7 +465,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="assigned_department_id" class="form-label">Department</label>
                     <select name="assigned_department_id" id="assigned_department_id" class="form-select">
                         <option value="">Select Department</option>
@@ -495,7 +474,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="priority" class="form-label">Priority <span style="color: var(--danger);">*</span></label>
                     <select name="priority" id="priority" class="form-select">
                         <option value="low" {{ old('priority') === 'low' ? 'selected' : '' }}>Low</option>
@@ -504,11 +483,11 @@
                         <option value="critical" {{ old('priority') === 'critical' ? 'selected' : '' }}>Critical</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="due_date" class="form-label">Due Date</label>
-                    <input type="date" name="due_date" id="due_date" class="form-input" value="{{ old('due_date') }}">
+                    <input type="date" name="due_date" id="due_date" class="form-control" value="{{ old('due_date') }}">
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="status" class="form-label">Status <span style="color: var(--danger);">*</span></label>
                     <select name="status" id="status" class="form-select">
                         <option value="open" {{ old('status') === 'open' ? 'selected' : '' }}>Open</option>
@@ -517,47 +496,45 @@
                         <option value="cancelled" {{ old('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="remarks" class="form-label">Remarks</label>
-                    <textarea name="remarks" id="remarks" class="form-textarea" rows="2">{{ old('remarks') }}</textarea>
+                    <textarea name="remarks" id="remarks" class="form-control" rows="2">{{ old('remarks') }}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('addActionItemModal')">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" class="btn btn-primary">Add Action Item</button>
             </div>
         </form>
+        </div>
     </div>
-</div>
+</div></div>
 
 <!-- Edit Action Item Modal -->
-<div class="modal-overlay" id="editActionItemModal">
-    <div class="modal">
+<div class="modal fade" id="editActionItemModal" tabindex="-1" aria-labelledby="editActionItemModal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
         <div class="modal-header">
-            <h3 class="modal-title">Edit Action Item</h3>
-            <button type="button" class="modal-close" onclick="closeModal('editActionItemModal')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
+                <h5 class="modal-title" id="editActionItemModal-label">Edit Action Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
         <form id="editActionItemForm" method="POST">
             @csrf
             @method('PUT')
             <div class="modal-body">
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_action_no" class="form-label">Action # <span style="color: var(--danger);">*</span></label>
-                    <input type="number" name="action_no" id="edit_action_no" class="form-input" min="1" required>
+                    <input type="number" name="action_no" id="edit_action_no" class="form-control" min="1" required>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="title" id="edit_title" class="form-input" required>
+                    <input type="text" name="title" id="edit_title" class="form-control" required>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_description" class="form-label">Description</label>
-                    <textarea name="description" id="edit_description" class="form-textarea" rows="3"></textarea>
+                    <textarea name="description" id="edit_description" class="form-control" rows="3"></textarea>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_assigned_to" class="form-label">Assigned To</label>
                     <select name="assigned_to" id="edit_assigned_to" class="form-select">
                         <option value="">Select Assignee</option>
@@ -566,7 +543,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_assigned_department_id" class="form-label">Department</label>
                     <select name="assigned_department_id" id="edit_assigned_department_id" class="form-select">
                         <option value="">Select Department</option>
@@ -575,7 +552,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_priority" class="form-label">Priority <span style="color: var(--danger);">*</span></label>
                     <select name="priority" id="edit_priority" class="form-select">
                         <option value="low">Low</option>
@@ -584,11 +561,11 @@
                         <option value="critical">Critical</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_due_date" class="form-label">Due Date</label>
-                    <input type="date" name="due_date" id="edit_due_date" class="form-input">
+                    <input type="date" name="due_date" id="edit_due_date" class="form-control">
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_status" class="form-label">Status <span style="color: var(--danger);">*</span></label>
                     <select name="status" id="edit_status" class="form-select">
                         <option value="open">Open</option>
@@ -597,42 +574,40 @@
                         <option value="cancelled">Cancelled</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_remarks" class="form-label">Remarks</label>
-                    <textarea name="remarks" id="edit_remarks" class="form-textarea" rows="2"></textarea>
+                    <textarea name="remarks" id="edit_remarks" class="form-control" rows="2"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('editActionItemModal')">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" class="btn btn-primary">Update Action Item</button>
             </div>
         </form>
+        </div>
     </div>
-</div>
+</div></div>
 
 <!-- Create Task Modal -->
-<div class="modal-overlay" id="createTaskModal">
-    <div class="modal">
+<div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
         <div class="modal-header">
-            <h3 class="modal-title">Create Task from Action Item</h3>
-            <button type="button" class="modal-close" onclick="closeModal('createTaskModal')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
+                <h5 class="modal-title" id="createTaskModal-label">Create Task from Action Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
         <form id="createTaskForm" method="POST">
             @csrf
             <div class="modal-body">
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="task_title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="title" id="task_title" class="form-input" required>
+                    <input type="text" name="title" id="task_title" class="form-control" required>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="task_description" class="form-label">Description</label>
-                    <textarea name="description" id="task_description" class="form-textarea" rows="3"></textarea>
+                    <textarea name="description" id="task_description" class="form-control" rows="3"></textarea>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="task_priority" class="form-label">Priority <span style="color: var(--danger);">*</span></label>
                     <select name="priority" id="task_priority" class="form-select">
                         <option value="low">Low</option>
@@ -640,7 +615,7 @@
                         <option value="high">High</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="task_status" class="form-label">Status <span style="color: var(--danger);">*</span></label>
                     <select name="status" id="task_status" class="form-select">
                         <option value="pending" selected>Pending</option>
@@ -648,11 +623,11 @@
                         <option value="completed">Completed</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="task_due_date" class="form-label">Due Date</label>
-                    <input type="date" name="due_date" id="task_due_date" class="form-input">
+                    <input type="date" name="due_date" id="task_due_date" class="form-control">
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="task_responsible_user_id" class="form-label">Responsible User</label>
                     <select name="responsible_user_id" id="task_responsible_user_id" class="form-select">
                         <option value="">Select User</option>
@@ -663,28 +638,26 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('createTaskModal')">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" class="btn btn-primary">Create Task</button>
             </div>
         </form>
+        </div>
     </div>
-</div>
+</div></div>
 
 <!-- Link Task Modal -->
-<div class="modal-overlay" id="linkTaskModal">
-    <div class="modal">
+<div class="modal fade" id="linkTaskModal" tabindex="-1" aria-labelledby="linkTaskModal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
         <div class="modal-header">
-            <h3 class="modal-title">Link Existing Task</h3>
-            <button type="button" class="modal-close" onclick="closeModal('linkTaskModal')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
+                <h5 class="modal-title" id="linkTaskModal-label">Link Existing Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
         <form id="linkTaskForm" method="POST">
             @csrf
             <div class="modal-body">
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="link_task_id" class="form-label">Select Task <span style="color: var(--danger);">*</span></label>
                     <select name="task_id" id="link_task_id" class="form-select" required>
                         <option value="">Select a task</option>
@@ -697,12 +670,13 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('linkTaskModal')">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" class="btn btn-primary">Link Task</button>
             </div>
         </form>
+        </div>
     </div>
-</div>
+</div></div>
 
 <div class="card" style="margin-bottom: 1.5rem;">
     <div class="card-header">
@@ -711,7 +685,7 @@
     </div>
     <div class="card-body">
         @if($meeting->participants->isNotEmpty())
-            <div class="table-container">
+            <div class="table-responsive">
                 <table class="table">
                     <thead>
                         <tr>
@@ -727,10 +701,10 @@
                         <tr>
                             <td>{{ $participant->user->name ?? 'N/A' }}</td>
                             <td>
-                                <span class="badge badge-secondary">{{ ucwords($participant->participant_type) }}</span>
+                                <span class="badge text-bg-secondary">{{ ucwords($participant->participant_type) }}</span>
                             </td>
                             <td>
-                                <span class="badge {{ $participant->attendance_status === 'present' ? 'badge-success' : ($participant->attendance_status === 'accepted' ? 'badge-primary' : 'badge-secondary') }}">
+                                <span class="badge {{ $participant->attendance_status === 'present' ? 'text-bg-success' : ($participant->attendance_status === 'accepted' ? 'badge-primary' : 'text-bg-secondary') }}">
                                     {{ ucwords($participant->attendance_status) }}
                                 </span>
                             </td>
@@ -759,20 +733,17 @@
 </div>
 
 <!-- Add Participant Modal -->
-<div class="modal-overlay" id="addParticipantModal">
-    <div class="modal">
+<div class="modal fade" id="addParticipantModal" tabindex="-1" aria-labelledby="addParticipantModal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
         <div class="modal-header">
-            <h3 class="modal-title">Add Participant</h3>
-            <button type="button" class="modal-close" onclick="closeModal('addParticipantModal')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
+                <h5 class="modal-title" id="addParticipantModal-label">Add Participant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
         <form action="{{ route('meetings.participants.store', $meeting) }}" method="POST">
             @csrf
             <div class="modal-body">
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="user_id" class="form-label">User <span style="color: var(--danger);">*</span></label>
                     <select name="user_id" id="user_id" class="form-select" required>
                         <option value="">Select User</option>
@@ -781,7 +752,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="participant_type" class="form-label">Type <span style="color: var(--danger);">*</span></label>
                     <select name="participant_type" id="participant_type" class="form-select">
                         <option value="organizer" {{ old('participant_type') === 'organizer' ? 'selected' : '' }}>Organizer</option>
@@ -792,7 +763,7 @@
                         <option value="observer" {{ old('participant_type') === 'observer' ? 'selected' : '' }}>Observer</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="attendance_status" class="form-label">Attendance <span style="color: var(--danger);">*</span></label>
                     <select name="attendance_status" id="attendance_status" class="form-select">
                         <option value="invited" {{ old('attendance_status') === 'invited' ? 'selected' : '' }}>Invited</option>
@@ -803,35 +774,33 @@
                         <option value="apology" {{ old('attendance_status') === 'apology' ? 'selected' : '' }}>Apology</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="remarks" class="form-label">Remarks</label>
-                    <textarea name="remarks" id="remarks" class="form-textarea" rows="2">{{ old('remarks') }}</textarea>
+                    <textarea name="remarks" id="remarks" class="form-control" rows="2">{{ old('remarks') }}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('addParticipantModal')">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" class="btn btn-primary">Add Participant</button>
             </div>
         </form>
+        </div>
     </div>
-</div>
+</div></div>
 
 <!-- Edit Participant Modal -->
-<div class="modal-overlay" id="editParticipantModal">
-    <div class="modal">
+<div class="modal fade" id="editParticipantModal" tabindex="-1" aria-labelledby="editParticipantModal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
         <div class="modal-header">
-            <h3 class="modal-title">Edit Participant</h3>
-            <button type="button" class="modal-close" onclick="closeModal('editParticipantModal')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
+                <h5 class="modal-title" id="editParticipantModal-label">Edit Participant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
         <form id="editParticipantForm" method="POST">
             @csrf
             @method('PUT')
             <div class="modal-body">
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_user_id" class="form-label">User <span style="color: var(--danger);">*</span></label>
                     <select name="user_id" id="edit_user_id" class="form-select" required>
                         <option value="">Select User</option>
@@ -840,7 +809,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_participant_type" class="form-label">Type <span style="color: var(--danger);">*</span></label>
                     <select name="participant_type" id="edit_participant_type" class="form-select">
                         <option value="organizer">Organizer</option>
@@ -851,7 +820,7 @@
                         <option value="observer">Observer</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_attendance_status" class="form-label">Attendance <span style="color: var(--danger);">*</span></label>
                     <select name="attendance_status" id="edit_attendance_status" class="form-select">
                         <option value="invited">Invited</option>
@@ -862,18 +831,19 @@
                         <option value="apology">Apology</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_remarks" class="form-label">Remarks</label>
-                    <textarea name="remarks" id="edit_remarks" class="form-textarea" rows="2"></textarea>
+                    <textarea name="remarks" id="edit_remarks" class="form-control" rows="2"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('editParticipantModal')">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" class="btn btn-primary">Update Participant</button>
             </div>
         </form>
+        </div>
     </div>
-</div>
+</div></div>
 
 <div class="card" style="margin-bottom: 1.5rem;">
     <div class="card-header">
@@ -882,7 +852,7 @@
     </div>
     <div class="card-body">
         @if($meeting->attachments->isNotEmpty())
-            <div class="table-container">
+            <div class="table-responsive">
                 <table class="table">
                     <thead>
                         <tr>
@@ -923,35 +893,33 @@
 </div>
 
 <!-- Add Attachment Modal -->
-<div class="modal-overlay" id="addAttachmentModal">
-    <div class="modal">
+<div class="modal fade" id="addAttachmentModal" tabindex="-1" aria-labelledby="addAttachmentModal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
         <div class="modal-header">
-            <h3 class="modal-title">Add Attachment</h3>
-            <button type="button" class="modal-close" onclick="closeModal('addAttachmentModal')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
+                <h5 class="modal-title" id="addAttachmentModal-label">Add Attachment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
         <form action="{{ route('meetings.attachments.store', $meeting) }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="modal-body">
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="file" class="form-label">File <span style="color: var(--danger);">*</span></label>
-                    <input type="file" name="file" id="file" class="form-input" required>
+                    <input type="file" name="file" id="file" class="form-control" required>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="description" class="form-label">Description</label>
-                    <textarea name="description" id="description" class="form-textarea" rows="3">{{ old('description') }}</textarea>
+                    <textarea name="description" id="description" class="form-control" rows="3">{{ old('description') }}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('addAttachmentModal')">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" class="btn btn-primary">Upload Attachment</button>
             </div>
         </form>
+        </div>
     </div>
-</div>
+</div></div>
 
 <div class="card" style="margin-bottom: 1.5rem;">
     <div class="card-header">
@@ -987,28 +955,25 @@
 </div>
 
 <!-- Add Agenda Modal -->
-<div class="modal-overlay" id="addAgendaModal">
-    <div class="modal">
+<div class="modal fade" id="addAgendaModal" tabindex="-1" aria-labelledby="addAgendaModal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
         <div class="modal-header">
-            <h3 class="modal-title">Add Agenda Item</h3>
-            <button type="button" class="modal-close" onclick="closeModal('addAgendaModal')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
+                <h5 class="modal-title" id="addAgendaModal-label">Add Agenda Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
         <form action="{{ route('meetings.agendas.store', $meeting) }}" method="POST">
             @csrf
             <div class="modal-body">
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="agenda_no" class="form-label">Agenda # <span style="color: var(--danger);">*</span></label>
-                    <input type="number" name="agenda_no" id="agenda_no" class="form-input" value="{{ old('agenda_no', $meeting->agendas->count() + 1) }}" min="1" required>
+                    <input type="number" name="agenda_no" id="agenda_no" class="form-control" value="{{ old('agenda_no', $meeting->agendas->count() + 1) }}" min="1" required>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="title" id="title" class="form-input" value="{{ old('title') }}" required>
+                    <input type="text" name="title" id="title" class="form-control" value="{{ old('title') }}" required>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="presented_by" class="form-label">Presented By</label>
                     <select name="presented_by" id="presented_by" class="form-select">
                         <option value="">Select Presenter</option>
@@ -1017,11 +982,11 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="estimated_minutes" class="form-label">Estimated Minutes</label>
-                    <input type="number" name="estimated_minutes" id="estimated_minutes" class="form-input" value="{{ old('estimated_minutes') }}" min="1">
+                    <input type="number" name="estimated_minutes" id="estimated_minutes" class="form-control" value="{{ old('estimated_minutes') }}" min="1">
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="status" class="form-label">Status</label>
                     <select name="status" id="status" class="form-select">
                         <option value="pending" {{ old('status') === 'pending' ? 'selected' : '' }}>Pending</option>
@@ -1030,47 +995,45 @@
                         <option value="skipped" {{ old('status') === 'skipped' ? 'selected' : '' }}>Skipped</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="sort_order" class="form-label">Sort Order</label>
-                    <input type="number" name="sort_order" id="sort_order" class="form-input" value="{{ old('sort_order', 0) }}" min="0">
+                    <input type="number" name="sort_order" id="sort_order" class="form-control" value="{{ old('sort_order', 0) }}" min="0">
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="description" class="form-label">Description</label>
-                    <textarea name="description" id="description" class="form-textarea" rows="3">{{ old('description') }}</textarea>
+                    <textarea name="description" id="description" class="form-control" rows="3">{{ old('description') }}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('addAgendaModal')">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" class="btn btn-primary">Add Agenda</button>
             </div>
         </form>
+        </div>
     </div>
-</div>
+</div></div>
 
 <!-- Edit Agenda Modal -->
-<div class="modal-overlay" id="editAgendaModal">
-    <div class="modal">
+<div class="modal fade" id="editAgendaModal" tabindex="-1" aria-labelledby="editAgendaModal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
         <div class="modal-header">
-            <h3 class="modal-title">Edit Agenda Item</h3>
-            <button type="button" class="modal-close" onclick="closeModal('editAgendaModal')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
+                <h5 class="modal-title" id="editAgendaModal-label">Edit Agenda Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
         <form id="editAgendaForm" method="POST">
             @csrf
             @method('PUT')
             <div class="modal-body">
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_agenda_no" class="form-label">Agenda # <span style="color: var(--danger);">*</span></label>
-                    <input type="number" name="agenda_no" id="edit_agenda_no" class="form-input" min="1" required>
+                    <input type="number" name="agenda_no" id="edit_agenda_no" class="form-control" min="1" required>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="title" id="edit_title" class="form-input" required>
+                    <input type="text" name="title" id="edit_title" class="form-control" required>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_presented_by" class="form-label">Presented By</label>
                     <select name="presented_by" id="edit_presented_by" class="form-select">
                         <option value="">Select Presenter</option>
@@ -1079,11 +1042,11 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_estimated_minutes" class="form-label">Estimated Minutes</label>
-                    <input type="number" name="estimated_minutes" id="edit_estimated_minutes" class="form-input" min="1">
+                    <input type="number" name="estimated_minutes" id="edit_estimated_minutes" class="form-control" min="1">
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_status" class="form-label">Status</label>
                     <select name="status" id="edit_status" class="form-select">
                         <option value="pending">Pending</option>
@@ -1092,22 +1055,23 @@
                         <option value="skipped">Skipped</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_sort_order" class="form-label">Sort Order</label>
-                    <input type="number" name="sort_order" id="edit_sort_order" class="form-input" min="0">
+                    <input type="number" name="sort_order" id="edit_sort_order" class="form-control" min="0">
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                     <label for="edit_description" class="form-label">Description</label>
-                    <textarea name="description" id="edit_description" class="form-textarea" rows="3"></textarea>
+                    <textarea name="description" id="edit_description" class="form-control" rows="3"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('editAgendaModal')">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" class="btn btn-primary">Update Agenda</button>
             </div>
         </form>
+        </div>
     </div>
-</div>
+</div></div>
 
 <div class="card">
     <div class="card-header">
@@ -1132,6 +1096,16 @@
 
 @push('scripts')
 <script>
+    // Bootstrap 5 modal helpers. The dialogs themselves are plain Bootstrap
+    // markup now, so these simply delegate to Bootstrap's Modal API.
+    function openModal(id) {
+        bootstrap.Modal.getOrCreateInstance(document.getElementById(id)).show();
+    }
+
+    function closeModal(id) {
+        bootstrap.Modal.getOrCreateInstance(document.getElementById(id)).hide();
+    }
+
     function openEditAgendaModal(id, title, description, presentedBy, estimatedMinutes, status, sortOrder, agendaNo) {
         document.getElementById('editAgendaForm').action = '/meetings/{{ $meeting->id }}/agendas/' + id;
         document.getElementById('edit_agenda_no').value = agendaNo;

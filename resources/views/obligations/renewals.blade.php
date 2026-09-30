@@ -11,30 +11,21 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Obligation Renewals</h1>
-            <p class="page-description">Complete renewal history for all obligations.</p>
-        </div>
-    </div>
-</div>
+<x-page-header title="Obligation Renewals" subtitle="Complete renewal history for all obligations." />
 
 <div class="card" style="margin-bottom: 1rem;">
     <div class="card-body">
         <form action="{{ route('obligations.renewals') }}" method="GET" id="filter-form">
-            <div class="filters-bar">
-                <div class="search-box">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <input type="search" name="search" class="form-input" placeholder="Search by obligation number or title..." value="{{ $filters['search'] ?? '' }}">
+            <div class="d-flex flex-wrap align-items-center gap-3">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="search" name="search" class="form-control" placeholder="Search by obligation number or title..." value="{{ $filters['search'] ?? '' }}">
                 </div>
 
                 <button type="submit" class="btn btn-secondary">Search</button>
 
                 @if(!empty(array_filter($filters)))
-                    <a href="{{ route('obligations.renewals') }}" class="btn btn-ghost">Clear</a>
+                    <a href="{{ route('obligations.renewals') }}" class="btn btn-outline-secondary">Clear</a>
                 @endif
             </div>
         </form>
@@ -43,7 +34,7 @@
 
 <div class="card">
     @if($renewals->count())
-        <div class="table-container">
+        <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
@@ -84,13 +75,7 @@
         </div>
         @endif
     @else
-        <div class="empty-state">
-            <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-            </svg>
-            <h3 class="empty-state-title">No renewals found</h3>
-            <p class="empty-state-description">No renewal history available yet.</p>
-        </div>
+        <x-empty-state title="No renewals found" description="No renewal history available yet." />
     @endif
 </div>
 @endsection

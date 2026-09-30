@@ -30,6 +30,27 @@
     overflow-wrap: anywhere;
 }
 
+/* Bootstrap has no min-width utility; flex children need it to truncate. */
+.min-w-0 {
+    min-width: 0;
+}
+
+/* Icon tile used by <x-stat> and <x-stat-card>. */
+.stat-icon {
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Placeholder AdminLTE reveals via [data-lte-search-empty] when a menu
+   search returns nothing. */
+.sidebar-search-empty {
+    padding: 0.5rem 0.75rem;
+}
+
 /* Print views reuse the AdminLTE shell but drop the chrome. */
 @media print {
     .app-sidebar,

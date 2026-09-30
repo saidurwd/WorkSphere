@@ -12,14 +12,7 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">New Agenda Item</h1>
-            <p class="page-description">Add an agenda item to {{ $meeting->title }}</p>
-        </div>
-    </div>
-</div>
+<x-page-header title="New Agenda Item" subtitle="Add an agenda item to {{ $meeting->title }}" />
 
 <div class="card">
     <div class="card-body">
@@ -29,13 +22,13 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
                 <div>
                     <label class="form-label">Agenda # <span style="color: var(--danger);">*</span></label>
-                    <input type="number" name="agenda_no" class="form-input @error('agenda_no') is-invalid @enderror" value="{{ old('agenda_no') }}" min="1" required>
+                    <input type="number" name="agenda_no" class="form-control @error('agenda_no') is-invalid @enderror" value="{{ old('agenda_no') }}" min="1" required>
                     @error('agenda_no')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div>
                     <label class="form-label">Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="title" class="form-input @error('title') is-invalid @enderror" value="{{ old('title') }}" required>
+                    <input type="text" name="title" class="form-control @error('title') is-invalid @enderror" value="{{ old('title') }}" required>
                     @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
@@ -52,7 +45,7 @@
 
                 <div>
                     <label class="form-label">Estimated Minutes</label>
-                    <input type="number" name="estimated_minutes" class="form-input @error('estimated_minutes') is-invalid @enderror" value="{{ old('estimated_minutes') }}" min="1">
+                    <input type="number" name="estimated_minutes" class="form-control @error('estimated_minutes') is-invalid @enderror" value="{{ old('estimated_minutes') }}" min="1">
                     @error('estimated_minutes')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
@@ -69,14 +62,14 @@
 
                 <div>
                     <label class="form-label">Sort Order</label>
-                    <input type="number" name="sort_order" class="form-input @error('sort_order') is-invalid @enderror" value="{{ old('sort_order', 0) }}" min="0">
+                    <input type="number" name="sort_order" class="form-control @error('sort_order') is-invalid @enderror" value="{{ old('sort_order', 0) }}" min="0">
                     @error('sort_order')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
             </div>
 
             <div style="margin-top: 1.5rem;">
                 <label class="form-label">Description</label>
-                <textarea name="description" class="form-input" rows="3">{{ old('description') }}</textarea>
+                <textarea name="description" class="form-control" rows="3">{{ old('description') }}</textarea>
             </div>
 
             <div style="display: flex; gap: 0.75rem; margin-top: 2rem;">

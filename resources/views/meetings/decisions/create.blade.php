@@ -12,14 +12,7 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">New Decision</h1>
-            <p class="page-description">Record a decision for {{ $meeting->title }}</p>
-        </div>
-    </div>
-</div>
+<x-page-header title="New Decision" subtitle="Record a decision for {{ $meeting->title }}" />
 
 <div class="card">
     <div class="card-body">
@@ -29,13 +22,13 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
                 <div>
                     <label class="form-label">Decision # <span style="color: var(--danger);">*</span></label>
-                    <input type="number" name="decision_no" class="form-input @error('decision_no') is-invalid @enderror" value="{{ old('decision_no') }}" min="1" required>
+                    <input type="number" name="decision_no" class="form-control @error('decision_no') is-invalid @enderror" value="{{ old('decision_no') }}" min="1" required>
                     @error('decision_no')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div>
                     <label class="form-label">Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="decision_title" class="form-input @error('decision_title') is-invalid @enderror" value="{{ old('decision_title') }}" required>
+                    <input type="text" name="decision_title" class="form-control @error('decision_title') is-invalid @enderror" value="{{ old('decision_title') }}" required>
                     @error('decision_title')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
@@ -63,25 +56,25 @@
 
                 <div>
                     <label class="form-label">Decision Date</label>
-                    <input type="date" name="decision_date" class="form-input @error('decision_date') is-invalid @enderror" value="{{ old('decision_date') }}">
+                    <input type="date" name="decision_date" class="form-control @error('decision_date') is-invalid @enderror" value="{{ old('decision_date') }}">
                     @error('decision_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div>
                     <label class="form-label">Effective Date</label>
-                    <input type="date" name="effective_date" class="form-input @error('effective_date') is-invalid @enderror" value="{{ old('effective_date') }}">
+                    <input type="date" name="effective_date" class="form-control @error('effective_date') is-invalid @enderror" value="{{ old('effective_date') }}">
                     @error('effective_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
             </div>
 
             <div style="margin-top: 1.5rem;">
                 <label class="form-label">Description</label>
-                <textarea name="decision_description" class="form-input" rows="3">{{ old('decision_description') }}</textarea>
+                <textarea name="decision_description" class="form-control" rows="3">{{ old('decision_description') }}</textarea>
             </div>
 
             <div style="margin-top: 1.5rem;">
                 <label class="form-label">Remarks</label>
-                <textarea name="remarks" class="form-input" rows="2">{{ old('remarks') }}</textarea>
+                <textarea name="remarks" class="form-control" rows="2">{{ old('remarks') }}</textarea>
             </div>
 
             <div style="display: flex; gap: 0.75rem; margin-top: 2rem;">

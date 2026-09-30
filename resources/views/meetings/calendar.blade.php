@@ -14,14 +14,7 @@
 @endpush
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Meeting Calendar</h1>
-            <p class="page-description">View meetings and action items on the calendar.</p>
-        </div>
-    </div>
-</div>
+<x-page-header title="Meeting Calendar" subtitle="View meetings and action items on the calendar." />
 
 <div class="card">
     <div class="card-body">

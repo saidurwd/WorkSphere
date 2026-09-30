@@ -12,18 +12,11 @@
 @endphp
 
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Person-wise Accountability</h1>
-            <p class="page-description">Action item accountability by person.</p>
-        </div>
-    </div>
-</div>
+<x-page-header title="Person-wise Accountability" subtitle="Action item accountability by person." />
 
 <div class="card">
     @if($report->count())
-        <div class="table-container">
+        <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
@@ -41,7 +34,7 @@
                         <td>{{ $row->open }}</td>
                         <td>{{ $row->in_progress }}</td>
                         <td>{{ $row->completed }}</td>
-                        <td><span class="badge {{ $row->overdue > 0 ? 'badge-danger' : 'badge-secondary' }}">{{ $row->overdue }}</span></td>
+                        <td><span class="badge {{ $row->overdue > 0 ? 'text-bg-danger' : 'text-bg-secondary' }}">{{ $row->overdue }}</span></td>
                     </tr>
                     @endforeach
                 </tbody>
