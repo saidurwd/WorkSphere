@@ -2,113 +2,97 @@
 
 @section('title', 'Documents')
 
-@section('breadcrumb')
-<a href="{{ route('dashboard.index') }}">Dashboard</a>
-<span class="breadcrumb-separator">/</span>
-<a href="{{ route('obligations.dashboard') }}">Obligations</a>
-<span class="breadcrumb-separator">/</span>
-<span>Documents</span>
-@endsection
-
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Obligation Documents</h1>
-            <p class="page-description">All documents uploaded across obligations.</p>
+    <x-page-header title="Documents" subtitle="All documents uploaded across obligations." icon="folder" />
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form action="{{ route('obligations.documents') }}" method="GET" id="filter-form">
+                <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label for="document-search" class="form-label">Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input id="document-search" type="search" name="search" class="form-control"
+                                   placeholder="Search documents or obligations..." value="{{ request('search') }}">
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <label for="type-filter" class="form-label">Type</label>
+                        <select id="type-filter" name="document_type" class="form-select" onchange="document.getElementById('filter-form').submit()">
+                            <option value="">All</option>
+                            @foreach($documentTypes as $type)
+                                <option value="{{ $type }}" {{ request('document_type') === $type ? 'selected' : '' }}>{{ $type }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-12 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i>Apply</button>
+                        @if(request()->hasAny(['search', 'document_type']))
+                            <a href="{{ route('obligations.documents') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg me-1"></i>Clear</a>
+                        @endif
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
-</div>
 
-<div class="card" style="margin-bottom: 1rem;">
-    <div class="card-body">
-        <form action="{{ route('obligations.documents') }}" method="GET" id="filter-form">
-            <div class="filters-bar">
-                <div class="search-box">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <input type="search" name="search" class="form-input" placeholder="Search documents or obligations..." value="{{ $filters['search'] ?? '' }}">
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">Type:</label>
-                    <select name="document_type" class="form-select" style="min-width: 180px;" onchange="document.getElementById('filter-form').submit()">
-                        <option value="">All Types</option>
-                        @foreach($documentTypes as $type)
-                            <option value="{{ $type }}" {{ ($filters['document_type'] ?? '') === $type ? 'selected' : '' }}>
-                                {{ $type }}
-                            </option>
+    <div class="card">
+        @if($documents->count())
+            <div class="card-body p-0">
+                <x-datatable id="documents-table" :options="['pageLength' => 20, 'order' => [[0, 'desc']]]">
+                    <thead>
+                        <tr>
+                            <th scope="col">Obligation</th>
+                            <th scope="col">Document Type</th>
+                            <th scope="col">File Name</th>
+                            <th scope="col">Uploaded By</th>
+                            <th scope="col">Uploaded At</th>
+                            <th scope="col" class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($documents as $document)
+                            <tr>
+                                <td>
+                                    @if($document->obligation)
+                                        <a href="{{ route('obligations.show', $document->obligation) }}" class="fw-semibold text-decoration-none">
+                                            {{ $document->obligation->obligation_no }} - {{ $document->obligation->title }}
+                                        </a>
+                                    @else
+                                        <span class="text-body-secondary">N/A</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <x-badge variant="secondary">{{ $document->document_type }}</x-badge>
+                                </td>
+                                <td>{{ $document->file_name }}</td>
+                                <td>{{ $document->uploader->name ?? 'N/A' }}</td>
+                                <td>{{ $document->created_at->format('M d, Y') }}</td>
+                                <td>
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <a href="{{ Storage::url($document->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Download">
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
                         @endforeach
-                    </select>
-                </div>
-
-                <button type="submit" class="btn btn-secondary">Search</button>
-
-                @if(!empty(array_filter($filters)))
-                    <a href="{{ route('obligations.documents') }}" class="btn btn-ghost">Clear</a>
-                @endif
+                    </tbody>
+                </x-datatable>
             </div>
-        </form>
-    </div>
-</div>
 
-<div class="card">
-    @if($documents->count())
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Obligation</th>
-                        <th>Document Type</th>
-                        <th>File Name</th>
-                        <th>Uploaded By</th>
-                        <th>Uploaded At</th>
-                        <th style="text-align: right;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($documents as $document)
-                    <tr>
-                        <td>
-                            @if($document->obligation)
-                                <a href="{{ route('obligations.show', $document->obligation) }}" style="text-decoration: none; color: inherit; font-weight: 500;">
-                                    {{ $document->obligation->obligation_no }} - {{ $document->obligation->title }}
-                                </a>
-                            @else
-                                <span style="color: var(--muted-foreground);">N/A</span>
-                            @endif
-                        </td>
-                        <td><span class="badge badge-secondary">{{ $document->document_type }}</span></td>
-                        <td>{{ $document->file_name }}</td>
-                        <td>{{ $document->uploader->name ?? 'N/A' }}</td>
-                        <td>{{ $document->created_at->format('M d, Y') }}</td>
-                        <td style="text-align: right;">
-                            <a href="{{ Storage::url($document->file_path) }}" class="action-btn" title="Download" target="_blank">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                            </a>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        @if($documents->hasPages())
-        <div class="pagination">
-            {{ $documents->links() }}
-        </div>
+            @if ($documents->hasPages())
+                <div class="card-footer">
+                    <x-pagination :paginator="$documents" />
+                </div>
+            @endif
+        @else
+            <div class="card-body">
+                <x-empty-state icon="folder" title="No documents found" description="No documents have been uploaded yet." />
+            </div>
         @endif
-    @else
-        <div class="empty-state">
-            <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <h3 class="empty-state-title">No documents found</h3>
-            <p class="empty-state-description">No documents have been uploaded yet.</p>
-        </div>
-    @endif
-</div>
+    </div>
 @endsection
