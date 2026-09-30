@@ -43,7 +43,7 @@
     <div class="card">
         @if($vendors->count())
             <div class="card-body p-0">
-                <x-datatable id="vendors-table" :options="['pageLength' => 20, 'order' => [[0, 'asc']]]">
+                <x-datatable id="vendors-table" :options="['paging' => false, 'info' => false, 'order' => [[0, 'asc']]]">
                     <thead>
                         <tr>
                             <th scope="col">Vendor Name</th>
@@ -84,11 +84,9 @@
                 </x-datatable>
             </div>
 
-            @if ($vendors->hasPages())
-                <div class="card-footer">
-                    <x-pagination :paginator="$vendors" />
-                </div>
-            @endif
+            <div class="card-footer">
+                <x-pagination :paginator="$vendors" />
+            </div>
         @else
             <div class="card-body">
                 <x-empty-state icon="building" title="No vendors found" description="No vendors have been added yet." />

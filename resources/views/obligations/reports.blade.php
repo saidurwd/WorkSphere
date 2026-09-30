@@ -2,11 +2,13 @@
 
 @section('title', 'Obligations Reports')
 
-@section('breadcrumb', [
-    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
-    ['label' => 'Obligations', 'url' => {{ route('obligations.dashboard') }}],
-    ['label' => 'Reports'],
-])
+@php
+    $breadcrumbs = [
+        ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+        ['label' => 'Obligations', 'url' => route('obligations.dashboard')],
+        ['label' => 'Reports'],
+    ];
+@endphp
 
 @section('content')
 <div class="page-header">

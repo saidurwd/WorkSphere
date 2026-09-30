@@ -2,11 +2,13 @@
 
 @section('title', 'Obligations Calendar')
 
-@section('breadcrumb', [
-    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
-    ['label' => 'Obligations', 'url' => {{ route('obligations.dashboard') }}],
-    ['label' => 'Calendar'],
-])
+@php
+    $breadcrumbs = [
+        ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+        ['label' => 'Obligations', 'url' => route('obligations.dashboard')],
+        ['label' => 'Calendar'],
+    ];
+@endphp
 
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">

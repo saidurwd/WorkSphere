@@ -23,7 +23,7 @@
     <x-navbar />
 
     <main class="app-main">
-        <x-content-header />
+        <x-content-header :breadcrumbs="$breadcrumbs ?? null" />
 
         <div class="app-content">
             <div class="container-fluid">

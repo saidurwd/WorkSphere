@@ -2,12 +2,14 @@
 
 @section('title', 'Renew Obligation')
 
-@section('breadcrumb', [
-    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
-    ['label' => 'Obligations', 'url' => {{ route('obligations.index') }}],
-    ['label' => '{{ $obligation->obligation_no }}', 'url' => {{ route('obligations.show', $obligation) }}],
-    ['label' => 'Renew'],
-])
+@php
+    $breadcrumbs = [
+        ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+        ['label' => 'Obligations', 'url' => route('obligations.index')],
+        ['label' => $obligation->obligation_no, 'url' => route('obligations.show', $obligation)],
+        ['label' => 'Renew'],
+    ];
+@endphp
 
 @section('content')
 <div class="page-header">

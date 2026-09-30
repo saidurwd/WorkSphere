@@ -2,12 +2,14 @@
 
 @section('title', 'Upload Attachment')
 
-@section('breadcrumb', [
-    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
-    ['label' => 'Meetings', 'url' => {{ route('meetings.index') }}],
-    ['label' => '{{ $meeting->title }}', 'url' => {{ route('meetings.show', $meeting) }}],
-    ['label' => 'Upload Attachment'],
-])
+@php
+    $breadcrumbs = [
+        ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+        ['label' => 'Meetings', 'url' => route('meetings.index')],
+        ['label' => $meeting->title, 'url' => route('meetings.show', $meeting)],
+        ['label' => 'Upload Attachment'],
+    ];
+@endphp
 
 @section('content')
 <div class="page-header">

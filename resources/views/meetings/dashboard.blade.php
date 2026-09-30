@@ -2,10 +2,12 @@
 
 @section('title', 'Meeting Dashboard')
 
-@section('breadcrumb', [
-    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
-    ['label' => 'Meeting Dashboard'],
-])
+@php
+    $breadcrumbs = [
+        ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+        ['label' => 'Meeting Dashboard'],
+    ];
+@endphp
 
 @section('content')
 <div class="page-header">

@@ -2,12 +2,14 @@
 
 @section('title', 'Action Item Report')
 
-@section('breadcrumb', [
-    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
-    ['label' => 'Meetings', 'url' => {{ route('meetings.index') }}],
-    ['label' => 'Reports', 'url' => {{ route('meetings.reports.index') }}],
-    ['label' => 'Action Items'],
-])
+@php
+    $breadcrumbs = [
+        ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+        ['label' => 'Meetings', 'url' => route('meetings.index')],
+        ['label' => 'Reports', 'url' => route('meetings.reports.index')],
+        ['label' => 'Action Items'],
+    ];
+@endphp
 
 @section('content')
 <div class="page-header">

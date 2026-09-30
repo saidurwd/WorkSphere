@@ -2,12 +2,13 @@
 
 @section('title', 'Task Notification Logs')
 
-@section('breadcrumb', [
-    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
-    ['label' => 'Tasks
-
-Notification Logs'],
-])
+@php
+    $breadcrumbs = [
+        ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+        ['label' => 'Tasks', 'url' => route('tasks.index')],
+        ['label' => 'Notification Logs'],
+    ];
+@endphp
 
 @section('content')
 <div class="page-header">

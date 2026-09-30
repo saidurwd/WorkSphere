@@ -8,11 +8,13 @@ $statusAccent = $task->status === 'completed' ? 'var(--success)' : ($task->statu
 
 @section('title', 'Task Details')
 
-@section('breadcrumb', [
-    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
-    ['label' => 'Tasks', 'url' => {{ route('tasks.index') }}],
-    ['label' => 'Task Details'],
-])
+@php
+    $breadcrumbs = [
+        ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+        ['label' => 'Tasks', 'url' => route('tasks.index')],
+        ['label' => 'Task Details'],
+    ];
+@endphp
 
 @section('content')
 <div class="page-header">

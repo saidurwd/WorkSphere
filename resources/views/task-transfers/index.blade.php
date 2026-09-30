@@ -2,11 +2,13 @@
 
 @section('title', 'Task Transfers')
 
-@section('breadcrumb', [
-    ['label' => 'Dashboard', 'url' => {{ 'dashboard.index' }}],
-    ['label' => 'Tasks', 'url' => {{ route('tasks.index') }}],
-    ['label' => 'Task Transfers'],
-])
+@php
+    $breadcrumbs = [
+        ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+        ['label' => 'Tasks', 'url' => route('tasks.index')],
+        ['label' => 'Task Transfers'],
+    ];
+@endphp
 
 @section('content')
 <style>

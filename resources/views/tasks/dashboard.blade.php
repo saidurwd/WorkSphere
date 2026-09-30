@@ -2,9 +2,11 @@
 
 @section('title', 'Task Dashboard')
 
-@section('breadcrumb', [
-    ['label' => 'Task Dashboard'],
-])
+@php
+    $breadcrumbs = [
+        ['label' => 'Task Dashboard'],
+    ];
+@endphp
 
 @section('content')
 <div class="page-header">

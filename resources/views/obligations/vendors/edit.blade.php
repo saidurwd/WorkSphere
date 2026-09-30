@@ -2,12 +2,14 @@
 
 @section('title', 'Edit Vendor')
 
-@section('breadcrumb', [
-    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
-    ['label' => 'Obligations', 'url' => {{ route('obligations.dashboard') }}],
-    ['label' => 'Vendors', 'url' => {{ route('obligations.vendors') }}],
-    ['label' => 'Edit Vendor'],
-])
+@php
+    $breadcrumbs = [
+        ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+        ['label' => 'Obligations', 'url' => route('obligations.dashboard')],
+        ['label' => 'Vendors', 'url' => route('obligations.vendors')],
+        ['label' => 'Edit Vendor'],
+    ];
+@endphp
 
 @section('content')
 <div class="page-header">

@@ -2,12 +2,14 @@
 
 @section('title', 'Overdue Actions')
 
-@section('breadcrumb', [
-    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
-    ['label' => 'Meetings', 'url' => {{ route('meetings.index') }}],
-    ['label' => 'Reports', 'url' => {{ route('meetings.reports.index') }}],
-    ['label' => 'Overdue Actions'],
-])
+@php
+    $breadcrumbs = [
+        ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+        ['label' => 'Meetings', 'url' => route('meetings.index')],
+        ['label' => 'Reports', 'url' => route('meetings.reports.index')],
+        ['label' => 'Overdue Actions'],
+    ];
+@endphp
 
 @section('content')
 <div class="page-header">

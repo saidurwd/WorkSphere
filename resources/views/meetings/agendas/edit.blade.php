@@ -2,12 +2,14 @@
 
 @section('title', 'Edit Agenda Item')
 
-@section('breadcrumb', [
-    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
-    ['label' => 'Meetings', 'url' => {{ route('meetings.index') }}],
-    ['label' => '{{ $meeting->title }}', 'url' => {{ route('meetings.show', $meeting) }}],
-    ['label' => 'Edit Agenda'],
-])
+@php
+    $breadcrumbs = [
+        ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+        ['label' => 'Meetings', 'url' => route('meetings.index')],
+        ['label' => $meeting->title, 'url' => route('meetings.show', $meeting)],
+        ['label' => 'Edit Agenda'],
+    ];
+@endphp
 
 @section('content')
 <div class="page-header">

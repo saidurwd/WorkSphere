@@ -2,12 +2,14 @@
 
 @section('title', 'Person-wise Accountability')
 
-@section('breadcrumb', [
-    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
-    ['label' => 'Meetings', 'url' => {{ route('meetings.index') }}],
-    ['label' => 'Reports', 'url' => {{ route('meetings.reports.index') }}],
-    ['label' => 'Person-wise Accountability'],
-])
+@php
+    $breadcrumbs = [
+        ['label' => 'Dashboard', 'url' => route('dashboard.index')],
+        ['label' => 'Meetings', 'url' => route('meetings.index')],
+        ['label' => 'Reports', 'url' => route('meetings.reports.index')],
+        ['label' => 'Person-wise Accountability'],
+    ];
+@endphp
 
 @section('content')
 <div class="page-header">
