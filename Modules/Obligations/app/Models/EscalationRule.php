@@ -1,0 +1,33 @@
+<?php
+
+namespace Modules\Obligations\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class EscalationRule extends Model
+{
+    protected $fillable = [
+        'obligation_type_id',
+        'days_before_expiry',
+        'days_after_expiry',
+        'escalation_level',
+        'recipient_type',
+        'channel',
+        'active',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'days_before_expiry' => 'integer',
+            'days_after_expiry' => 'integer',
+            'active' => 'boolean',
+        ];
+    }
+
+    public function obligationType(): BelongsTo
+    {
+        return $this->belongsTo(ObligationType::class);
+    }
+}

@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\MeetingType;
+use Modules\Meetings\Models\MeetingType;
 use Illuminate\Database\Seeder;
 
 class MeetingTypeSeeder extends Seeder

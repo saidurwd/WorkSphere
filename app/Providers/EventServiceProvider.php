@@ -2,87 +2,37 @@
 
 namespace App\Providers;
 
-use App\Events\ActionItemCompleted;
-use App\Events\ActionItemCreated;
-use App\Events\MeetingCancelled;
-use App\Events\MeetingCompleted;
-use App\Events\MeetingCreated;
-use App\Events\MeetingPostponed;
-use App\Events\MeetingStarted;
-use App\Events\MinutesApproved;
-use App\Events\MinutesPublished;
-use App\Events\MinutesReturned;
-use App\Events\MinutesSubmitted;
-use App\Events\TaskAssigned;
-use App\Events\TaskCompleted;
-use App\Events\TaskCreated;
-use App\Events\TaskUpdated;
-use App\Listeners\SendActionAssignmentNotification;
-use App\Listeners\SendActionCompletedNotification;
-use App\Listeners\SendMeetingCancellationNotifications;
-use App\Listeners\SendMeetingInvitations;
-use App\Listeners\SendMeetingPostponedNotifications;
-use App\Listeners\SendMeetingUpdateNotifications;
-use App\Listeners\SendMinutesApprovedNotification;
-use App\Listeners\SendMinutesPublishedNotification;
-use App\Listeners\SendMinutesReturnedNotification;
-use App\Listeners\SendMinutesSubmittedNotification;
-use App\Listeners\SendTaskAssignedNotification;
-use App\Listeners\SendTaskCompletedNotification;
-use App\Listeners\SendTaskUpdateNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
+/**
+ * Application-wide event wiring.
+ *
+ * Every domain event now lives with the module that owns it, and each module
+ * registers its own listeners through its EventServiceProvider:
+ *
+ *   Modules\Meetings\Providers\EventServiceProvider
+ *   Modules\Tasks\Providers\EventServiceProvider
+ *
+ * This provider is kept for the framework's email-verification hooks and as
+ * the place to register genuinely cross-cutting application events.
+ */
 class EventServiceProvider extends ServiceProvider
 {
-    protected $listen = [
-        MeetingCreated::class => [
-            SendMeetingInvitations::class,
-        ],
-        MeetingUpdated::class => [
-            SendMeetingUpdateNotifications::class,
-        ],
-        MeetingCancelled::class => [
-            SendMeetingCancellationNotifications::class,
-        ],
-        MeetingPostponed::class => [
-            SendMeetingPostponedNotifications::class,
-        ],
-        MeetingStarted::class => [],
-        MeetingCompleted::class => [],
-        ActionItemCreated::class => [
-            SendActionAssignmentNotification::class,
-        ],
-        ActionItemCompleted::class => [
-            SendActionCompletedNotification::class,
-        ],
-        MinutesSubmitted::class => [
-            SendMinutesSubmittedNotification::class,
-        ],
-        MinutesApproved::class => [
-            SendMinutesApprovedNotification::class,
-        ],
-        MinutesReturned::class => [
-            SendMinutesReturnedNotification::class,
-        ],
-        MinutesPublished::class => [
-            SendMinutesPublishedNotification::class,
-        ],
-        TaskCreated::class => [
-            SendTaskAssignedNotification::class,
-        ],
-        TaskUpdated::class => [
-            SendTaskUpdateNotification::class,
-        ],
-        TaskCompleted::class => [
-            SendTaskCompletedNotification::class,
-        ],
-        TaskAssigned::class => [
-            SendTaskAssignedNotification::class,
-        ],
-    ];
+    /**
+     * @var array<class-string, array<int, class-string>>
+     */
+    protected $listen = [];
 
-    public function boot(): void
+    /**
+     * Domain modules declare their own explicit mappings, so the application
+     * provider does not need to discover anything.
+     *
+     * @var bool
+     */
+    protected static $shouldDiscoverEvents = false;
+
+    public function shouldDiscoverEvents(): bool
     {
-        //
+        return false;
     }
 }

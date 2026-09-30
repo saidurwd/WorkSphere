@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\MeetingTag;
+use Modules\Meetings\Models\MeetingTag;
 use Illuminate\Database\Seeder;
 
 class MeetingTagSeeder extends Seeder

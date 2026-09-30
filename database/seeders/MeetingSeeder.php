@@ -2,16 +2,16 @@
 
 namespace Database\Seeders;
 
-use App\Models\Meeting;
-use App\Models\MeetingActionItem;
-use App\Models\MeetingAgenda;
-use App\Models\MeetingAttachment;
-use App\Models\MeetingDecision;
-use App\Models\MeetingDiscussion;
-use App\Models\MeetingMinutesApproval;
-use App\Models\MeetingParticipant;
-use App\Models\MeetingTag;
-use App\Models\MeetingType;
+use Modules\Meetings\Models\Meeting;
+use Modules\Meetings\Models\MeetingActionItem;
+use Modules\Meetings\Models\MeetingAgenda;
+use Modules\Meetings\Models\MeetingAttachment;
+use Modules\Meetings\Models\MeetingDecision;
+use Modules\Meetings\Models\MeetingDiscussion;
+use Modules\Meetings\Models\MeetingMinutesApproval;
+use Modules\Meetings\Models\MeetingParticipant;
+use Modules\Meetings\Models\MeetingTag;
+use Modules\Meetings\Models\MeetingType;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 

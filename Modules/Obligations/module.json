@@ -1,0 +1,11 @@
+{
+    "name": "Obligations",
+    "alias": "obligations",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Obligations\\Providers\\ObligationsServiceProvider"
+    ],
+    "files": []
+}

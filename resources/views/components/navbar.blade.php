@@ -5,19 +5,19 @@
     $recentNotifications = collect();
 
     if ($user) {
-        $obligationNotifications = \App\Models\NotificationLog::query()
+        $obligationNotifications = \Modules\Obligations\Models\NotificationLog::query()
             ->where('user_id', $user->id)
             ->orderByDesc('created_at')
             ->limit(10)
             ->get(['id', 'subject', 'status', 'created_at', 'notification_type as type']);
 
-        $taskNotifications = \App\Models\TaskNotificationLog::query()
+        $taskNotifications = \Modules\Tasks\Models\TaskNotificationLog::query()
             ->where('user_id', $user->id)
             ->orderByDesc('created_at')
             ->limit(10)
             ->get(['id', 'subject', 'status', 'created_at', 'notification_type as type']);
 
-        $meetingNotifications = \App\Models\MeetingNotificationLog::query()
+        $meetingNotifications = \Modules\Meetings\Models\MeetingNotificationLog::query()
             ->where('user_id', $user->id)
             ->orderByDesc('created_at')
             ->limit(10)

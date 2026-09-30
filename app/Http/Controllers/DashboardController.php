@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Meeting;
-use App\Models\MeetingActionItem;
-use App\Models\Obligation;
-use App\Models\ObligationType;
-use App\Models\Task;
+use Modules\Meetings\Models\Meeting;
+use Modules\Meetings\Models\MeetingActionItem;
+use Modules\Obligations\Models\Obligation;
+use Modules\Obligations\Models\ObligationType;
+use Modules\Tasks\Models\Task;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 

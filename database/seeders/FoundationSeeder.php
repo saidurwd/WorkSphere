@@ -7,7 +7,7 @@ use App\Models\Department;
 use App\Models\Employee;
 use App\Models\Location;
 use App\Models\User;
-use App\Models\Vendor;
+use Modules\Obligations\Models\Vendor;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;

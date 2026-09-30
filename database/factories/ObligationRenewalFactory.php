@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Obligation;
+use Modules\Obligations\Models\Obligation;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

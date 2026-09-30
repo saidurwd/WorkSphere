@@ -5,10 +5,10 @@ namespace Database\Factories;
 use App\Models\Company;
 use App\Models\Department;
 use App\Models\Location;
-use App\Models\ObligationCategory;
-use App\Models\ObligationType;
+use Modules\Obligations\Models\ObligationCategory;
+use Modules\Obligations\Models\ObligationType;
 use App\Models\User;
-use App\Models\Vendor;
+use Modules\Obligations\Models\Vendor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

@@ -2,13 +2,13 @@
 
 namespace Database\Seeders;
 
-use App\Models\ApprovalWorkflow;
-use App\Models\ApprovalWorkflowStep;
+use Modules\Obligations\Models\ApprovalWorkflow;
+use Modules\Obligations\Models\ApprovalWorkflowStep;
 use App\Models\Company;
-use App\Models\EscalationRule;
-use App\Models\NotificationRule;
-use App\Models\ObligationCategory;
-use App\Models\ObligationType;
+use Modules\Obligations\Models\EscalationRule;
+use Modules\Obligations\Models\NotificationRule;
+use Modules\Obligations\Models\ObligationCategory;
+use Modules\Obligations\Models\ObligationType;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
