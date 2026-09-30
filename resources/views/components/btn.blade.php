@@ -8,7 +8,7 @@
 
 @php
     $classes = 'btn btn-'.$variant.($size ? ' btn-'.$size : '');
-    $element = $href || $type === 'submit' ? 'button' : 'a';
+    $element = $type === 'submit' ? 'button' : 'a';
 @endphp
 
 <{{ $element }}

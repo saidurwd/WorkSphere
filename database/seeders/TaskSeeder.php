@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -15,6 +16,30 @@ class TaskSeeder extends Seeder
         $user = $users->firstOrFail();
 
         $now = Carbon::now();
+
+        $projects = [];
+        $projectNames = [
+            'Website Redesign',
+            'Mobile App Launch',
+            'Q4 Marketing Campaign',
+            'Customer Portal',
+            'API Integration',
+            'Data Migration',
+            'Security Audit',
+            'Performance Optimization',
+            'Internal Tooling',
+            'Cloud Infrastructure',
+        ];
+
+        foreach ($projectNames as $projectName) {
+            $projects[] = Project::create([
+                'name' => $projectName,
+                'description' => fake()->sentence(rand(8, 14)),
+                'user_id' => $users->random()->id,
+                'created_at' => $now->copy()->subDays(rand(10, 40))->toDateTimeString(),
+                'updated_at' => $now->copy()->subDays(rand(1, 10))->toDateTimeString(),
+            ]);
+        }
 
         $templates = [
             ['title' => 'Update project documentation', 'priority' => 'high', 'status' => 'pending'],
@@ -57,6 +82,7 @@ class TaskSeeder extends Seeder
             Task::create([
                 'user_id' => $user->id,
                 'responsible_user_id' => $users->random()->id,
+                'project_id' => $projects[array_rand($projects)]->id,
                 'title' => $template['title'].' #'.($i + 1),
                 'description' => fake()->sentence(rand(6, 15)),
                 'priority' => $template['priority'],
