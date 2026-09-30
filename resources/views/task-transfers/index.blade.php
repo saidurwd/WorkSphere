@@ -2,13 +2,11 @@
 
 @section('title', 'Task Transfers')
 
-@section('breadcrumb')
-<a href="{{ 'dashboard.index' }}">Dashboard</a>
-<span class="breadcrumb-separator">/</span>
-<a href="{{ route('tasks.index') }}">Tasks</a>
-<span class="breadcrumb-separator">/</span>
-<span>Task Transfers</span>
-@endsection
+@section('breadcrumb', [
+    ['label' => 'Dashboard', 'url' => {{ 'dashboard.index' }}],
+    ['label' => 'Tasks', 'url' => {{ route('tasks.index') }}],
+    ['label' => 'Task Transfers'],
+])
 
 @section('content')
 <style>

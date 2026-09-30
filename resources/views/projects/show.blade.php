@@ -2,13 +2,11 @@
 
 @section('title', $project->name)
 
-@section('breadcrumb')
-<a href="{{ route('dashboard.index') }}">Dashboard</a>
-<span class="breadcrumb-separator">/</span>
-<a href="{{ route('projects.index') }}">Projects</a>
-<span class="breadcrumb-separator">/</span>
-<span>{{ $project->name }}</span>
-@endsection
+@section('breadcrumb', [
+    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
+    ['label' => 'Projects', 'url' => {{ route('projects.index') }}],
+    ['label' => '{{ $project->name }}'],
+])
 
 @section('content')
 <div class="page-header">

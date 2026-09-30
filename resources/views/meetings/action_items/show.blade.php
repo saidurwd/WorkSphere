@@ -2,15 +2,12 @@
 
 @section('title', 'Action Item Details')
 
-@section('breadcrumb')
-<a href="{{ route('dashboard.index') }}">Dashboard</a>
-<span class="breadcrumb-separator">/</span>
-<a href="{{ route('meetings.index') }}">Meetings</a>
-<span class="breadcrumb-separator">/</span>
-<a href="{{ route('meetings.action-items.index') }}">Action Items</a>
-<span class="breadcrumb-separator">/</span>
-<span>Details</span>
-@endsection
+@section('breadcrumb', [
+    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
+    ['label' => 'Meetings', 'url' => {{ route('meetings.index') }}],
+    ['label' => 'Action Items', 'url' => {{ route('meetings.action-items.index') }}],
+    ['label' => 'Details'],
+])
 
 @section('content')
 <div class="page-header">

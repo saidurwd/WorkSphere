@@ -2,15 +2,12 @@
 
 @section('title', 'Edit Vendor')
 
-@section('breadcrumb')
-<a href="{{ route('dashboard.index') }}">Dashboard</a>
-<span class="breadcrumb-separator">/</span>
-<a href="{{ route('obligations.dashboard') }}">Obligations</a>
-<span class="breadcrumb-separator">/</span>
-<a href="{{ route('obligations.vendors') }}">Vendors</a>
-<span class="breadcrumb-separator">/</span>
-<span>Edit Vendor</span>
-@endsection
+@section('breadcrumb', [
+    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
+    ['label' => 'Obligations', 'url' => {{ route('obligations.dashboard') }}],
+    ['label' => 'Vendors', 'url' => {{ route('obligations.vendors') }}],
+    ['label' => 'Edit Vendor'],
+])
 
 @section('content')
 <div class="page-header">

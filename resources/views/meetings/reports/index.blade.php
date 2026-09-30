@@ -2,13 +2,11 @@
 
 @section('title', 'Meeting Reports')
 
-@section('breadcrumb')
-<a href="{{ route('dashboard.index') }}">Dashboard</a>
-<span class="breadcrumb-separator">/</span>
-<a href="{{ route('meetings.index') }}">Meetings</a>
-<span class="breadcrumb-separator">/</span>
-<span>Reports</span>
-@endsection
+@section('breadcrumb', [
+    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
+    ['label' => 'Meetings', 'url' => {{ route('meetings.index') }}],
+    ['label' => 'Reports'],
+])
 
 @section('content')
 <div class="page-header">

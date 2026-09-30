@@ -2,13 +2,11 @@
 
 @section('title', 'Edit Task')
 
-@section('breadcrumb')
-<a href="{{ route('dashboard.index') }}">Dashboard</a>
-<span class="breadcrumb-separator">/</span>
-<a href="{{ route('tasks.index') }}">Tasks</a>
-<span class="breadcrumb-separator">/</span>
-<span>Edit Task</span>
-@endsection
+@section('breadcrumb', [
+    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
+    ['label' => 'Tasks', 'url' => {{ route('tasks.index') }}],
+    ['label' => 'Edit Task'],
+])
 
 @section('content')
 <div class="page-header">

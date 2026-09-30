@@ -2,13 +2,11 @@
 
 @section('title', 'Obligations Calendar')
 
-@section('breadcrumb')
-<a href="{{ route('dashboard.index') }}">Dashboard</a>
-<span class="breadcrumb-separator">/</span>
-<a href="{{ route('obligations.dashboard') }}">Obligations</a>
-<span class="breadcrumb-separator">/</span>
-<span>Calendar</span>
-@endsection
+@section('breadcrumb', [
+    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
+    ['label' => 'Obligations', 'url' => {{ route('obligations.dashboard') }}],
+    ['label' => 'Calendar'],
+])
 
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">

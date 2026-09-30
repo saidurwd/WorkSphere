@@ -2,15 +2,12 @@
 
 @section('title', 'Upload Attachment')
 
-@section('breadcrumb')
-<a href="{{ route('dashboard.index') }}">Dashboard</a>
-<span class="breadcrumb-separator">/</span>
-<a href="{{ route('meetings.index') }}">Meetings</a>
-<span class="breadcrumb-separator">/</span>
-<a href="{{ route('meetings.show', $meeting) }}">{{ $meeting->title }}</a>
-<span class="breadcrumb-separator">/</span>
-<span>Upload Attachment</span>
-@endsection
+@section('breadcrumb', [
+    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
+    ['label' => 'Meetings', 'url' => {{ route('meetings.index') }}],
+    ['label' => '{{ $meeting->title }}', 'url' => {{ route('meetings.show', $meeting) }}],
+    ['label' => 'Upload Attachment'],
+])
 
 @section('content')
 <div class="page-header">

@@ -2,13 +2,11 @@
 
 @section('title', 'Obligations Reports')
 
-@section('breadcrumb')
-<a href="{{ route('dashboard.index') }}">Dashboard</a>
-<span class="breadcrumb-separator">/</span>
-<a href="{{ route('obligations.dashboard') }}">Obligations</a>
-<span class="breadcrumb-separator">/</span>
-<span>Reports</span>
-@endsection
+@section('breadcrumb', [
+    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
+    ['label' => 'Obligations', 'url' => {{ route('obligations.dashboard') }}],
+    ['label' => 'Reports'],
+])
 
 @section('content')
 <div class="page-header">

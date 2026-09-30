@@ -2,9 +2,9 @@
 
 @section('title', 'Task Dashboard')
 
-@section('breadcrumb')
-<span>Task Dashboard</span>
-@endsection
+@section('breadcrumb', [
+    ['label' => 'Task Dashboard'],
+])
 
 @section('content')
 <div class="page-header">

@@ -2,15 +2,12 @@
 
 @section('title', 'Overdue Actions')
 
-@section('breadcrumb')
-<a href="{{ route('dashboard.index') }}">Dashboard</a>
-<span class="breadcrumb-separator">/</span>
-<a href="{{ route('meetings.index') }}">Meetings</a>
-<span class="breadcrumb-separator">/</span>
-<a href="{{ route('meetings.reports.index') }}">Reports</a>
-<span class="breadcrumb-separator">/</span>
-<span>Overdue Actions</span>
-@endsection
+@section('breadcrumb', [
+    ['label' => 'Dashboard', 'url' => {{ route('dashboard.index') }}],
+    ['label' => 'Meetings', 'url' => {{ route('meetings.index') }}],
+    ['label' => 'Reports', 'url' => {{ route('meetings.reports.index') }}],
+    ['label' => 'Overdue Actions'],
+])
 
 @section('content')
 <div class="page-header">
