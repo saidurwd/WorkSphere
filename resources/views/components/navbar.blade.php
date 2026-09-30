@@ -3,9 +3,9 @@
     $initials = strtoupper(substr($user?->name ?? 'U', 0, 2));
 @endphp
 
-<nav class="app-header navbar navbar-expand bg-body">
+<nav class="app-header navbar navbar-expand-md navbar-light bg-body">
     <div class="container-fluid">
-        <ul class="navbar-nav">
+        <ul class="navbar-nav me-auto">
             <li class="nav-item">
                 <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" aria-label="Toggle navigation">
                     <i class="bi bi-list"></i>
@@ -46,19 +46,7 @@
                         <div class="dropdown-divider"></div>
 
                         <a class="dropdown-item" href="{{ route('dashboard.index') }}">
-                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
-                        </a>
-
-                        <a class="dropdown-item" href="{{ route('tasks.index') }}">
-                            <i class="bi bi-check2-square me-2"></i>My Tasks
-                        </a>
-
-                        <a class="dropdown-item" href="{{ route('meetings.index') }}">
-                            <i class="bi bi-journal-text me-2"></i>Meetings
-                        </a>
-
-                        <a class="dropdown-item" href="{{ route('obligations.index') }}">
-                            <i class="bi bi-file-earmark-text me-2"></i>Obligations
+                            <i class="bi bi-person me-2"></i>Profile
                         </a>
 
                         <div class="dropdown-divider"></div>
@@ -66,7 +54,7 @@
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="dropdown-item">
-                                <i class="bi bi-box-arrow-right me-2"></i>Sign out
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
                             </button>
                         </form>
                     </div>

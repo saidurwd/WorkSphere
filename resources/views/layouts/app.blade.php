@@ -19,6 +19,7 @@
 
 <div class="app-wrapper">
     <x-sidebar />
+
     <x-navbar />
 
     <main class="app-main">
