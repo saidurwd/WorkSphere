@@ -37,10 +37,16 @@ return [
             'children' => [
                 ['label' => 'Dashboard', 'icon' => 'speedometer2', 'route' => 'tasks.dashboard'],
                 ['label' => 'My Tasks', 'icon' => 'list-task', 'route' => 'tasks.index', 'active' => ['tasks.index', 'tasks.show', 'tasks.create', 'tasks.edit']],
-                ['label' => 'Task Transfers', 'icon' => 'arrow-left-right', 'route' => 'task-transfers.index'],
-                ['label' => 'Projects', 'icon' => 'folder2-open', 'route' => 'projects.index', 'active' => ['projects.*'],],
+                ['label' => 'Task Transfers', 'icon' => 'arrow-left-right', 'route' => 'task-transfers.index', 'active' => ['task-transfers.*']],
                 ['label' => 'Notification Logs', 'icon' => 'bell', 'route' => 'tasks.notification-logs.index'],
             ],
+        ],
+
+        [
+            'label' => 'Projects',
+            'icon' => 'folder2-open',
+            'route' => 'projects.index',
+            'active' => ['projects.*'],
         ],
 
         [
