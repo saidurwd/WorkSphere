@@ -146,43 +146,43 @@
 </div>
 
 <div class="grid-2">
-    @include('partials._detail-card', [
-        'title' => "Today's Tasks",
-        'items' => $todayTasks,
-        'emptyMessage' => 'No tasks due today.',
-        'viewAllRoute' => $viewAllTodayRoute,
-        'viewAllLabel' => 'View Today',
-    ])
-    @include('partials._detail-card', [
-        'title' => 'Overdue Tasks',
-        'items' => $overdueTasks,
-        'emptyMessage' => 'No overdue tasks.',
-        'viewAllRoute' => $viewAllOverdueRoute,
-        'viewAllLabel' => 'View Overdue',
-    ])
-    @include('partials._detail-card', [
-        'title' => 'Completed Tasks',
-        'items' => $completedTasks,
-        'emptyMessage' => 'No completed tasks yet.',
-        'viewAllRoute' => $viewAllCompletedRoute,
-        'viewAllLabel' => 'View Completed',
-    ])
-    @include('partials._detail-card', [
-        'title' => 'Upcoming Tasks',
-        'items' => $upcomingTasks,
-        'emptyMessage' => 'No upcoming tasks this week.',
-        'viewAllRoute' => $viewAllUpcomingRoute,
-        'viewAllLabel' => 'View Upcoming',
-    ])
+    <x-detail-card
+        title="Today's Tasks"
+        :items="$todayTasks"
+        emptyMessage="No tasks due today."
+        :viewAllRoute="$viewAllTodayRoute"
+        viewAllLabel="View Today"
+    />
+    <x-detail-card
+        title="Overdue Tasks"
+        :items="$overdueTasks"
+        emptyMessage="No overdue tasks."
+        :viewAllRoute="$viewAllOverdueRoute"
+        viewAllLabel="View Overdue"
+    />
+    <x-detail-card
+        title="Completed Tasks"
+        :items="$completedTasks"
+        emptyMessage="No completed tasks yet."
+        :viewAllRoute="$viewAllCompletedRoute"
+        viewAllLabel="View Completed"
+    />
+    <x-detail-card
+        title="Upcoming Tasks"
+        :items="$upcomingTasks"
+        emptyMessage="No upcoming tasks this week."
+        :viewAllRoute="$viewAllUpcomingRoute"
+        viewAllLabel="View Upcoming"
+    />
 </div>
 
 <div class="grid-2" style="margin-top: 1.5rem;">
-    @include('partials._detail-card', [
-        'title' => 'High-Priority Tasks',
-        'items' => $highPriorityTasks,
-        'emptyMessage' => 'No high-priority tasks.',
-        'viewAllRoute' => $viewAllHighPriorityRoute,
-        'viewAllLabel' => 'View High Priority',
-    ])
+    <x-detail-card
+        title="High-Priority Tasks"
+        :items="$highPriorityTasks"
+        emptyMessage="No high-priority tasks."
+        :viewAllRoute="$viewAllHighPriorityRoute"
+        viewAllLabel="View High Priority"
+    />
 </div>
 @endsection
