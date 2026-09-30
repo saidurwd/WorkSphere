@@ -2,238 +2,201 @@
 
 @section('title', 'Obligations')
 
-@section('breadcrumb')
-<a href="{{ route('dashboard.index') }}">Dashboard</a>
-<span class="breadcrumb-separator">/</span>
-<span>Obligations</span>
-@endsection
-
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Obligations</h1>
-            <p class="page-description">Manage compliance and obligation renewals.</p>
-        </div>
-        <div>
-            <a href="{{ route('obligations.create') }}" class="btn btn-primary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                New Obligation
-            </a>
+    <x-page-header title="Obligations" subtitle="Manage compliance and obligation renewals." icon="file-earmark-text">
+        <x-btn :href="route('obligations.create')" icon="plus-lg">New Obligation</x-btn>
+    </x-page-header>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form action="{{ route('obligations.index') }}" method="GET" id="filter-form">
+                <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label for="obligation-search" class="form-label">Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input id="obligation-search" type="search" name="search" class="form-control"
+                                   placeholder="Search obligations..." value="{{ request('search') }}">
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <label for="status-filter" class="form-label">Status</label>
+                        <select id="status-filter" name="status" class="form-select" onchange="document.getElementById('filter-form').submit()">
+                            <option value="">All</option>
+                            <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
+                            <option value="upcoming" {{ request('status') === 'upcoming' ? 'selected' : '' }}>Upcoming</option>
+                            <option value="action_required" {{ request('status') === 'action_required' ? 'selected' : '' }}>Action Required</option>
+                            <option value="renewal_in_progress" {{ request('status') === 'renewal_in_progress' ? 'selected' : '' }}>Renewal In Progress</option>
+                            <option value="pending_approval" {{ request('status') === 'pending_approval' ? 'selected' : '' }}>Pending Approval</option>
+                            <option value="expired" {{ request('status') === 'expired' ? 'selected' : '' }}>Expired</option>
+                            <option value="renewed" {{ request('status') === 'renewed' ? 'selected' : '' }}>Renewed</option>
+                        </select>
+                    </div>
+
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <label for="priority-filter" class="form-label">Priority</label>
+                        <select id="priority-filter" name="priority" class="form-select" onchange="document.getElementById('filter-form').submit()">
+                            <option value="">All</option>
+                            <option value="low" {{ request('priority') === 'low' ? 'selected' : '' }}>Low</option>
+                            <option value="medium" {{ request('priority') === 'medium' ? 'selected' : '' }}>Medium</option>
+                            <option value="high" {{ request('priority') === 'high' ? 'selected' : '' }}>High</option>
+                            <option value="critical" {{ request('priority') === 'critical' ? 'selected' : '' }}>Critical</option>
+                        </select>
+                    </div>
+
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <label for="risk-filter" class="form-label">Risk</label>
+                        <select id="risk-filter" name="risk_level" class="form-select" onchange="document.getElementById('filter-form').submit()">
+                            <option value="">All</option>
+                            <option value="low" {{ request('risk_level') === 'low' ? 'selected' : '' }}>Low</option>
+                            <option value="medium" {{ request('risk_level') === 'medium' ? 'selected' : '' }}>Medium</option>
+                            <option value="high" {{ request('risk_level') === 'high' ? 'selected' : '' }}>High</option>
+                            <option value="critical" {{ request('risk_level') === 'critical' ? 'selected' : '' }}>Critical</option>
+                        </select>
+                    </div>
+
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <label for="type-filter" class="form-label">Type</label>
+                        <select id="type-filter" name="obligation_type_id" class="form-select" onchange="document.getElementById('filter-form').submit()">
+                            <option value="">All</option>
+                            @foreach($types as $type)
+                                <option value="{{ $type->id }}" {{ request('obligation_type_id') == $type->id ? 'selected' : '' }}>{{ $type->type_name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <label for="owner-filter" class="form-label">Owner</label>
+                        <select id="owner-filter" name="owner_user_id" class="form-select" onchange="document.getElementById('filter-form').submit()">
+                            <option value="">All</option>
+                            @foreach($users as $user)
+                                <option value="{{ $user->id }}" {{ request('owner_user_id') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <label for="department-filter" class="form-label">Department</label>
+                        <select id="department-filter" name="department_id" class="form-select" onchange="document.getElementById('filter-form').submit()">
+                            <option value="">All</option>
+                            @foreach($departments as $department)
+                                <option value="{{ $department->id }}" {{ request('department_id') == $department->id ? 'selected' : '' }}>{{ $department->department_name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <label for="expiry-filter" class="form-label">Expiry</label>
+                        <select id="expiry-filter" name="expiry_period" class="form-select" onchange="document.getElementById('filter-form').submit()">
+                            <option value="">All</option>
+                            <option value="7_days" {{ request('expiry_period') === '7_days' ? 'selected' : '' }}>Next 7 Days</option>
+                            <option value="30_days" {{ request('expiry_period') === '30_days' ? 'selected' : '' }}>Next 30 Days</option>
+                            <option value="90_days" {{ request('expiry_period') === '90_days' ? 'selected' : '' }}>Next 90 Days</option>
+                            <option value="expired" {{ request('expiry_period') === 'expired' ? 'selected' : '' }}>Expired</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i>Apply</button>
+                        @if(request()->hasAny(['search', 'status', 'priority', 'risk_level', 'expiry_period', 'obligation_type_id', 'owner_user_id', 'department_id']))
+                            <a href="{{ route('obligations.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg me-1"></i>Clear</a>
+                        @endif
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
-</div>
 
-<div class="card" style="margin-bottom: 1rem;">
-    <div class="card-body">
-        <form action="{{ route('obligations.index') }}" method="GET" id="filter-form">
-            <div class="filters-bar">
-                <div class="search-box">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <input type="search" name="search" class="form-input" placeholder="Search obligations..." value="{{ $filters['search'] ?? '' }}">
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">Status:</label>
-                    <select name="status" class="form-select" style="min-width: 150px;" onchange="document.getElementById('filter-form').submit()">
-                        <option value="">All Statuses</option>
-                        <option value="active" {{ ($filters['status'] ?? '') === 'active' ? 'selected' : '' }}>Active</option>
-                        <option value="upcoming" {{ ($filters['status'] ?? '') === 'upcoming' ? 'selected' : '' }}>Upcoming</option>
-                        <option value="action_required" {{ ($filters['status'] ?? '') === 'action_required' ? 'selected' : '' }}>Action Required</option>
-                        <option value="renewal_in_progress" {{ ($filters['status'] ?? '') === 'renewal_in_progress' ? 'selected' : '' }}>Renewal In Progress</option>
-                        <option value="pending_approval" {{ ($filters['status'] ?? '') === 'pending_approval' ? 'selected' : '' }}>Pending Approval</option>
-                        <option value="expired" {{ ($filters['status'] ?? '') === 'expired' ? 'selected' : '' }}>Expired</option>
-                        <option value="renewed" {{ ($filters['status'] ?? '') === 'renewed' ? 'selected' : '' }}>Renewed</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">Priority:</label>
-                    <select name="priority" class="form-select" style="min-width: 140px;" onchange="document.getElementById('filter-form').submit()">
-                        <option value="">All Priorities</option>
-                        <option value="low" {{ ($filters['priority'] ?? '') === 'low' ? 'selected' : '' }}>Low</option>
-                        <option value="medium" {{ ($filters['priority'] ?? '') === 'medium' ? 'selected' : '' }}>Medium</option>
-                        <option value="high" {{ ($filters['priority'] ?? '') === 'high' ? 'selected' : '' }}>High</option>
-                        <option value="critical" {{ ($filters['priority'] ?? '') === 'critical' ? 'selected' : '' }}>Critical</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">Risk:</label>
-                    <select name="risk_level" class="form-select" style="min-width: 140px;" onchange="document.getElementById('filter-form').submit()">
-                        <option value="">All Risks</option>
-                        <option value="low" {{ ($filters['risk_level'] ?? '') === 'low' ? 'selected' : '' }}>Low</option>
-                        <option value="medium" {{ ($filters['risk_level'] ?? '') === 'medium' ? 'selected' : '' }}>Medium</option>
-                        <option value="high" {{ ($filters['risk_level'] ?? '') === 'high' ? 'selected' : '' }}>High</option>
-                        <option value="critical" {{ ($filters['risk_level'] ?? '') === 'critical' ? 'selected' : '' }}>Critical</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">Expiry:</label>
-                    <select name="expiry_period" class="form-select" style="min-width: 150px;" onchange="document.getElementById('filter-form').submit()">
-                        <option value="">All Dates</option>
-                        <option value="7_days" {{ ($filters['expiry_period'] ?? '') === '7_days' ? 'selected' : '' }}>Next 7 Days</option>
-                        <option value="30_days" {{ ($filters['expiry_period'] ?? '') === '30_days' ? 'selected' : '' }}>Next 30 Days</option>
-                        <option value="90_days" {{ ($filters['expiry_period'] ?? '') === '90_days' ? 'selected' : '' }}>Next 90 Days</option>
-                        <option value="expired" {{ ($filters['expiry_period'] ?? '') === 'expired' ? 'selected' : '' }}>Expired</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">Type:</label>
-                    <select name="obligation_type_id" class="form-select" style="min-width: 180px;" onchange="document.getElementById('filter-form').submit()">
-                        <option value="">All Types</option>
-                        @foreach($types as $type)
-                            <option value="{{ $type->id }}" {{ (int) ($filters['obligation_type_id'] ?? 0) === $type->id ? 'selected' : '' }}>
-                                {{ $type->type_name }}
-                            </option>
+    <div class="card">
+        @if($obligations->count())
+            <div class="card-body p-0">
+                <x-datatable id="obligations-table" :options="['pageLength' => 20, 'order' => [[0, 'desc']]]">
+                    <thead>
+                        <tr>
+                            <th scope="col">Obligation No.</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Department</th>
+                            <th scope="col">Owner</th>
+                            <th scope="col">Expiry Date</th>
+                            <th scope="col">Remaining</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Priority</th>
+                            <th scope="col">Risk</th>
+                            <th scope="col" class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($obligations as $obligation)
+                            @php
+                                $remaining = now()->startOfDay()->diffInDays($obligation->expiry_date, false);
+                            @endphp
+                            <tr>
+                                <td><a href="{{ route('obligations.show', $obligation) }}" class="fw-semibold text-decoration-none">{{ $obligation->obligation_no }}</a></td>
+                                <td>{{ $obligation->title }}</td>
+                                <td>{{ $obligation->type->type_name ?? 'N/A' }}</td>
+                                <td>{{ $obligation->department->department_name ?? 'N/A' }}</td>
+                                <td>{{ $obligation->owner->name ?? 'Unassigned' }}</td>
+                                <td>{{ $obligation->expiry_date->format('M d, Y') }}</td>
+                                <td>
+                                    @if($remaining < 0)
+                                        <span class="text-danger fw-semibold">Expired {{ abs($remaining) }}d ago</span>
+                                    @elseif($remaining === 0)
+                                        <span class="text-danger fw-semibold">Today</span>
+                                    @else
+                                        {{ $remaining }} days
+                                    @endif
+                                </td>
+                                <td><span class="badge badge-secondary">{{ ucwords(str_replace('_', ' ', $obligation->status)) }}</span></td>
+                                <td>
+                                    <x-badge :variant="match ($obligation->priority) {
+                                        'critical' => 'danger',
+                                        'high' => 'warning',
+                                        'medium' => 'primary',
+                                        'low' => 'secondary',
+                                    }">{{ ucfirst($obligation->priority) }}</x-badge>
+                                </td>
+                                <td>
+                                    <x-badge :variant="match ($obligation->risk_level) {
+                                        'critical' => 'danger',
+                                        'high' => 'warning',
+                                        'medium' => 'primary',
+                                        'low' => 'secondary',
+                                    }">{{ ucfirst($obligation->risk_level) }}</x-badge>
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <x-icon-btn :href="route('obligations.show', $obligation)" icon="eye" label="View" />
+                                        <x-icon-btn :href="route('obligations.edit', $obligation)" icon="pencil" label="Edit" />
+                                        <form action="{{ route('obligations.destroy', $obligation) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center"
+                                                    data-confirm="Delete obligation "{{ $obligation->obligation_no }}"? This cannot be undone."
+                                                    data-confirm-button="Delete" aria-label="Delete" title="Delete">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
                         @endforeach
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">Owner:</label>
-                    <select name="owner_user_id" class="form-select" style="min-width: 180px;" onchange="document.getElementById('filter-form').submit()">
-                        <option value="">All Owners</option>
-                        @foreach($users as $user)
-                            <option value="{{ $user->id }}" {{ (int) ($filters['owner_user_id'] ?? 0) === $user->id ? 'selected' : '' }}>
-                                {{ $user->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">Department:</label>
-                    <select name="department_id" class="form-select" style="min-width: 180px;" onchange="document.getElementById('filter-form').submit()">
-                        <option value="">All Departments</option>
-                        @foreach($departments as $department)
-                            <option value="{{ $department->id }}" {{ (int) ($filters['department_id'] ?? 0) === $department->id ? 'selected' : '' }}>
-                                {{ $department->department_name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <button type="submit" class="btn btn-secondary">Search</button>
-
-                @if(!empty(array_filter($filters)))
-                    <a href="{{ route('obligations.index') }}" class="btn btn-ghost">Clear</a>
-                @endif
+                    </tbody>
+                </x-datatable>
             </div>
-        </form>
-    </div>
-</div>
 
-<div class="card">
-    @if($obligations->count())
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Obligation No.</th>
-                        <th>Title</th>
-                        <th>Type</th>
-                        <th>Department</th>
-                        <th>Owner</th>
-                        <th>Expiry Date</th>
-                        <th>Remaining</th>
-                        <th>Status</th>
-                        <th>Priority</th>
-                        <th>Risk</th>
-                        <th style="text-align: right;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($obligations as $obligation)
-                    @php
-                        $remaining = now()->startOfDay()->diffInDays($obligation->expiry_date, false);
-                        $riskClass = match ($obligation->risk_level) {
-                            'critical' => 'badge-danger',
-                            'high' => 'badge-warning',
-                            'medium' => 'badge-primary',
-                            'low' => 'badge-secondary',
-                        };
-                        $priorityClass = match ($obligation->priority) {
-                            'critical' => 'badge-danger',
-                            'high' => 'badge-warning',
-                            'medium' => 'badge-primary',
-                            'low' => 'badge-secondary',
-                        };
-                    @endphp
-                    <tr>
-                        <td><a href="{{ route('obligations.show', $obligation) }}" style="text-decoration: none; color: inherit; font-weight: 500;">{{ $obligation->obligation_no }}</a></td>
-                        <td>{{ $obligation->title }}</td>
-                        <td>{{ $obligation->type->type_name ?? 'N/A' }}</td>
-                        <td>{{ $obligation->department->department_name ?? 'N/A' }}</td>
-                        <td>{{ $obligation->owner->name ?? 'Unassigned' }}</td>
-                        <td>{{ $obligation->expiry_date->format('M d, Y') }}</td>
-                        <td>
-                            @if($remaining < 0)
-                                <span style="color: var(--destructive); font-weight: 600;">Expired {{ abs($remaining) }}d ago</span>
-                            @elseif($remaining === 0)
-                                <span style="color: var(--destructive); font-weight: 600;">Today</span>
-                            @else
-                                {{ $remaining }} days
-                            @endif
-                        </td>
-                        <td><span class="badge badge-secondary">{{ ucwords(str_replace('_', ' ', $obligation->status)) }}</span></td>
-                        <td><span class="badge {{ $priorityClass }}">{{ ucfirst($obligation->priority) }}</span></td>
-                        <td><span class="badge {{ $riskClass }}">{{ ucfirst($obligation->risk_level) }}</span></td>
-                        <td>
-                            <div class="action-buttons" style="justify-content: flex-end;">
-                                <a href="{{ route('obligations.show', $obligation) }}" class="action-btn" title="Details">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                </a>
-                                <a href="{{ route('obligations.edit', $obligation) }}" class="action-btn" title="Edit">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </a>
-                                <form action="{{ route('obligations.destroy', $obligation) }}" method="POST" style="display: inline;" id="delete-obligation-form-{{ $obligation->id }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="button" class="action-btn action-btn-danger" title="Delete" onclick="if (confirm('Are you sure you want to delete this obligation? This action cannot be undone.')) { document.getElementById('delete-obligation-form-{{ $obligation->id }}').submit(); }">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        @if($obligations->hasPages())
-        <div class="pagination">
-            {{ $obligations->links() }}
-        </div>
+            @if ($obligations->hasPages())
+                <div class="card-footer">
+                    <x-pagination :paginator="$obligations" />
+                </div>
+            @endif
+        @else
+            <div class="card-body">
+                <x-empty-state icon="file-earmark-text" title="No obligations found" description="Get started by creating a new obligation.">
+                    <x-btn :href="route('obligations.create')" icon="plus-lg" size="sm">New Obligation</x-btn>
+                </x-empty-state>
+            </div>
         @endif
-    @else
-        <div class="empty-state">
-            <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-            </svg>
-            <h3 class="empty-state-title">No obligations found</h3>
-            <p class="empty-state-description">Get started by creating a new obligation.</p>
-            <a href="{{ route('obligations.create') }}" class="btn btn-primary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                New Obligation
-            </a>
-        </div>
-    @endif
-</div>
+    </div>
 @endsection

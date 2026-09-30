@@ -138,91 +138,77 @@
 
 <div class="card">
     @if($transfers->count())
-        <div class="card-body">
-            <h2 style="margin-bottom: 1rem; font-size: 1.05rem;">Transfer History</h2>
-            <div class="table-container">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Task</th>
-                            <th>From</th>
-                            <th>To</th>
-                            <th>Transferred By</th>
-                            <th>Reason</th>
-                            <th>Transfer Date</th>
-                            <th>File</th>
-                            <th style="text-align: right;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($transfers as $transfer)
-                            <tr>
-                                <td>
-                                    @if($transfer->task)
-                                        <a href="{{ route('tasks.edit', $transfer->task) }}" style="text-decoration: none; color: inherit; font-weight: 500;">
-                                            {{ $transfer->task->title }}
-                                        </a>
-                                    @else
-                                        <span style="color: var(--muted-foreground);">Deleted Task</span>
-                                    @endif
-                                </td>
-                                <td>{{ $transfer->fromUser->name ?? '—' }}</td>
-                                <td>{{ $transfer->toUser->name ?? '—' }}</td>
-                                <td>{{ $transfer->transferredBy->name ?? '—' }}</td>
-                                <td style="max-width: 280px;">
-                                    <span title="{{ $transfer->reason }}">{{ Str::limit($transfer->reason, 60) }}</span>
-                                    @if($transfer->remarks)
-                                        <div class="user-cell-email" title="{{ $transfer->remarks }}">Remarks: {{ Str::limit($transfer->remarks, 40) }}</div>
-                                    @endif
-                                </td>
-                                <td>{{ $transfer->transfer_date ? $transfer->transfer_date->format('M d, Y') : '—' }}</td>
-                                <td>
-                                    @if($transfer->file_attache)
-                                        <a href="{{ Storage::url($transfer->file_attache) }}" target="_blank"
-                                            class="action-btn" title="Download {{ $transfer->file_attache }}"
-                                            style="color: var(--primary); text-decoration: none;">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                            </svg>
-                                            {{ $transfer->file_title ?: basename($transfer->file_attache) }}
-                                        </a>
-                                    @else
-                                        <span style="color: var(--muted-foreground);">—</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <div class="action-buttons" style="justify-content: flex-end;">
-                                        <form action="{{ route('task-transfers.destroy', $transfer) }}" method="POST" style="display: inline;" id="delete-transfer-form-{{ $transfer->id }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="button" class="action-btn action-btn-danger" title="Delete"
-                                                onclick="if (confirm('Are you sure you want to delete this transfer record? This action cannot be undone.')) { document.getElementById('delete-transfer-form-{{ $transfer->id }}').submit(); }">
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-            @if($transfers->hasPages())
-                <div class="pagination">
-                    {{ $transfers->links() }}
-                </div>
-            @endif
+        <div class="card-header">
+            <h3 class="card-title mb-0">Transfer History</h3>
         </div>
+
+        <div class="card-body p-0">
+            <x-datatable id="transfers-table" :options="['pageLength' => 20, 'order' => [[0, 'desc']]]">
+                <thead>
+                    <tr>
+                        <th scope="col">Task</th>
+                        <th scope="col">From</th>
+                        <th scope="col">To</th>
+                        <th scope="col">Transferred By</th>
+                        <th scope="col">Reason</th>
+                        <th scope="col">Transfer Date</th>
+                        <th scope="col">File</th>
+                        <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($transfers as $transfer)
+                        <tr>
+                            <td>
+                                @if($transfer->task)
+                                    <a href="{{ route('tasks.edit', $transfer->task) }}" class="fw-semibold text-decoration-none">
+                                        {{ $transfer->task->title }}
+                                    </a>
+                                @else
+                                    <span class="text-body-secondary">Deleted Task</span>
+                                @endif
+                            </td>
+                            <td>{{ $transfer->fromUser->name ?? '—' }}</td>
+                            <td>{{ $transfer->toUser->name ?? '—' }}</td>
+                            <td>{{ $transfer->transferredBy->name ?? '—' }}</td>
+                            <td>{{ Str::limit($transfer->reason, 60) }}</td>
+                            <td>{{ $transfer->transfer_date ? $transfer->transfer_date->format('M d, Y') : '—' }}</td>
+                            <td>
+                                @if($transfer->file_attache)
+                                    <a href="{{ Storage::url($transfer->file_attache) }}" target="_blank" class="text-decoration-none">
+                                        <i class="bi bi-file-earmark-text me-1"></i>{{ $transfer->file_title ?: basename($transfer->file_attache) }}
+                                    </a>
+                                @else
+                                    <span class="text-body-secondary">—</span>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-end gap-1">
+                                    <form action="{{ route('task-transfers.destroy', $transfer) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center"
+                                                data-confirm="Delete this transfer record? This cannot be undone."
+                                                data-confirm-button="Delete" aria-label="Delete" title="Delete">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </x-datatable>
+        </div>
+
+        @if ($transfers->hasPages())
+            <div class="card-footer">
+                <x-pagination :paginator="$transfers" />
+            </div>
+        @endif
     @else
-        <div class="empty-state">
-            <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17 3l4 4-4 4M7 21l-4-4 4-4M21 7H7m-4 10h14" />
-            </svg>
-            <h3 class="empty-state-title">No transfers found</h3>
-            <p class="empty-state-description">Use the form above to transfer a task to another user.</p>
+        <div class="card-body">
+            <x-empty-state icon="arrow-left-right" title="No transfers found" description="Use the form above to transfer a task to another user." />
         </div>
     @endif
 </div>

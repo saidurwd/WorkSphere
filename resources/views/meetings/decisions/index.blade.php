@@ -2,95 +2,66 @@
 
 @section('title', 'Decisions')
 
-@section('breadcrumb')
-<a href="{{ route('dashboard.index') }}">Dashboard</a>
-<span class="breadcrumb-separator">/</span>
-<a href="{{ route('meetings.index') }}">Meetings</a>
-<span class="breadcrumb-separator">/</span>
-<a href="{{ route('meetings.show', $meeting) }}">{{ $meeting->title }}</a>
-<span class="breadcrumb-separator">/</span>
-<span>Decisions</span>
-@endsection
-
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Decisions</h1>
-            <p class="page-description">Manage decisions for {{ $meeting->title }}</p>
-        </div>
-        <div>
-            <a href="{{ route('meetings.decisions.create', $meeting) }}" class="btn btn-primary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                New Decision
-            </a>
-        </div>
-    </div>
-</div>
+    <x-page-header title="Decisions" subtitle="Manage decisions for {{ $meeting->title }}" icon="check2-square">
+        <x-btn :href="route('meetings.decisions.create', $meeting)" icon="plus-lg">New Decision</x-btn>
+    </x-page-header>
 
-<div class="card">
-    @if($decisions->count())
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Title</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                        <th>Approved By</th>
-                        <th style="text-align: right;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($decisions as $decision)
-                    <tr>
-                        <td>{{ $decision->decision_no }}</td>
-                        <td>{{ $decision->decision_title }}</td>
-                        <td>{{ ucwords(str_replace('_', ' ', $decision->decision_type)) }}</td>
-                        <td>
-                            <span class="badge {{ $decision->decision_status === 'active' ? 'badge-success' : 'badge-secondary' }}">
-                                {{ ucwords($decision->decision_status) }}
-                            </span>
-                        </td>
-                        <td>{{ $decision->decision_date ? $decision->decision_date->format('M d, Y') : 'N/A' }}</td>
-                        <td>{{ $decision->approvedBy->name ?? 'N/A' }}</td>
-                        <td>
-                            <div class="action-buttons" style="justify-content: flex-end;">
-                                <a href="{{ route('meetings.decisions.edit', [$meeting, $decision]) }}" class="action-btn" title="Edit">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </a>
-                                <form action="{{ route('meetings.decisions.destroy', [$meeting, $decision]) }}" method="POST" style="display: inline;" id="delete-decision-form-{{ $decision->id }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="button" class="action-btn action-btn-danger" title="Delete" onclick="if (confirm('Are you sure you want to delete this decision?')) { document.getElementById('delete-decision-form-{{ $decision->id }}').submit(); }">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+    <div class="card">
+        @if($decisions->count())
+            <div class="card-body p-0">
+                <x-datatable id="decisions-table" :options="['pageLength' => 20, 'order' => [[0, 'desc']]]">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Approved By</th>
+                            <th scope="col" class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($decisions as $decision)
+                            <tr>
+                                <td>{{ $decision->decision_no }}</td>
+                                <td>{{ $decision->decision_title }}</td>
+                                <td>{{ ucwords(str_replace('_', ' ', $decision->decision_type)) }}</td>
+                                <td>
+                                    <x-badge :variant="$decision->decision_status === 'active' ? 'success' : 'secondary'">{{ ucwords($decision->decision_status) }}</x-badge>
+                                </td>
+                                <td>{{ $decision->decision_date ? $decision->decision_date->format('M d, Y') : 'N/A' }}</td>
+                                <td>{{ $decision->approvedBy->name ?? 'N/A' }}</td>
+                                <td>
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <x-icon-btn :href="route('meetings.decisions.edit', [$meeting, $decision])" icon="pencil" label="Edit" />
+                                        <form action="{{ route('meetings.decisions.destroy', [$meeting, $decision]) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center"
+                                                    data-confirm="Delete this decision?"
+                                                    data-confirm-button="Delete" aria-label="Delete" title="Delete">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </x-datatable>
+            </div>
 
-        @if($decisions->hasPages())
-        <div class="pagination">
-            {{ $decisions->links() }}
-        </div>
+            @if ($decisions->hasPages())
+                <div class="card-footer">
+                    <x-pagination :paginator="$decisions" />
+                </div>
+            @endif
+        @else
+            <div class="card-body">
+                <x-empty-state icon="check2-square" title="No decisions recorded yet" description="Decisions will appear here after they are created." />
+            </div>
         @endif
-    @else
-        <div class="empty-state">
-            <p style="margin: 0; color: var(--muted-foreground);">No decisions recorded yet.</p>
-        </div>
-    @endif
-</div>
+    </div>
 @endsection

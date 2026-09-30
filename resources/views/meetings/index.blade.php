@@ -2,186 +2,156 @@
 
 @section('title', 'Meetings')
 
-@section('breadcrumb')
-<a href="{{ route('dashboard.index') }}">Dashboard</a>
-<span class="breadcrumb-separator">/</span>
-<span>Meetings</span>
-@endsection
-
 @section('content')
-<div class="page-header">
-    <div class="page-header-row">
-        <div>
-            <h1 class="page-title">Meetings</h1>
-            <p class="page-description">Schedule and manage meetings.</p>
-        </div>
-        <div>
-            <a href="{{ route('meetings.create') }}" class="btn btn-primary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                New Meeting
-            </a>
+    <x-page-header title="Meetings" subtitle="Schedule and manage meetings." icon="calendar-week">
+        <x-btn :href="route('meetings.create')" icon="plus-lg">New Meeting</x-btn>
+    </x-page-header>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form action="{{ route('meetings.index') }}" method="GET" id="filter-form">
+                <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label for="meeting-search" class="form-label">Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input id="meeting-search" type="search" name="search" class="form-control"
+                                   placeholder="Search meetings..." value="{{ request('search') }}">
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <label for="status-filter" class="form-label">Status</label>
+                        <select id="status-filter" name="status" class="form-select" onchange="document.getElementById('filter-form').submit()">
+                            <option value="">All</option>
+                            <option value="scheduled" {{ request('status') === 'scheduled' ? 'selected' : '' }}>Scheduled</option>
+                            <option value="in_progress" {{ request('status') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                            <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Completed</option>
+                            <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                            <option value="postponed" {{ request('status') === 'postponed' ? 'selected' : '' }}>Postponed</option>
+                        </select>
+                    </div>
+
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <label for="type-filter" class="form-label">Type</label>
+                        <select id="type-filter" name="meeting_type_id" class="form-select" onchange="document.getElementById('filter-form').submit()">
+                            <option value="">All</option>
+                            @foreach($types as $type)
+                                <option value="{{ $type->id }}" {{ request('meeting_type_id') == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <label for="department-filter" class="form-label">Department</label>
+                        <select id="department-filter" name="department_id" class="form-select" onchange="document.getElementById('filter-form').submit()">
+                            <option value="">All</option>
+                            @foreach($departments as $department)
+                                <option value="{{ $department->id }}" {{ request('department_id') == $department->id ? 'selected' : '' }}>{{ $department->department_name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <label for="date-from" class="form-label">From</label>
+                        <input id="date-from" type="date" name="date_from" class="form-control" value="{{ request('date_from') }}">
+                    </div>
+
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <label for="date-to" class="form-label">To</label>
+                        <input id="date-to" type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
+                    </div>
+
+                    <div class="col-12 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i>Apply</button>
+                        @if(request()->hasAny(['search', 'status', 'meeting_type_id', 'department_id', 'date_from', 'date_to']))
+                            <a href="{{ route('meetings.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg me-1"></i>Clear</a>
+                        @endif
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
-</div>
 
-<div class="card" style="margin-bottom: 1rem;">
-    <div class="card-body">
-        <form action="{{ route('meetings.index') }}" method="GET" id="filter-form">
-            <div class="filters-bar">
-                <div class="search-box">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <input type="search" name="search" class="form-input" placeholder="Search meetings..." value="{{ $filters['search'] ?? '' }}">
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">Status:</label>
-                    <select name="status" class="form-select" style="min-width: 150px;" onchange="document.getElementById('filter-form').submit()">
-                        <option value="">All Statuses</option>
-                        <option value="scheduled" {{ ($filters['status'] ?? '') === 'scheduled' ? 'selected' : '' }}>Scheduled</option>
-                        <option value="in_progress" {{ ($filters['status'] ?? '') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                        <option value="completed" {{ ($filters['status'] ?? '') === 'completed' ? 'selected' : '' }}>Completed</option>
-                        <option value="cancelled" {{ ($filters['status'] ?? '') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                        <option value="postponed" {{ ($filters['status'] ?? '') === 'postponed' ? 'selected' : '' }}>Postponed</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">Type:</label>
-                    <select name="meeting_type_id" class="form-select" style="min-width: 180px;" onchange="document.getElementById('filter-form').submit()">
-                        <option value="">All Types</option>
-                        @foreach($types as $type)
-                            <option value="{{ $type->id }}" {{ (int) ($filters['meeting_type_id'] ?? 0) === $type->id ? 'selected' : '' }}>
-                                {{ $type->name }}
-                            </option>
+    <div class="card">
+        @if($meetings->count())
+            <div class="card-body p-0">
+                <x-datatable id="meetings-table" :options="['pageLength' => 20, 'order' => [[0, 'desc']]]">
+                    <thead>
+                        <tr>
+                            <th scope="col">Meeting No</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Department</th>
+                            <th scope="col">Organizer</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Minutes</th>
+                            <th scope="col" class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($meetings as $meeting)
+                            <tr>
+                                <td><span class="fw-semibold" style="font-family: monospace;">{{ $meeting->meeting_no }}</span></td>
+                                <td>
+                                    <a href="{{ route('meetings.show', $meeting) }}" class="fw-semibold text-decoration-none">
+                                        {{ $meeting->title }}
+                                    </a>
+                                </td>
+                                <td>{{ $meeting->meeting_date->format('M d, Y') }}</td>
+                                <td>{{ $meeting->type->name ?? 'N/A' }}</td>
+                                <td>{{ $meeting->department->department_name ?? 'N/A' }}</td>
+                                <td>{{ $meeting->organizer->name ?? 'N/A' }}</td>
+                                <td>
+                                    <x-badge :variant="match ($meeting->status) {
+                                        'completed' => 'success',
+                                        'cancelled' => 'danger',
+                                        'in_progress' => 'primary',
+                                        'postponed' => 'warning',
+                                        default => 'secondary',
+                                    }">{{ ucwords(str_replace('_', ' ', $meeting->status)) }}</x-badge>
+                                </td>
+                                <td>
+                                    <x-badge :variant="match ($meeting->minutes_status) {
+                                        'published' => 'success',
+                                        'approved' => 'primary',
+                                        'submitted' => 'warning',
+                                        default => 'secondary',
+                                    }">{{ ucwords(str_replace('_', ' ', $meeting->minutes_status)) }}</x-badge>
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <x-icon-btn :href="route('meetings.show', $meeting)" icon="eye" label="View" />
+                                        <x-icon-btn :href="route('meetings.edit', $meeting)" icon="pencil" label="Edit" />
+                                        <form action="{{ route('meetings.destroy', $meeting) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center"
+                                                    data-confirm="Delete meeting "{{ $meeting->title }}"? This cannot be undone."
+                                                    data-confirm-button="Delete" aria-label="Delete" title="Delete">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
                         @endforeach
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">Department:</label>
-                    <select name="department_id" class="form-select" style="min-width: 180px;" onchange="document.getElementById('filter-form').submit()">
-                        <option value="">All Departments</option>
-                        @foreach($departments as $department)
-                            <option value="{{ $department->id }}" {{ (int) ($filters['department_id'] ?? 0) === $department->id ? 'selected' : '' }}>
-                                {{ $department->department_name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">Date From:</label>
-                    <input type="date" name="date_from" class="form-input" value="{{ $filters['date_from'] ?? '' }}" style="min-width: 150px;">
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">Date To:</label>
-                    <input type="date" name="date_to" class="form-input" value="{{ $filters['date_to'] ?? '' }}" style="min-width: 150px;">
-                </div>
-
-                <button type="submit" class="btn btn-secondary">Search</button>
-
-                @if(!empty($filters['search']) || !empty($filters['status']) || !empty($filters['meeting_type_id']) || !empty($filters['department_id']) || !empty($filters['date_from']) || !empty($filters['date_to']))
-                    <a href="{{ route('meetings.index') }}" class="btn btn-ghost">Clear</a>
-                @endif
+                    </tbody>
+                </x-datatable>
             </div>
-        </form>
-    </div>
-</div>
 
-<div class="card">
-    @if($meetings->count())
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Meeting No</th>
-                        <th>Title</th>
-                        <th>Date</th>
-                        <th>Type</th>
-                        <th>Department</th>
-                        <th>Organizer</th>
-                        <th>Status</th>
-                        <th>Minutes</th>
-                        <th style="text-align: right;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($meetings as $meeting)
-                    <tr>
-                        <td><span style="font-weight: 600; font-family: monospace;">{{ $meeting->meeting_no }}</span></td>
-                        <td>
-                            <a href="{{ route('meetings.show', $meeting) }}" style="text-decoration: none; color: inherit; font-weight: 500;">
-                                {{ $meeting->title }}
-                            </a>
-                        </td>
-                        <td>{{ $meeting->meeting_date->format('M d, Y') }}</td>
-                        <td>{{ $meeting->type->name ?? 'N/A' }}</td>
-                        <td>{{ $meeting->department->department_name ?? 'N/A' }}</td>
-                        <td>{{ $meeting->organizer->name ?? 'N/A' }}</td>
-                        <td>
-                            <span class="badge {{ $meeting->status === 'completed' ? 'badge-success' : ($meeting->status === 'cancelled' ? 'badge-danger' : ($meeting->status === 'in_progress' ? 'badge-primary' : 'badge-secondary')) }}">
-                                {{ ucwords(str_replace('_', ' ', $meeting->status)) }}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="badge {{ $meeting->minutes_status === 'published' ? 'badge-success' : ($meeting->minutes_status === 'approved' ? 'badge-primary' : ($meeting->minutes_status === 'submitted' ? 'badge-warning' : 'badge-secondary')) }}">
-                                {{ ucwords(str_replace('_', ' ', $meeting->minutes_status)) }}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="action-buttons" style="justify-content: flex-end;">
-                                <a href="{{ route('meetings.show', $meeting) }}" class="action-btn" title="View">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                </a>
-                                <a href="{{ route('meetings.edit', $meeting) }}" class="action-btn" title="Edit">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </a>
-                                <form action="{{ route('meetings.destroy', $meeting) }}" method="POST" style="display: inline;" id="delete-meeting-form-{{ $meeting->id }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="button" class="action-btn action-btn-danger" title="Delete" onclick="if (confirm('Are you sure you want to delete this meeting? This action cannot be undone.')) { document.getElementById('delete-meeting-form-{{ $meeting->id }}').submit(); }">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        @if($meetings->hasPages())
-        <div class="pagination">
-            {{ $meetings->links() }}
-        </div>
+            @if ($meetings->hasPages())
+                <div class="card-footer">
+                    <x-pagination :paginator="$meetings" />
+                </div>
+            @endif
+        @else
+            <div class="card-body">
+                <x-empty-state icon="calendar-week" title="No meetings found" description="Get started by scheduling a new meeting.">
+                    <x-btn :href="route('meetings.create')" icon="plus-lg" size="sm">New Meeting</x-btn>
+                </x-empty-state>
+            </div>
         @endif
-    @else
-        <div class="empty-state">
-            <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <h3 class="empty-state-title">No meetings found</h3>
-            <p class="empty-state-description">Get started by scheduling a new meeting.</p>
-            <a href="{{ route('meetings.create') }}" class="btn btn-primary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                New Meeting
-            </a>
-        </div>
-    @endif
-</div>
+    </div>
 @endsection
