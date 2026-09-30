@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Role: {{ $role->name }}')
+@section('title')
+    Role: {{ $role->name }}
+@endsection
 
 @section('header-actions')
     <x-btn :href="route('admin.roles.edit', $role)" icon="pencil" variant="outline-secondary">Edit</x-btn>

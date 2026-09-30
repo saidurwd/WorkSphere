@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'User: {{ $user->name }}')
+@section('title')
+    User: {{ $user->name }}
+@endsection
 
 @section('header-actions')
     <x-btn :href="route('admin.users.edit', $user)" icon="pencil" variant="outline-secondary">Edit</x-btn>

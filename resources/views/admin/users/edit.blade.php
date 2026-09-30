@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Edit User: {{ $user->name }}')
+@section('title')
+    Edit User: {{ $user->name }}
+@endsection
 
 @section('content')
     <x-page-header title="Edit User" subtitle="{{ $user->name }}" icon="person-gear" />

@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Role: {{ $role->name }}')
+@section('title')
+    Edit Role: {{ $role->name }}
+@endsection
 
 @section('content')
     <x-page-header title="Edit Role" subtitle="{{ $role->name }}" icon="person-gear" />
