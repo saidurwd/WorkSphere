@@ -170,7 +170,7 @@ class DashboardController extends Controller
             ];
         };
 
-        $mapObligation = static function (Obligation $o): array {
+        $mapObligation = static function (Obligation $o) use ($today): array {
             $remaining = $today->diffInDays($o->expiry_date, false);
             $remainingText = $remaining < 0 ? 'Expired '.abs($remaining).' days ago' : ($remaining === 0 ? 'Expires today' : $remaining.' days remaining');
 
