@@ -17,9 +17,17 @@
             <h1 class="page-title">Edit Task</h1>
             <p class="page-description">Update task details.</p>
         </div>
-        <button type="button" class="btn btn-primary" onclick="openRemarkModal()">
-            Add Remarks
-        </button>
+        <div style="display: flex; gap: 0.5rem;">
+            <a href="{{ route('task-transfers.index', ['task_id' => $task->id]) }}" class="btn btn-secondary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 3l4 4-4 4M7 21l-4-4 4-4M21 7H7m-4 10h14" />
+                </svg>
+                Transfer
+            </a>
+            <button type="button" class="btn btn-primary" onclick="openRemarkModal()">
+                Add Remarks
+            </button>
+        </div>
     </div>
 </div>
 
@@ -145,7 +153,7 @@
 @endif
 
 <!-- Add Remark Modal -->
-<div id="remarkModal" style="display: none !important; position: fixed; inset: 0; z-index: 999; background: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
+<div id="remarkModal" class="modal" tabindex="-1" style="display: none; position: fixed; inset: 0; z-index: 999; background: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
     <div class="card" style="width: 100%; max-width: 600px; margin: 0;">
         <div class="card-header">
             <h3 class="card-title">Add Remark</h3>
@@ -178,13 +186,6 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var modal = document.getElementById('remarkModal');
-        if (modal) {
-            modal.style.display = 'none';
-        }
-    });
-
     function openRemarkModal() {
         var modal = document.getElementById('remarkModal');
         modal.style.display = 'flex';
@@ -200,27 +201,6 @@
             closeRemarkModal();
         }
     });
-
-    (function() {
-        var btn = document.getElementById('update-task-btn');
-        if (!btn) return;
-
-        var form = btn.closest('form');
-        if (!form) return;
-
-        btn.addEventListener('click', function(e) {
-            if (!form.checkValidity()) {
-                return;
-            }
-
-            e.preventDefault();
-
-            btn.disabled = true;
-            btn.innerHTML = 'Working...<svg style="width:1.25rem;height:1.25rem;display:inline-block;vertical-align:middle;margin-right:0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path></svg>';
-
-            form.submit();
-        });
-    })();
 </script>
 @endpush
 @endsection
