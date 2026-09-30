@@ -30,11 +30,10 @@ class FoundationSeeder extends Seeder
             ['Sales & Marketing', 'SAL'],
             ['Operations', 'OPS'],
         ])->map(function (array $d) {
-            return Department::create([
-                'department_name' => $d[0],
-                'department_code' => $d[1],
-                'status' => 'active',
-            ]);
+            return Department::firstOrCreate(
+                ['department_code' => $d[1]],
+                ['department_name' => $d[0], 'status' => 'active']
+            );
         });
 
         $locations = collect([
@@ -43,32 +42,31 @@ class FoundationSeeder extends Seeder
             ['Chittagong Hub', 'CTG', '8 Agrabad', 'Chittagong', 'Bangladesh'],
             ['Remote / WFH', 'REM', null, null, null],
         ])->map(function (array $l) {
-            return Location::create([
-                'location_name' => $l[0],
-                'location_code' => $l[1],
-                'address' => $l[2],
-                'city' => $l[3],
-                'country' => $l[4],
-                'status' => 'active',
-            ]);
+            return Location::firstOrCreate(
+                ['location_code' => $l[1]],
+                ['location_name' => $l[0], 'address' => $l[2], 'city' => $l[3], 'country' => $l[4], 'status' => 'active']
+            );
         });
 
-        collect([
-            ['Dell Technologies', 'Rahman Ali', 'bd-sales@dell.example', '+8801700000001', 'Dell Tower, Dhaka'],
-            ['Apple Reseller Ltd', 'Nusrat Jahan', 'sales@applereseller.example', '+8801700000002', 'Banani, Dhaka'],
-            ['HP Bangladesh', 'Karim Uddin', 'contact@hpbangladesh.example', '+8801700000003', 'Motijheel, Dhaka'],
-            ['Microsoft Volume', 'Sultana Yesmin', 'vl@microsoft.example', '+8801700000004', 'Online'],
-            ['Local IT Wholesale', 'Jamal Hossain', 'trade@localit.example', '+8801700000005', 'Elephant Road, Dhaka'],
-        ])->map(function (array $v) {
-            return Vendor::create([
-                'vendor_name' => $v[0],
-                'contact_person' => $v[1],
-                'email' => $v[2],
-                'phone' => $v[3],
-                'address' => $v[4],
-                'website' => 'https://'.Str::slug($v[0]).'.example',
-                'status' => 'active',
-            ]);
+        $vendorNames = [
+            'Dell Technologies', 'Apple Reseller Ltd', 'HP Bangladesh', 'Microsoft Volume', 'Local IT Wholesale',
+            'Cisco Systems', 'IBM Bangladesh', 'Oracle Bangladesh', 'SAP Bangladesh', 'Lenovo Solutions',
+            'Sony Bangladesh', 'Samsung Electronics', 'LG Bangladesh', 'Asus Tech', 'Acer Service',
+            'Nokia Networks', 'Huawei Technologies', 'Xiaomi Services', 'Logitech Bangladesh', 'Epson Bangladesh',
+        ];
+
+        collect($vendorNames)->map(function (string $vendorName, int $index) use ($faker) {
+            return Vendor::firstOrCreate(
+                ['vendor_name' => $vendorName],
+                [
+                    'contact_person' => $faker->name(),
+                    'email' => strtolower(Str::slug($vendorName)).'@example.com',
+                    'phone' => '+88017'.str_pad((string) $faker->numberBetween(10000000, 99999999), 8, '0', STR_PAD_LEFT),
+                    'address' => $faker->address(),
+                    'website' => 'https://'.Str::slug($vendorName).'.example',
+                    'status' => $faker->randomElement(['active', 'active', 'active', 'inactive']),
+                ]
+            );
         });
 
         // ---------------------------------------------------------------
