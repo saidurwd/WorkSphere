@@ -7,6 +7,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class UserController extends Controller
@@ -57,16 +58,23 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'status' => ['required', 'in:active,inactive'],
+            'avatar' => ['nullable', 'image', 'max:2048'],
             'roles' => ['array'],
             'roles.*' => ['exists:roles,id'],
         ]);
 
-        $user = User::query()->create([
+        $userData = [
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => $data['password'],
             'status' => $data['status'],
-        ]);
+        ];
+
+        if ($request->hasFile('avatar')) {
+            $userData['avatar'] = $request->file('avatar')->store('user-avatars', 'public');
+        }
+
+        $user = User::query()->create($userData);
 
         if (! empty($data['roles'])) {
             $user->roles()->sync($data['roles']);
@@ -113,11 +121,27 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'status' => ['required', 'in:active,inactive'],
+            'avatar' => ['nullable', 'image', 'max:2048'],
             'roles' => ['array'],
             'roles.*' => ['exists:roles,id'],
         ]);
 
-        $user->fill(array_filter($data, fn ($v) => $v !== null, ARRAY_FILTER_USE_BOTH));
+        $userData = array_filter($data, fn ($v) => $v !== null, ARRAY_FILTER_USE_BOTH);
+        unset($userData['password'], $userData['avatar'], $userData['roles']);
+
+        if ($request->filled('password')) {
+            $userData['password'] = $data['password'];
+        }
+
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            $userData['avatar'] = $request->file('avatar')->store('user-avatars', 'public');
+        }
+
+        $user->fill($userData);
         $user->save();
 
         if (isset($data['roles'])) {

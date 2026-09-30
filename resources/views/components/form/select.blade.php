@@ -33,7 +33,13 @@
         @endif
 
         @foreach ($options as $optionValue => $optionLabel)
-            <option value="{{ $optionValue }}" @selected((string) old($name, $value) === (string) $optionValue)>{{ $optionLabel }}</option>
+            @php
+                $selectedValue = old($name, $value);
+                $isSelected = is_array($selectedValue)
+                    ? in_array((string) $optionValue, array_map('strval', $selectedValue), true)
+                    : (string) $selectedValue === (string) $optionValue;
+            @endphp
+            <option value="{{ $optionValue }}" @selected($isSelected)>{{ $optionLabel }}</option>
         @endforeach
 
         {{ $slot }}

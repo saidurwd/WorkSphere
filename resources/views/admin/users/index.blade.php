@@ -53,7 +53,7 @@
                         <tr>
                             <td>{{ $user->id }}</td>
                             <td>
-                                <x-user-cell :name="$user->name" :email="$user->email" :size="32" />
+                                <x-user-cell :name="$user->name" :email="$user->email" :size="32" :avatar="$user->avatar" />
                             </td>
                             <td>{{ $user->email }}</td>
                             <td>

@@ -9,7 +9,7 @@
 
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('admin.users.update', $user) }}" method="POST">
+            <form action="{{ route('admin.users.update', $user) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -28,6 +28,18 @@
 
                     <div class="col-12 col-md-6">
                         <x-form.input name="password_confirmation" label="Confirm New Password" type="password" />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">Profile Picture</label>
+                        <input type="file" name="avatar" id="avatar" class="form-control" accept="image/*">
+                        <div class="form-text">Upload a profile picture (max 2MB). JPG, PNG, or GIF.</div>
+                        @if($user->avatar)
+                            <div class="mt-2">
+                                <img src="{{ asset('storage/'.$user->avatar) }}" alt="{{ $user->name }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%;">
+                                <div class="form-text">Current profile picture</div>
+                            </div>
+                        @endif
                     </div>
 
                     <div class="col-12 col-md-6">

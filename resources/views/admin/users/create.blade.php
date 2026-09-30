@@ -7,7 +7,7 @@
 
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('admin.users.store') }}" method="POST">
+            <form action="{{ route('admin.users.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
                 <div class="row g-3">
@@ -25,6 +25,12 @@
 
                     <div class="col-12 col-md-6">
                         <x-form.input name="password_confirmation" label="Confirm Password" type="password" required />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">Profile Picture</label>
+                        <input type="file" name="avatar" id="avatar" class="form-control" accept="image/*">
+                        <div class="form-text">Upload a profile picture (max 2MB). JPG, PNG, or GIF.</div>
                     </div>
 
                     <div class="col-12 col-md-6">

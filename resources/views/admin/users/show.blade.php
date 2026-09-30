@@ -20,7 +20,11 @@
         <div class="col-lg-4">
             <div class="card h-100">
                 <div class="card-body text-center">
-                    <div class="user-image d-inline-flex" style="width: 120px; height: 120px; font-size: 3rem;">{{ strtoupper(substr($user->name, 0, 2)) }}</div>
+                    @if($user->avatar)
+                        <img src="{{ asset('storage/'.$user->avatar) }}" alt="{{ $user->name }}" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+                    @else
+                        <div class="user-image d-inline-flex" style="width: 120px; height: 120px; font-size: 3rem;">{{ strtoupper(substr($user->name, 0, 2)) }}</div>
+                    @endif
 
                     <h4 class="mt-3 mb-1">{{ $user->name }}</h4>
                     <p class="text-body-secondary mb-3">{{ $user->email }}</p>

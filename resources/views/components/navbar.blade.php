@@ -125,15 +125,23 @@
             @auth
                 <li class="nav-item dropdown user-menu">
                     <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown" href="#" aria-expanded="false">
-                        <span class="user-image rounded-circle d-inline-flex align-items-center justify-content-center bg-secondary text-white" style="width: 2rem; height: 2rem; font-size: 0.75rem;">{{ $initials }}</span>
+                        @if($user?->avatar)
+                            <img src="{{ asset('storage/'.$user->avatar) }}" class="user-image rounded-circle" alt="{{ $user->name }}" style="width: 2rem; height: 2rem; object-fit: cover;">
+                        @else
+                            <span class="user-image rounded-circle d-inline-flex align-items-center justify-content-center bg-secondary text-white" style="width: 2rem; height: 2rem; font-size: 0.75rem;">{{ $initials }}</span>
+                        @endif
                         <span class="d-none d-sm-inline">{{ $user?->name }}</span>
                     </a>
 
                     <ul class="dropdown-menu dropdown-menu-end">
                         <a href="{{ route('dashboard.index') }}" class="user-header text-center text-decoration-none">
-                            <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center text-white" style="width: 90px; height: 90px; font-size: 2.25rem; border: 3px solid var(--bs-border-color-translucent);">
-                                {{ $initials }}
-                            </div>
+                            @if($user?->avatar)
+                                <img src="{{ asset('storage/'.$user->avatar) }}" class="rounded-circle" alt="{{ $user->name }}" style="width: 90px; height: 90px; object-fit: cover; border: 3px solid var(--bs-border-color-translucent);">
+                            @else
+                                <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center text-white" style="width: 90px; height: 90px; font-size: 2.25rem; border: 3px solid var(--bs-border-color-translucent);">
+                                    {{ $initials }}
+                                </div>
+                            @endif
                             <p class="mt-2 mb-0 text-body">
                                 {{ $user?->name }}
                                 <small class="d-block text-body-secondary">{{ $user?->email }}</small>
