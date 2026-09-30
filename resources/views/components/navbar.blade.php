@@ -123,33 +123,43 @@
             </li>
 
             @auth
-                <li class="nav-item dropdown">
+                <li class="nav-item dropdown user-menu">
                     <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown" href="#" aria-expanded="false">
-                        <span class="user-image">{{ $initials }}</span>
+                        <span class="user-image rounded-circle d-inline-flex align-items-center justify-content-center bg-secondary text-white" style="width: 2rem; height: 2rem; font-size: 0.75rem;">{{ $initials }}</span>
                         <span class="d-none d-sm-inline">{{ $user?->name }}</span>
                     </a>
 
-                    <div class="dropdown-menu dropdown-menu-end">
-                        <div class="dropdown-header">
-                            <span class="d-block fw-semibold">{{ $user?->name }}</span>
-                            <small class="text-body-secondary">{{ $user?->email }}</small>
-                        </div>
-
-                        <div class="dropdown-divider"></div>
-
-                        <a class="dropdown-item" href="{{ route('dashboard.index') }}">
-                            <i class="bi bi-person me-2"></i>Profile
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <a href="{{ route('dashboard.index') }}" class="user-header text-center text-decoration-none">
+                            <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center text-white" style="width: 90px; height: 90px; font-size: 2.25rem; border: 3px solid var(--bs-border-color-translucent);">
+                                {{ $initials }}
+                            </div>
+                            <p class="mt-2 mb-0 text-body">
+                                {{ $user?->name }}
+                                <small class="d-block text-body-secondary">{{ $user?->email }}</small>
+                            </p>
                         </a>
 
-                        <div class="dropdown-divider"></div>
+                        <li class="user-body">
+                            <div class="d-flex justify-content-between px-3 py-2">
+                                <a href="{{ route('dashboard.index') }}" class="text-center text-decoration-none">
+                                    <i class="bi bi-person d-block mb-1"></i>Profile
+                                </a>
+                                <a href="{{ route('obligations.notifications') }}" class="text-center text-decoration-none">
+                                    <i class="bi bi-bell d-block mb-1"></i>Notifications
+                                </a>
+                            </div>
+                        </li>
 
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="dropdown-item">
-                                <i class="bi bi-box-arrow-right me-2"></i>Logout
-                            </button>
-                        </form>
-                    </div>
+                        <li class="user-footer">
+                            <form method="POST" action="{{ route('logout') }}" class="w-100">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-outline-secondary w-100">
+                                    <i class="bi bi-box-arrow-right me-1"></i>Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
                 </li>
             @endauth
         </ul>
