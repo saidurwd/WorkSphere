@@ -70,6 +70,9 @@ Route::middleware(['web', 'auth'])->prefix('obligations')->name('obligations.')-
     Route::get('/vendors', [ObligationVendorController::class, 'index'])->name('vendors');
     Route::get('/vendors/create', [ObligationVendorController::class, 'create'])->name('vendors.create');
     Route::post('/vendors', [ObligationVendorController::class, 'store'])->name('vendors.store');
+    Route::get('/vendors/{vendor}/edit', [ObligationVendorController::class, 'edit'])->name('vendors.edit');
+    Route::put('/vendors/{vendor}', [ObligationVendorController::class, 'update'])->name('vendors.update');
+    Route::delete('/vendors/{vendor}', [ObligationVendorController::class, 'destroy'])->name('vendors.destroy');
     Route::get('/documents', [ObligationDocumentListController::class, 'index'])->name('documents');
     Route::get('/notifications', [ObligationNotificationController::class, 'index'])->name('notifications');
     Route::delete('/notifications', [ObligationNotificationController::class, 'destroyAll'])->name('notifications.destroy-all');

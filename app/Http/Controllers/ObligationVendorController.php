@@ -57,4 +57,35 @@ class ObligationVendorController extends Controller
 
         return redirect()->route('obligations.vendors')->with('status', 'Vendor created successfully.');
     }
+
+    public function edit(Vendor $vendor): View
+    {
+        return view('obligations.vendors.edit', [
+            'vendor' => $vendor,
+        ]);
+    }
+
+    public function update(Request $request, Vendor $vendor): RedirectResponse
+    {
+        $validated = $request->validate([
+            'vendor_name' => ['required', 'string', 'max:255'],
+            'contact_person' => ['nullable', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:255'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'website' => ['nullable', 'url', 'max:255'],
+            'status' => ['required', Rule::in(['active', 'inactive'])],
+        ]);
+
+        $vendor->update($validated);
+
+        return redirect()->route('obligations.vendors')->with('status', 'Vendor updated successfully.');
+    }
+
+    public function destroy(Vendor $vendor): RedirectResponse
+    {
+        $vendor->delete();
+
+        return redirect()->route('obligations.vendors')->with('status', 'Vendor deleted successfully.');
+    }
 }
