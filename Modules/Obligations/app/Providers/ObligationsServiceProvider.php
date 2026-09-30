@@ -57,6 +57,10 @@ class ObligationsServiceProvider extends ModuleServiceProvider
      */
     public function boot(): void
     {
+        // Parent boot registers commands, module views, config,
+        // translations and migrations - all of which must still run.
+        parent::boot();
+
         View::addLocation(module_path($this->name, 'resources/views'));
     }
 }
