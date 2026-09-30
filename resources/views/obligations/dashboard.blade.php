@@ -124,7 +124,7 @@
                         <tr>
                             <td><a href="{{ $item['url'] }}" style="text-decoration: none; color: inherit; font-weight: 500;">{{ $item['title'] }}</a></td>
                             <td>{{ $item['subtitle'] }}</td>
-                            <td><span class="badge {{ $item['badge']['class'] }}">{{ $item['badge']['text'] }}</span></td>
+                            <td><span class="badge {{ $item['badge']['variant'] }}">{{ $item['badge']['text'] }}</span></td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -154,7 +154,7 @@
                         <tr>
                             <td><a href="{{ $item['url'] }}" style="text-decoration: none; color: inherit; font-weight: 500;">{{ $item['title'] }}</a></td>
                             <td>{{ $item['subtitle'] }}</td>
-                            <td><span class="badge {{ $item['badge']['class'] }}">{{ $item['badge']['text'] }}</span></td>
+                            <td><span class="badge {{ $item['badge']['variant'] }}">{{ $item['badge']['text'] }}</span></td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -185,7 +185,7 @@
                     <tr>
                         <td><a href="{{ $item['url'] }}" style="text-decoration: none; color: inherit; font-weight: 500;">{{ $item['title'] }}</a></td>
                         <td>{{ $item['subtitle'] }}</td>
-                        <td><span class="badge {{ $item['badge']['class'] }}">{{ $item['badge']['text'] }}</span></td>
+                        <td><span class="badge {{ $item['badge']['variant'] }}">{{ $item['badge']['text'] }}</span></td>
                     </tr>
                     @endforeach
                 </tbody>
