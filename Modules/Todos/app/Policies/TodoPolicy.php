@@ -43,6 +43,16 @@ class TodoPolicy
         return $user->hasPermission('todos.create');
     }
 
+    /**
+     * Delegating a To-Do to somebody else at creation is a distinct permission
+     * from creating one at all (§4). Without it, any user who may create a To-Do
+     * could also assign it into somebody else's workload.
+     */
+    public function createForOthers(User $user): bool
+    {
+        return $user->hasPermission('todos.create_for_others') || $user->hasRole('super-admin');
+    }
+
     public function view(User $user, Todo $todo): bool
     {
         if ($user->hasPermission('todos.view_all')) {

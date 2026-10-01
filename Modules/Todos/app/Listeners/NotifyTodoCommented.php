@@ -4,6 +4,7 @@ namespace Modules\Todos\Listeners;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Modules\Todos\Events\TodoCommented;
+use Modules\Todos\Jobs\SendTodoCommentJob;
 use Modules\Todos\Models\Todo;
 
 /**

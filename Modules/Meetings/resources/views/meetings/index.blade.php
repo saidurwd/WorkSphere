@@ -104,7 +104,7 @@
                                 <td>{{ $meeting->department->department_name ?? 'N/A' }}</td>
                                 <td>{{ $meeting->organizer->name ?? 'N/A' }}</td>
                                 <td>
-                                    <x-badge :variant="match ($meeting->status) {
+                                    <x-badge :variant="\App\Support\StatusBadge::variant($meeting->status)">
                                         'completed' => 'success',
                                         'cancelled' => 'danger',
                                         'in_progress' => 'primary',

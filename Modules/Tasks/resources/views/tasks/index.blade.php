@@ -135,18 +135,14 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <x-badge :variant="match ($task->priority) {
-                                        'high' => 'danger',
-                                        'medium' => 'warning',
-                                        default => 'secondary',
-                                    }">{{ ucfirst($task->priority) }}</x-badge>
+                                    <x-badge :variant="\App\Support\StatusBadge::priorityVariant($task->priority)">
+                                        {{ \App\Support\StatusBadge::label($task->priority) }}
+                                    </x-badge>
                                 </td>
                                 <td>
-                                    <x-badge :variant="match ($task->status) {
-                                        'completed' => 'success',
-                                        'in_progress' => 'primary',
-                                        default => 'secondary',
-                                    }">{{ ucwords(str_replace('_', ' ', $task->status)) }}</x-badge>
+                                    <x-badge :variant="\App\Support\StatusBadge::variant($task->status)">
+                                        {{ \App\Support\StatusBadge::label($task->status) }}
+                                    </x-badge>
                                 </td>
                                 <td class="text-nowrap">{{ $task->due_date->format('M d, Y') }}</td>
                                 <td>

@@ -150,20 +150,14 @@
                                 </td>
                                 <td><span class="badge text-bg-secondary">{{ ucwords(str_replace('_', ' ', $obligation->status)) }}</span></td>
                                 <td>
-                                    <x-badge :variant="match ($obligation->priority) {
-                                        'critical' => 'danger',
-                                        'high' => 'warning',
-                                        'medium' => 'primary',
-                                        'low' => 'secondary',
-                                    }">{{ ucfirst($obligation->priority) }}</x-badge>
+                                    <x-badge :variant="\App\Support\StatusBadge::priorityVariant($obligation->priority)">
+                                        {{ \App\Support\StatusBadge::label($obligation->priority) }}
+                                    </x-badge>
                                 </td>
                                 <td>
-                                    <x-badge :variant="match ($obligation->risk_level) {
-                                        'critical' => 'danger',
-                                        'high' => 'warning',
-                                        'medium' => 'primary',
-                                        'low' => 'secondary',
-                                    }">{{ ucfirst($obligation->risk_level) }}</x-badge>
+                                    <x-badge :variant="\App\Support\StatusBadge::priorityVariant($obligation->risk_level)">
+                                        {{ ucfirst($obligation->risk_level) }}
+                                    </x-badge>
                                 </td>
                                 <td>
                                     <div class="d-flex justify-content-end gap-1">

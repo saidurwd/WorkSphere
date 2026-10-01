@@ -35,7 +35,7 @@
             @endif
         </div>
     @else
-        <input type="{{ $type }}" value="{{ old($name, $value) }}" {{ $attributes->only(['placeholder', 'disabled', 'readonly', 'step', 'min', 'max'])->merge($shared) }}>
+        <input type="{{ $type }}" value="{{ old($name, $value) }}" {{ $attributes->only(['placeholder', 'disabled', 'readonly', 'step', 'min', 'max', 'maxlength', 'minlength', 'autocomplete', 'data-quick-capture'])->merge($shared) }}>
     @endif
 
     @if ($help)
