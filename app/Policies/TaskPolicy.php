@@ -19,7 +19,9 @@ class TaskPolicy
 
     public function view(User $user, Task $task): bool
     {
-        return $this->owns($user, $task) || $user->hasPermission('task.view');
+        return $this->owns($user, $task)
+            || $user->hasPermission('task.view')
+            || $this->belongsToVisibleMeeting($user, $task);
     }
 
     public function create(User $user): bool
@@ -52,5 +54,19 @@ class TaskPolicy
         return $task->user_id === $user->id
             || $task->responsible_user_id === $user->id
             || $user->hasRole('super-admin');
+    }
+
+    /**
+     * A task created from a meeting action item belongs, for visibility purposes,
+     * to the meeting that produced it.
+     */
+    protected function belongsToVisibleMeeting(User $user, Task $task): bool
+    {
+        return $task->meetingActionItems()
+            ->whereHas('meeting', function ($query) use ($user) {
+                $query->where('organizer_id', $user->id)
+                    ->orWhereHas('participants', fn ($participants) => $participants->where('user_id', $user->id));
+            })
+            ->exists();
     }
 }

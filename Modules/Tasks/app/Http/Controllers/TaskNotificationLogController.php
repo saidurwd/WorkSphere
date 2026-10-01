@@ -3,11 +3,10 @@
 namespace Modules\Tasks\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Tasks\Models\TaskNotificationLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Modules\Tasks\Models\TaskNotificationLog;
 
 class TaskNotificationLogController extends Controller
 {
@@ -53,9 +52,7 @@ class TaskNotificationLogController extends Controller
 
     public function destroy(TaskNotificationLog $log): RedirectResponse
     {
-        if (! $this->canManageAllLogs()) {
-            abort(403);
-        }
+        $this->authorize('task.delete_notification_logs');
 
         $log->delete();
 
@@ -64,9 +61,7 @@ class TaskNotificationLogController extends Controller
 
     public function destroyAll(Request $request): RedirectResponse
     {
-        if (! $this->canManageAllLogs()) {
-            abort(403);
-        }
+        $this->authorize('task.delete_notification_logs');
 
         $query = TaskNotificationLog::query();
 
@@ -99,12 +94,5 @@ class TaskNotificationLogController extends Controller
         $count = $query->delete();
 
         return redirect()->route('tasks.notification-logs.index')->with('success', "Deleted {$count} notification log(s).");
-    }
-
-    private function canManageAllLogs(): bool
-    {
-        $user = Auth::user();
-
-        return $user !== null && method_exists($user, 'hasRole') && $user->hasRole('super-admin');
     }
 }

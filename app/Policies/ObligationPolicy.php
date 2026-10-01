@@ -51,6 +51,20 @@ class ObligationPolicy
         return $this->owns($user, $obligation) || $user->hasPermission('obligation.assign');
     }
 
+    public function renew(User $user, Obligation $obligation): bool
+    {
+        return $this->owns($user, $obligation) || $user->hasPermission('obligation.renew');
+    }
+
+    /**
+     * Documents hang off the obligation and are governed by the same owner rule
+     * plus a dedicated document permission.
+     */
+    public function manageDocuments(User $user, Obligation $obligation): bool
+    {
+        return $this->owns($user, $obligation) || $user->hasPermission('obligation.manage_documents');
+    }
+
     protected function owns(User $user, Obligation $obligation): bool
     {
         return $obligation->owner_user_id === $user->id || $user->hasRole('super-admin');

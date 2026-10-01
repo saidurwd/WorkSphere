@@ -23,7 +23,9 @@ class EmployeeFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->optional()->numerify('+8801#########'),
             'designation' => fake()->optional()->jobTitle(),
-            'joining_date' => fake()->optional()->dateTimeBetween('-5 years', 'now')->format('Y-m-d'),
+            'joining_date' => fake()->boolean(80)
+                ? fake()->dateTimeBetween('-5 years', 'now')->format('Y-m-d')
+                : null,
             'status' => 'active',
         ];
     }

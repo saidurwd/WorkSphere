@@ -13,6 +13,8 @@ class RoleController extends Controller
 {
     public function index(): View
     {
+        $this->authorize('viewAny', Role::class);
+
         $roles = Role::query()->withCount('userRoles')->orderBy('name')->paginate(20);
 
         return view('admin.roles.index', [
@@ -27,6 +29,8 @@ class RoleController extends Controller
 
     public function create(): View
     {
+        $this->authorize('create', Role::class);
+
         $permissions = Permission::query()->orderBy('permission_name')->get();
 
         return view('admin.roles.create', [
@@ -42,6 +46,8 @@ class RoleController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->authorize('create', Role::class);
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'unique:roles,slug'],
@@ -63,6 +69,8 @@ class RoleController extends Controller
 
     public function show(Role $role): View
     {
+        $this->authorize('view', $role);
+
         $role->load('users', 'permissions');
 
         return view('admin.roles.show', [
@@ -78,6 +86,8 @@ class RoleController extends Controller
 
     public function edit(Role $role): View
     {
+        $this->authorize('update', $role);
+
         $role->load('permissions');
         $permissions = Permission::query()->orderBy('permission_name')->get();
 
@@ -95,6 +105,8 @@ class RoleController extends Controller
 
     public function update(Request $request, Role $role): RedirectResponse
     {
+        $this->authorize('update', $role);
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'unique:roles,slug,'.$role->id],
@@ -117,6 +129,8 @@ class RoleController extends Controller
 
     public function destroy(Role $role): RedirectResponse
     {
+        $this->authorize('delete', $role);
+
         if (in_array($role->slug, config('authorization.admin_roles', []), true)) {
             return back()->with('error', 'System roles cannot be deleted.');
         }

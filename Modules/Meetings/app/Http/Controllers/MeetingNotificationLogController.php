@@ -3,11 +3,10 @@
 namespace Modules\Meetings\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Meetings\Models\MeetingNotificationLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Modules\Meetings\Models\MeetingNotificationLog;
 
 class MeetingNotificationLogController extends Controller
 {
@@ -56,9 +55,7 @@ class MeetingNotificationLogController extends Controller
 
     public function destroy(MeetingNotificationLog $log): RedirectResponse
     {
-        if (! $this->canManageAllLogs()) {
-            abort(403);
-        }
+        $this->authorize('meeting.delete_notification_logs');
 
         $log->delete();
 
@@ -67,9 +64,7 @@ class MeetingNotificationLogController extends Controller
 
     public function destroyAll(Request $request): RedirectResponse
     {
-        if (! $this->canManageAllLogs()) {
-            abort(403);
-        }
+        $this->authorize('meeting.delete_notification_logs');
 
         $query = MeetingNotificationLog::query();
 
@@ -105,12 +100,5 @@ class MeetingNotificationLogController extends Controller
         $count = $query->delete();
 
         return redirect()->route('meetings.notification-logs.index')->with('success', "Deleted {$count} notification log(s).");
-    }
-
-    private function canManageAllLogs(): bool
-    {
-        $user = Auth::user();
-
-        return $user !== null && method_exists($user, 'hasRole') && $user->hasRole('super-admin');
     }
 }

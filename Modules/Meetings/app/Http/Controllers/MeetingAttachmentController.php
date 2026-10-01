@@ -3,11 +3,11 @@
 namespace Modules\Meetings\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Meetings\Models\Meeting;
-use Modules\Meetings\Models\MeetingAttachment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Modules\Meetings\Models\Meeting;
+use Modules\Meetings\Models\MeetingAttachment;
 
 class MeetingAttachmentController extends Controller
 {
@@ -20,11 +20,15 @@ class MeetingAttachmentController extends Controller
 
     public function create(Meeting $meeting): View
     {
+        $this->authorize('update', $meeting);
+
         return view('meetings.attachments.create', compact('meeting'));
     }
 
     public function store(Request $request, Meeting $meeting): RedirectResponse
     {
+        $this->authorize('update', $meeting);
+
         $validated = $request->validate([
             'file' => ['required', 'file', 'max:10240'],
             'description' => ['nullable', 'string'],
@@ -47,6 +51,8 @@ class MeetingAttachmentController extends Controller
 
     public function destroy(Meeting $meeting, MeetingAttachment $attachment): RedirectResponse
     {
+        $this->authorize('update', $meeting);
+
         $attachment->delete();
 
         return redirect()->route('meetings.show', $meeting)->with('success', 'Attachment deleted successfully.');

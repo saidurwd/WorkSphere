@@ -3,17 +3,19 @@
 namespace Modules\Obligations\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Obligations\Models\Obligation;
-use Modules\Obligations\Models\ObligationActivityLog;
-use Modules\Obligations\Models\ObligationDocument;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Modules\Obligations\Models\Obligation;
+use Modules\Obligations\Models\ObligationActivityLog;
+use Modules\Obligations\Models\ObligationDocument;
 
 class ObligationDocumentController extends Controller
 {
     public function store(Request $request, Obligation $obligation): RedirectResponse
     {
+        $this->authorize('manageDocuments', $obligation);
+
         $validated = $request->validate([
             'document_type' => ['required', 'string', 'max:255'],
             'file' => ['required', 'file', 'max:10240'],
@@ -52,6 +54,8 @@ class ObligationDocumentController extends Controller
         if ($document->obligation_id !== $obligation->id) {
             abort(404);
         }
+
+        $this->authorize('manageDocuments', $obligation);
 
         $document->delete();
 

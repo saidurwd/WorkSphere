@@ -3,11 +3,10 @@
 namespace Modules\Obligations\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Obligations\Models\NotificationLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Modules\Obligations\Models\NotificationLog;
 
 class ObligationNotificationController extends Controller
 {
@@ -48,9 +47,7 @@ class ObligationNotificationController extends Controller
 
     public function destroy(NotificationLog $notification): RedirectResponse
     {
-        if (! $this->canManageAllLogs()) {
-            abort(403);
-        }
+        $this->authorize('obligation.delete_notification_logs');
 
         $notification->delete();
 
@@ -59,9 +56,7 @@ class ObligationNotificationController extends Controller
 
     public function destroyAll(Request $request): RedirectResponse
     {
-        if (! $this->canManageAllLogs()) {
-            abort(403);
-        }
+        $this->authorize('obligation.delete_notification_logs');
 
         $query = NotificationLog::query();
 
@@ -89,12 +84,5 @@ class ObligationNotificationController extends Controller
         $count = $query->delete();
 
         return redirect()->route('obligations.notifications')->with('success', "Deleted {$count} notification(s).");
-    }
-
-    private function canManageAllLogs(): bool
-    {
-        $user = Auth::user();
-
-        return $user !== null && method_exists($user, 'hasRole') && $user->hasRole('super-admin');
     }
 }

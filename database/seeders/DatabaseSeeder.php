@@ -28,6 +28,9 @@ class DatabaseSeeder extends Seeder
         $this->call(MeetingTagSeeder::class);
         $this->call(MeetingSeeder::class);
         $this->call(ObligationSeeder::class);
+        $this->call(TodoSeeder::class);
+        // Last: ProjectPermissionSeeder deletes any permission that is not in its
+        // own allow-list, so nothing that creates permissions may run after it.
         $this->call(ProjectPermissionSeeder::class);
     }
 }
