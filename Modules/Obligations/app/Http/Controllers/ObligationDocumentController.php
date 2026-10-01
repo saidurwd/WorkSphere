@@ -7,8 +7,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Modules\Obligations\Models\Obligation;
-use Modules\Obligations\Models\ObligationActivityLog;
 use Modules\Obligations\Models\ObligationDocument;
+use Modules\Obligations\Services\ObligationActivitySynchroniser;
 
 class ObligationDocumentController extends Controller
 {
@@ -36,15 +36,16 @@ class ObligationDocumentController extends Controller
             'uploaded_by' => Auth::id(),
         ]);
 
-        ObligationActivityLog::create([
-            'obligation_id' => $obligation->id,
-            'user_id' => Auth::id(),
-            'action' => 'DOCUMENT_UPLOADED',
-            'new_value' => json_encode($document->toArray()),
-            'remarks' => 'Document uploaded: '.$validated['document_type'],
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
+        app(ObligationActivitySynchroniser::class)->record(
+            $obligation,
+            'DOCUMENT_UPLOADED',
+            null,
+            $document->toArray(),
+            'Document uploaded: '.$validated['document_type'],
+            Auth::id(),
+            $request->ip(),
+            $request->userAgent(),
+        );
 
         return back()->with('success', 'Document uploaded successfully.');
     }
@@ -59,15 +60,16 @@ class ObligationDocumentController extends Controller
 
         $document->delete();
 
-        ObligationActivityLog::create([
-            'obligation_id' => $obligation->id,
-            'user_id' => Auth::id(),
-            'action' => 'DOCUMENT_DELETED',
-            'old_value' => json_encode($document->toArray()),
-            'remarks' => 'Document deleted: '.$document->file_name,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        app(ObligationActivitySynchroniser::class)->record(
+            $obligation,
+            'DOCUMENT_DELETED',
+            $document->toArray(),
+            null,
+            'Document deleted: '.$document->file_name,
+            Auth::id(),
+            request()->ip(),
+            request()->userAgent(),
+        );
 
         return back()->with('success', 'Document deleted successfully.');
     }

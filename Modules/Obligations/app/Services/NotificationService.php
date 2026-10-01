@@ -2,12 +2,11 @@
 
 namespace Modules\Obligations\Services;
 
-use Modules\Obligations\Mail\ObligationReminder;
+use App\Models\User;
+use Modules\Obligations\Jobs\SendObligationReminderJob;
 use Modules\Obligations\Models\NotificationLog;
 use Modules\Obligations\Models\NotificationRule;
 use Modules\Obligations\Models\Obligation;
-use App\Models\User;
-use Illuminate\Support\Facades\Mail;
 
 class NotificationService
 {
@@ -23,28 +22,21 @@ class NotificationService
             'status' => 'PENDING',
             'subject' => $this->buildSubject($obligation, $rule),
             'message' => $this->buildMessage($obligation, $rule),
+            // Phase 6 added dedupe_key behind a unique index. Without one, a cron
+            // firing twice sends twice.
+            'dedupe_key' => sprintf(
+                'obligation.reminder:%d:%d:%s',
+                $obligation->id,
+                $rule->id,
+                now()->toDateString(),
+            ),
         ]);
 
-        try {
-            if ($rule->channel === 'EMAIL' && $recipient?->email) {
-                Mail::to($recipient->email)->send(new ObligationReminder($obligation, $rule, $recipient));
-            }
+        // GAP-022: queued, never inline. The log row is written here and marked
+        // SENT by the job, so the record reflects delivery rather than intent.
+        SendObligationReminderJob::dispatch($obligation, $rule, $recipient, (int) $log->id);
 
-            $log->update([
-                'status' => 'SENT',
-                'sent_at' => now(),
-            ]);
-
-            return true;
-        } catch (\Throwable $e) {
-            $log->update([
-                'status' => 'FAILED',
-                'error_message' => $e->getMessage(),
-                'retry_count' => $log->retry_count + 1,
-            ]);
-
-            return false;
-        }
+        return true;
     }
 
     public function buildSubject(Obligation $obligation, NotificationRule $rule): string

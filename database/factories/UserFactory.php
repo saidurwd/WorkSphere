@@ -29,6 +29,11 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            // Phase 8 GAP-040: `users.employee_id` is NOT NULL, so a user without
+            // an employee record cannot exist. Every factory user gets one, which
+            // is also what makes the constraint testable — a fixture that
+            // violated it would fail every test rather than the one about it.
+            'employee_id' => EmployeeFactory::new(),
             'remember_token' => Str::random(10),
         ];
     }

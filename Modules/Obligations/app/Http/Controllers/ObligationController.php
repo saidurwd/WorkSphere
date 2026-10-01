@@ -13,10 +13,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Modules\Obligations\Models\Obligation;
-use Modules\Obligations\Models\ObligationActivityLog;
 use Modules\Obligations\Models\ObligationCategory;
 use Modules\Obligations\Models\ObligationType;
 use Modules\Obligations\Models\Vendor;
+use Modules\Obligations\Services\ObligationActivitySynchroniser;
 
 class ObligationController extends Controller
 {
@@ -252,15 +252,17 @@ class ObligationController extends Controller
 
     private function logActivity(Obligation $obligation, string $action, ?array $oldValue, ?array $newValue, ?string $remarks = null): void
     {
-        ObligationActivityLog::create([
-            'obligation_id' => $obligation->id,
-            'user_id' => Auth::id(),
-            'action' => $action,
-            'old_value' => $oldValue ? json_encode($oldValue) : null,
-            'new_value' => $newValue ? json_encode($newValue) : null,
-            'remarks' => $remarks,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        // GAP-048: written to the module table AND the shared activity_logs table,
+        // with decoded payloads — the casts added in Phase 8 encode on save.
+        app(ObligationActivitySynchroniser::class)->record(
+            $obligation,
+            $action,
+            $oldValue,
+            $newValue,
+            $remarks,
+            Auth::id(),
+            request()->ip(),
+            request()->userAgent(),
+        );
     }
 }

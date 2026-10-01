@@ -9,7 +9,9 @@ use Database\Factories\ProjectFactory;
 use Database\Factories\TaskFactory;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Modules\Projects\Models\Project;
 use Modules\Tasks\Models\Task;
 use Tests\InteractsWithRoles;
@@ -33,11 +35,30 @@ class UserModelTest extends TestCase
         $this->assertSame($employee->id, $user->employee->id);
     }
 
-    public function test_the_employee_relation_is_null_when_no_employee_is_linked(): void
+    /**
+     * Phase 8 GAP-040: `users.employee_id` is NOT NULL, so a user without an
+     * employee record cannot exist. The relation is therefore total, not optional.
+     */
+    public function test_every_user_has_an_employee_record(): void
     {
-        $user = User::factory()->create(['employee_id' => null]);
+        $user = User::factory()->create();
 
-        $this->assertNull($user->employee);
+        $this->assertNotNull($user->employee_id);
+        $this->assertInstanceOf(Employee::class, $user->employee);
+    }
+
+    public function test_the_database_refuses_a_user_with_no_employee(): void
+    {
+        $this->expectException(QueryException::class);
+
+        DB::table('users')->insert([
+            'name' => 'No employee',
+            'email' => 'no-employee@example.com',
+            'password' => bcrypt('secret1234'),
+            'employee_id' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     public function test_tasks_responsible_tasks_and_projects_resolve(): void

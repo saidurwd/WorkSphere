@@ -4,7 +4,6 @@ namespace Modules\Obligations\Services;
 
 use Modules\Obligations\Models\NotificationRule;
 use Modules\Obligations\Models\Obligation;
-use Modules\Obligations\Models\ObligationActivityLog;
 
 class ObligationService
 {
@@ -22,14 +21,13 @@ class ObligationService
         if ($oldRisk !== $newRisk) {
             $obligation->update(['risk_level' => $newRisk]);
 
-            ObligationActivityLog::create([
-                'obligation_id' => $obligation->id,
-                'user_id' => null,
-                'action' => 'RISK_CHANGED',
-                'old_value' => json_encode(['risk_level' => $oldRisk]),
-                'new_value' => json_encode(['risk_level' => $newRisk]),
-                'remarks' => 'Automated risk recalculation',
-            ]);
+            app(ObligationActivitySynchroniser::class)->record(
+                $obligation,
+                'RISK_CHANGED',
+                ['risk_level' => $oldRisk],
+                ['risk_level' => $newRisk],
+                'Automated risk recalculation',
+            );
         }
 
         $rules = NotificationRule::query()

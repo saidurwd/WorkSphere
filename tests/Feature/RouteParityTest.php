@@ -135,6 +135,49 @@ class RouteParityTest extends TestCase
     /**
      * Phase 10 added the shared reports layer. Pinned like every other addition.
      */
+    /**
+     * Phase 8 GAP-041 gave the four reference-data tables their first routes.
+     */
+    public function test_the_reference_data_routes_are_exactly_what_phase_eight_declared(): void
+    {
+        $expected = [
+            'admin.reference.index',
+            'admin.reference.create',
+            'admin.reference.store',
+            'admin.reference.edit',
+            'admin.reference.update',
+            'admin.reference.destroy',
+        ];
+
+        $actual = [];
+
+        foreach (Route::getRoutes() as $route) {
+            if (str_starts_with((string) $route->getName(), 'admin.reference.')) {
+                $actual[] = $route->getName();
+            }
+        }
+
+        sort($expected);
+        sort($actual);
+
+        $this->assertSame($expected, $actual);
+    }
+
+    public function test_every_reference_data_route_requires_the_admin_middleware(): void
+    {
+        foreach (Route::getRoutes() as $route) {
+            if (! str_starts_with((string) $route->getName(), 'admin.reference.')) {
+                continue;
+            }
+
+            $this->assertContains(
+                'admin',
+                $route->gatherMiddleware(),
+                "{$route->getName()} is not behind the admin middleware.",
+            );
+        }
+    }
+
     public function test_the_report_routes_are_exactly_what_phase_ten_declared(): void
     {
         $expected = [

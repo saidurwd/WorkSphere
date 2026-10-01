@@ -45,12 +45,6 @@
                 </a>
             </li>
 
-            <li class="nav-item d-none d-md-block">
-                <a href="{{ route('dashboard.index') }}" class="nav-link">
-                    <i class="bi bi-house-door me-1"></i>{{ config('app.name', 'Laravel') }}
-                </a>
-            </li>
-
             {{-- Below `md` the centred box is hidden, so search would be
                  unreachable on a phone. This keeps it one tap away. --}}
             @auth
