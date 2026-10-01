@@ -38,11 +38,20 @@ class PlatformTableDualWriteTest extends TestCase
         $author = User::factory()->create();
         $meeting = MeetingFactory::new()->create();
 
+        // The legacy table's real shape: topic/discussion/discussion_by, and
+        // `agenda_id` is NOT NULL despite not appearing in the model's $fillable.
+        $agenda = $meeting->agendas()->create([
+            'agenda_no' => 1,
+            'title' => 'Budget',
+            'status' => 'pending',
+        ]);
+
         MeetingDiscussion::query()->create([
             'meeting_id' => $meeting->id,
-            'user_id' => $author->id,
-            'title' => 'Legacy title',
-            'body' => 'A shared comment body',
+            'agenda_id' => $agenda->id,
+            'topic' => 'Budget',
+            'discussion' => 'The legacy discussion body',
+            'discussion_by' => $author->id,
         ]);
 
         // The shared table is written by the application's own comment path, which
@@ -114,12 +123,17 @@ class PlatformTableDualWriteTest extends TestCase
     {
         $meeting = MeetingFactory::new()->create();
 
-        $attachment = $meeting->sharedAttachments()->create([
+        $created = $meeting->sharedAttachments()->create([
             'path' => 'x.pdf',
             'original_name' => 'x.pdf',
         ]);
 
-        $this->assertSame('local', $attachment->disk, 'Attachments must not default to a public disk.');
+        // `disk` is a column default, so it is absent from the in-memory model
+        // until reloaded. Asserting on the created instance would pass even if the
+        // default were 'public' — the row is the thing that has to be checked.
+        $persisted = Attachment::query()->findOrFail($created->id);
+
+        $this->assertSame('local', $persisted->disk, 'Attachments must not default to a public disk.');
     }
 
     public function test_meeting_tags_are_mirrored_onto_the_shared_pair(): void

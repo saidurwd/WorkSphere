@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Priority;
 use App\Models\Department;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -34,7 +35,7 @@ class MeetingFactory extends Factory
             'end_time' => sprintf('%02d:00', $startHour + 1),
             'timezone' => 'UTC',
             'status' => 'scheduled',
-            'priority' => fake()->randomElement(['normal', 'important', 'urgent']),
+            'priority' => fake()->randomElement(Priority::values()),
             'minutes_status' => 'draft',
         ];
     }
