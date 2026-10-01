@@ -2,7 +2,10 @@
 
 namespace Modules\Meetings\Models;
 
+use App\Models\Attachment;
+use App\Models\Comment;
 use App\Models\Department;
+use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,6 +13,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 #[SoftDeletes]
 class Meeting extends Model
@@ -112,6 +117,38 @@ class Meeting extends Model
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(MeetingTag::class, 'meeting_tag_map', 'meeting_id', 'tag_id');
+    }
+
+    /**
+     * Shared tags — GAP-048.
+     *
+     * `tags()` still reads `meeting_tag_map` because every existing meeting screen
+     * does. Writes are dual (see MeetingTagSynchroniser), so by Phase 8 this
+     * relation can become the only one; until then both are populated and this is
+     * the one cross-module queries use.
+     */
+    public function sharedTags(): MorphToMany
+    {
+        return $this->morphToMany(Tag::class, 'taggable')->withTimestamps();
+    }
+
+    /**
+     * Shared comments — GAP-048. `discussions()` reads `meeting_discussions`,
+     * which is still the screen's data source; this is the platform-table view
+     * that makes one comment stream across modules.
+     */
+    public function sharedComments(): MorphMany
+    {
+        return $this->morphMany(Comment::class, 'commentable');
+    }
+
+    /**
+     * Shared attachments — GAP-048. `attachments()` reads `meeting_attachments`;
+     * this reads the platform table so one upload query spans modules.
+     */
+    public function sharedAttachments(): MorphMany
+    {
+        return $this->morphMany(Attachment::class, 'attachable');
     }
 
     public function recurrence(): HasMany

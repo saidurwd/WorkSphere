@@ -12,6 +12,7 @@ use Modules\Obligations\Models\Obligation;
 use Modules\Obligations\Models\ObligationActivityLog;
 use Modules\Obligations\Models\ObligationRenewal;
 use Modules\Obligations\Models\Vendor;
+use Modules\Obligations\Services\ObligationRecurrenceService;
 
 class ObligationRenewalController extends Controller
 {
@@ -19,10 +20,18 @@ class ObligationRenewalController extends Controller
     {
         $this->authorize('renew', $obligation);
 
+        // GAP-049: the obligation's recurrence rule, if it has one, computes the
+        // suggested renewal dates. Previously `recurrence_type` was stored on
+        // every obligation and never read, so a "quarterly" obligation renewed on
+        // whatever date a person happened to type.
+        $suggested = app(ObligationRecurrenceService::class)
+            ->suggestedRenewal($obligation);
+
         return view('obligations.renew', [
             'obligation' => $obligation,
             'vendors' => Vendor::where('status', 'active')->orderBy('vendor_name')->get(['id', 'vendor_name']),
             'users' => User::orderBy('name')->get(['id', 'name']),
+            'suggested' => $suggested,
         ]);
     }
 

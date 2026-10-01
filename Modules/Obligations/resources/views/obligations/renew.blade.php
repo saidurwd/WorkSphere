@@ -34,13 +34,17 @@
             <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
                 <div class="col mb-3">
                     <label class="form-label">New Start Date <span style="color: var(--destructive);">*</span></label>
-                    <input type="date" name="new_start_date" class="form-control" value="{{ old('new_start_date', $obligation->start_date->addYear()->format('Y-m-d')) }}" required>
+                    {{-- The recurrence rule's computed dates take precedence; the previous
+             +1 year default stays for an obligation with no rule (GAP-049). --}}
+                    <input type="date" name="new_start_date" class="form-control"
+                           value="{{ old('new_start_date', $suggested['start'] ?? $obligation->start_date->addYear()->format('Y-m-d')) }}" required>
                     @error('new_start_date') <span style="color: var(--destructive); font-size: 0.875rem;">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="col mb-3">
                     <label class="form-label">New Expiry Date <span style="color: var(--destructive);">*</span></label>
-                    <input type="date" name="new_expiry_date" class="form-control" value="{{ old('new_expiry_date', $obligation->expiry_date->addYear()->format('Y-m-d')) }}" required>
+                                        <input type="date" name="new_expiry_date" class="form-control"
+                           value="{{ old('new_expiry_date', $suggested['expiry'] ?? $obligation->expiry_date->addYear()->format('Y-m-d')) }}" required>
                     @error('new_expiry_date') <span style="color: var(--destructive); font-size: 0.875rem;">{{ $message }}</span> @enderror
                 </div>
             </div>
