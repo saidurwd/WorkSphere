@@ -48,14 +48,37 @@ class User extends Authenticatable
      *
      * @return list<string>
      */
+    /**
+     * The user's role slugs.
+     *
+     * Cached on the instance for the same reason as {@see permissionNames()}: this
+     * is called from every policy check and every `Gate::before` evaluation, so an
+     * uncached version issued one query per check — 40 of them on a single
+     * dashboard render.
+     */
     public function roleSlugs(): array
     {
         if ($this->relationLoaded('roles')) {
             return $this->roles->pluck('slug')->all();
         }
 
-        return $this->roles()->pluck('slug')->all();
+        return $this->cachedRoleSlugs ??= $this->roles()->pluck('slug')->all();
     }
+
+    /**
+     * Drop the resolved role set so the next lookup re-queries.
+     */
+    public function forgetRoleCache(): static
+    {
+        $this->cachedRoleSlugs = null;
+
+        return $this;
+    }
+
+    /**
+     * @var list<string>|null
+     */
+    protected ?array $cachedRoleSlugs = null;
 
     public function hasRole(string $role): bool
     {
