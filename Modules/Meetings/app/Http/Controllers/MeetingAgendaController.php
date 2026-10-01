@@ -3,17 +3,19 @@
 namespace Modules\Meetings\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Meetings\Models\Meeting;
-use Modules\Meetings\Models\MeetingAgenda;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Modules\Meetings\Models\Meeting;
+use Modules\Meetings\Models\MeetingAgenda;
 
 class MeetingAgendaController extends Controller
 {
     public function index(Meeting $meeting): View
     {
+        $this->authorize('view', $meeting);
+
         $agendas = $meeting->agendas()->orderBy('sort_order')->paginate(15);
         $users = User::orderBy('name')->get(['id', 'name']);
 
@@ -22,6 +24,8 @@ class MeetingAgendaController extends Controller
 
     public function create(Meeting $meeting): View
     {
+        $this->authorize('update', $meeting);
+
         $users = User::orderBy('name')->get(['id', 'name']);
 
         return view('meetings.agendas.create', compact('meeting', 'users'));
@@ -29,6 +33,8 @@ class MeetingAgendaController extends Controller
 
     public function store(Request $request, Meeting $meeting): RedirectResponse
     {
+        $this->authorize('update', $meeting);
+
         $validated = $request->validate([
             'agenda_no' => ['required', 'integer', 'min:1'],
             'title' => ['required', 'string', 'max:255'],
@@ -49,6 +55,8 @@ class MeetingAgendaController extends Controller
 
     public function edit(Meeting $meeting, MeetingAgenda $agenda): View
     {
+        $this->authorize('update', $meeting);
+
         $users = User::orderBy('name')->get(['id', 'name']);
 
         return view('meetings.agendas.edit', compact('meeting', 'agenda', 'users'));
@@ -56,6 +64,8 @@ class MeetingAgendaController extends Controller
 
     public function update(Request $request, Meeting $meeting, MeetingAgenda $agenda): RedirectResponse
     {
+        $this->authorize('update', $meeting);
+
         $validated = $request->validate([
             'agenda_no' => ['required', 'integer', 'min:1'],
             'title' => ['required', 'string', 'max:255'],
@@ -75,6 +85,8 @@ class MeetingAgendaController extends Controller
 
     public function destroy(Meeting $meeting, MeetingAgenda $agenda): RedirectResponse
     {
+        $this->authorize('update', $meeting);
+
         $agenda->delete();
 
         return redirect()->route('meetings.show', $meeting)->with('success', 'Agenda item deleted successfully.');

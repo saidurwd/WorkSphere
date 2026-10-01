@@ -3,10 +3,10 @@
 namespace Modules\Meetings\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Meetings\Models\MeetingType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Modules\Meetings\Models\MeetingType;
 
 class MeetingTypeController extends Controller
 {
@@ -19,11 +19,15 @@ class MeetingTypeController extends Controller
 
     public function create(): View
     {
+        $this->authorize('meeting.manage_types');
+
         return view('meetings.types.create');
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $this->authorize('meeting.manage_types');
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:50', 'unique:meeting_types,code'],
@@ -45,11 +49,15 @@ class MeetingTypeController extends Controller
 
     public function edit(MeetingType $meetingType): View
     {
+        $this->authorize('meeting.manage_types');
+
         return view('meetings.types.edit', compact('meetingType'));
     }
 
     public function update(Request $request, MeetingType $meetingType): RedirectResponse
     {
+        $this->authorize('meeting.manage_types');
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:50', 'unique:meeting_types,code,'.$meetingType->id],
@@ -70,6 +78,8 @@ class MeetingTypeController extends Controller
 
     public function destroy(MeetingType $meetingType): RedirectResponse
     {
+        $this->authorize('meeting.manage_types');
+
         $meetingType->delete();
 
         return redirect()->route('meetings.types.index')->with('success', 'Meeting type deleted successfully.');

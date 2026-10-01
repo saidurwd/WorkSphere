@@ -3,20 +3,22 @@
 namespace Modules\Obligations\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Obligations\Models\Obligation;
-use Modules\Obligations\Models\ObligationActivityLog;
-use Modules\Obligations\Models\ObligationRenewal;
 use App\Models\User;
-use Modules\Obligations\Models\Vendor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Modules\Obligations\Models\Obligation;
+use Modules\Obligations\Models\ObligationActivityLog;
+use Modules\Obligations\Models\ObligationRenewal;
+use Modules\Obligations\Models\Vendor;
 
 class ObligationRenewalController extends Controller
 {
     public function create(Obligation $obligation): View
     {
+        $this->authorize('renew', $obligation);
+
         return view('obligations.renew', [
             'obligation' => $obligation,
             'vendors' => Vendor::where('status', 'active')->orderBy('vendor_name')->get(['id', 'vendor_name']),
@@ -26,6 +28,8 @@ class ObligationRenewalController extends Controller
 
     public function store(Request $request, Obligation $obligation): RedirectResponse
     {
+        $this->authorize('renew', $obligation);
+
         $validated = $request->validate([
             'new_start_date' => ['required', 'date', 'after_or_equal:'.$obligation->start_date],
             'new_expiry_date' => ['required', 'date', 'after:new_start_date'],

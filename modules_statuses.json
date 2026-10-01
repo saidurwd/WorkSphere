@@ -2,5 +2,6 @@
     "Projects": true,
     "Obligations": true,
     "Meetings": true,
-    "Tasks": true
+    "Tasks": true,
+    "Todos": true
 }

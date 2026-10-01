@@ -71,7 +71,14 @@ class AuditLogTest extends TestCase
 
         $log = AuditLog::query()->where('event', 'updated')->first();
 
-        $this->assertSame(['description'], array_keys($log->new_values));
+        // `updated_at` also moves whenever a save lands in a new second, so the
+        // assertion is about the business columns, not the bookkeeping ones.
+        $businessKeys = array_values(array_diff(
+            array_keys($log->new_values),
+            ['updated_at', 'created_at'],
+        ));
+
+        $this->assertSame(['description'], $businessKeys);
     }
 
     public function test_deleting_a_role_writes_an_audit_row(): void

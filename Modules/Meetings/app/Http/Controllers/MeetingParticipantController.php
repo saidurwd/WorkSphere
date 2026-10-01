@@ -3,12 +3,12 @@
 namespace Modules\Meetings\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Meetings\Models\Meeting;
-use Modules\Meetings\Models\MeetingParticipant;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Modules\Meetings\Models\Meeting;
+use Modules\Meetings\Models\MeetingParticipant;
 
 class MeetingParticipantController extends Controller
 {
@@ -22,6 +22,8 @@ class MeetingParticipantController extends Controller
 
     public function create(Meeting $meeting): View
     {
+        $this->authorize('update', $meeting);
+
         $users = User::orderBy('name')->get(['id', 'name']);
 
         return view('meetings.participants.create', compact('meeting', 'users'));
@@ -29,6 +31,8 @@ class MeetingParticipantController extends Controller
 
     public function store(Request $request, Meeting $meeting): RedirectResponse
     {
+        $this->authorize('update', $meeting);
+
         $validated = $request->validate([
             'user_id' => ['required', 'exists:users,id'],
             'participant_type' => ['required', 'in:organizer,chairperson,member,guest,presenter,observer'],
@@ -46,6 +50,8 @@ class MeetingParticipantController extends Controller
 
     public function edit(Meeting $meeting, MeetingParticipant $participant): View
     {
+        $this->authorize('update', $meeting);
+
         $users = User::orderBy('name')->get(['id', 'name']);
 
         return view('meetings.participants.edit', compact('meeting', 'participant', 'users'));
@@ -53,6 +59,8 @@ class MeetingParticipantController extends Controller
 
     public function update(Request $request, Meeting $meeting, MeetingParticipant $participant): RedirectResponse
     {
+        $this->authorize('update', $meeting);
+
         $validated = $request->validate([
             'participant_type' => ['required', 'in:organizer,chairperson,member,guest,presenter,observer'],
             'attendance_status' => ['required', 'in:invited,accepted,declined,present,absent,apology'],
@@ -66,6 +74,8 @@ class MeetingParticipantController extends Controller
 
     public function destroy(Meeting $meeting, MeetingParticipant $participant): RedirectResponse
     {
+        $this->authorize('update', $meeting);
+
         $participant->delete();
 
         return redirect()->route('meetings.show', $meeting)->with('success', 'Participant removed successfully.');

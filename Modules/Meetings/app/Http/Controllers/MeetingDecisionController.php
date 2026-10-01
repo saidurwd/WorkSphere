@@ -3,12 +3,12 @@
 namespace Modules\Meetings\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Meetings\Models\Meeting;
-use Modules\Meetings\Models\MeetingDecision;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Modules\Meetings\Models\Meeting;
+use Modules\Meetings\Models\MeetingDecision;
 
 class MeetingDecisionController extends Controller
 {
@@ -22,6 +22,8 @@ class MeetingDecisionController extends Controller
 
     public function create(Meeting $meeting): View
     {
+        $this->authorize('update', $meeting);
+
         $users = User::orderBy('name')->get(['id', 'name']);
 
         return view('meetings.decisions.create', compact('meeting', 'users'));
@@ -29,6 +31,8 @@ class MeetingDecisionController extends Controller
 
     public function store(Request $request, Meeting $meeting): RedirectResponse
     {
+        $this->authorize('update', $meeting);
+
         $validated = $request->validate([
             'agenda_id' => ['nullable', 'exists:meeting_agendas,id'],
             'discussion_id' => ['nullable', 'exists:meeting_discussions,id'],
@@ -54,6 +58,8 @@ class MeetingDecisionController extends Controller
 
     public function edit(Meeting $meeting, MeetingDecision $decision): View
     {
+        $this->authorize('update', $meeting);
+
         $users = User::orderBy('name')->get(['id', 'name']);
 
         return view('meetings.decisions.edit', compact('meeting', 'decision', 'users'));
@@ -61,6 +67,8 @@ class MeetingDecisionController extends Controller
 
     public function update(Request $request, Meeting $meeting, MeetingDecision $decision): RedirectResponse
     {
+        $this->authorize('update', $meeting);
+
         $validated = $request->validate([
             'agenda_id' => ['nullable', 'exists:meeting_agendas,id'],
             'discussion_id' => ['nullable', 'exists:meeting_discussions,id'],
@@ -84,6 +92,8 @@ class MeetingDecisionController extends Controller
 
     public function destroy(Meeting $meeting, MeetingDecision $decision): RedirectResponse
     {
+        $this->authorize('update', $meeting);
+
         $decision->delete();
 
         return redirect()->route('meetings.show', $meeting)->with('success', 'Decision deleted successfully.');

@@ -14,6 +14,8 @@ class UserController extends Controller
 {
     public function index(Request $request): View
     {
+        $this->authorize('viewAny', User::class);
+
         $query = User::query()->with('roles');
 
         if ($request->filled('search')) {
@@ -38,6 +40,8 @@ class UserController extends Controller
 
     public function create(): View
     {
+        $this->authorize('create', User::class);
+
         $roles = Role::query()->orderBy('name')->get();
 
         return view('admin.users.create', [
@@ -53,6 +57,8 @@ class UserController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->authorize('create', User::class);
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
@@ -85,6 +91,8 @@ class UserController extends Controller
 
     public function show(User $user): View
     {
+        $this->authorize('view', $user);
+
         $user->load('roles.permissions', 'employee', 'responsibleTasks', 'projects');
 
         return view('admin.users.show', [
@@ -100,6 +108,8 @@ class UserController extends Controller
 
     public function edit(User $user): View
     {
+        $this->authorize('update', $user);
+
         $roles = Role::query()->orderBy('name')->get();
 
         return view('admin.users.edit', [
@@ -116,6 +126,8 @@ class UserController extends Controller
 
     public function update(Request $request, User $user): RedirectResponse
     {
+        $this->authorize('update', $user);
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
@@ -153,6 +165,8 @@ class UserController extends Controller
 
     public function destroy(User $user): RedirectResponse
     {
+        $this->authorize('delete', $user);
+
         if ($user->id === auth()->id()) {
             return back()->with('error', 'You cannot delete yourself.');
         }

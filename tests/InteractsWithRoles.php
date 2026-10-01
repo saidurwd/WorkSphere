@@ -65,4 +65,38 @@ trait InteractsWithRoles
     {
         return User::factory()->create();
     }
+
+    /**
+     * A user holding the `admin` role slug, so they pass the `admin` middleware,
+     * but holding only the listed permissions. This is how a test proves a policy
+     * denies someone who has already passed the middleware.
+     *
+     * @param  list<string>  $permissions
+     */
+    protected function adminWithout(array $permissions = [], bool $grantAll = false): User
+    {
+        $user = User::factory()->create();
+
+        $role = Role::query()->firstOrCreate(
+            ['slug' => 'admin'],
+            ['name' => 'Administrator'],
+        );
+
+        $granted = $grantAll
+            ? Permission::query()->pluck('permission_name')->all()
+            : $permissions;
+
+        foreach ($granted as $permission) {
+            $model = Permission::query()->firstOrCreate(['permission_name' => $permission]);
+
+            RolePermission::query()->firstOrCreate([
+                'role_id' => $role->id,
+                'permission_id' => $model->id,
+            ]);
+        }
+
+        $user->roles()->attach($role->id);
+
+        return $user->fresh();
+    }
 }

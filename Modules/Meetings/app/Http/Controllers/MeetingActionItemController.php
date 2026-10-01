@@ -3,17 +3,17 @@
 namespace Modules\Meetings\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Meetings\Events\ActionItemAssigned;
-use Modules\Meetings\Events\ActionItemCompleted;
-use Modules\Meetings\Events\ActionItemCreated;
 use App\Models\Department;
-use Modules\Meetings\Models\Meeting;
-use Modules\Meetings\Models\MeetingActionItem;
-use Modules\Tasks\Models\Task;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Modules\Meetings\Events\ActionItemAssigned;
+use Modules\Meetings\Events\ActionItemCompleted;
+use Modules\Meetings\Events\ActionItemCreated;
+use Modules\Meetings\Models\Meeting;
+use Modules\Meetings\Models\MeetingActionItem;
+use Modules\Tasks\Models\Task;
 
 class MeetingActionItemController extends Controller
 {
@@ -22,7 +22,7 @@ class MeetingActionItemController extends Controller
         $user = auth()->user();
         $query = MeetingActionItem::query()->with(['meeting', 'assignedTo', 'assignedDepartment', 'task']);
 
-        if (! $this->canManageAll($user)) {
+        if (! $user->hasPermission('meeting.view_all_actions')) {
             $query->where(function ($q) use ($user) {
                 $q->where('assigned_to', $user->id)
                     ->orWhereHas('meeting', function ($q2) use ($user) {
@@ -54,6 +54,8 @@ class MeetingActionItemController extends Controller
 
     public function show(MeetingActionItem $actionItem): View
     {
+        $this->authorize('view', $actionItem);
+
         $actionItem->load('meeting', 'assignedTo', 'assignedDepartment', 'task');
 
         return view('meetings.action_items.show', compact('actionItem'));
@@ -61,6 +63,8 @@ class MeetingActionItemController extends Controller
 
     public function store(Request $request, Meeting $meeting): RedirectResponse
     {
+        $this->authorize('create_action', $meeting);
+
         $validated = $request->validate([
             'action_no' => ['required', 'integer', 'min:1'],
             'title' => ['required', 'string', 'max:255'],
@@ -88,6 +92,8 @@ class MeetingActionItemController extends Controller
 
     public function update(Request $request, Meeting $meeting, MeetingActionItem $actionItem): RedirectResponse
     {
+        $this->authorize('update', $actionItem);
+
         $validated = $request->validate([
             'action_no' => ['required', 'integer', 'min:1'],
             'title' => ['required', 'string', 'max:255'],
@@ -122,6 +128,8 @@ class MeetingActionItemController extends Controller
 
     public function destroy(Meeting $meeting, MeetingActionItem $actionItem): RedirectResponse
     {
+        $this->authorize('delete', $actionItem);
+
         $actionItem->delete();
 
         return redirect()->route('meetings.show', $meeting)->with('success', 'Action item deleted successfully.');
@@ -129,6 +137,8 @@ class MeetingActionItemController extends Controller
 
     public function storeTask(Request $request, Meeting $meeting, MeetingActionItem $actionItem): RedirectResponse
     {
+        $this->authorize('linkTask', $actionItem);
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -150,6 +160,8 @@ class MeetingActionItemController extends Controller
 
     public function linkTask(Request $request, Meeting $meeting, MeetingActionItem $actionItem): RedirectResponse
     {
+        $this->authorize('linkTask', $actionItem);
+
         $validated = $request->validate([
             'task_id' => ['required', 'exists:tasks,id'],
         ]);
@@ -161,13 +173,10 @@ class MeetingActionItemController extends Controller
 
     public function unlinkTask(Meeting $meeting, MeetingActionItem $actionItem): RedirectResponse
     {
+        $this->authorize('linkTask', $actionItem);
+
         $actionItem->update(['task_id' => null]);
 
         return redirect()->route('meetings.show', $meeting)->with('success', 'Task unlinked from action item successfully.');
-    }
-
-    private function canManageAll(mixed $user): bool
-    {
-        return method_exists($user, 'hasRole') && $user->hasRole('super-admin');
     }
 }

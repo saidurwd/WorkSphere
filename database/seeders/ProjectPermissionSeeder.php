@@ -64,6 +64,20 @@ class ProjectPermissionSeeder extends Seeder
         'obligation.manage_settings',
         'obligation.view_reports',
         'obligation.view_all_departments',
+        // To-Do module — TODO-MODULE-SPECIFICATION.md §4. Additive: no existing
+        // permission string is renamed or removed.
+        'todos.view',
+        'todos.view_all',
+        'todos.create',
+        'todos.create_for_others',
+        'todos.update_own',
+        'todos.update_any',
+        'todos.complete',
+        'todos.delete',
+        'todos.restore',
+        'todos.assign',
+        'todos.comment',
+        'todos.manage_recurrence',
     ];
 
     public function run(): void

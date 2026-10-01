@@ -3,11 +3,11 @@
 namespace Modules\Obligations\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Obligations\Models\Vendor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Modules\Obligations\Models\Vendor;
 
 class ObligationVendorController extends Controller
 {
@@ -39,11 +39,15 @@ class ObligationVendorController extends Controller
 
     public function create(): View
     {
+        $this->authorize('obligation.manage_vendors');
+
         return view('obligations.vendors.create');
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $this->authorize('obligation.manage_vendors');
+
         $validated = $request->validate([
             'vendor_name' => ['required', 'string', 'max:255'],
             'contact_person' => ['nullable', 'string', 'max:255'],
@@ -61,6 +65,8 @@ class ObligationVendorController extends Controller
 
     public function edit(Vendor $vendor): View
     {
+        $this->authorize('obligation.manage_vendors');
+
         return view('obligations.vendors.edit', [
             'vendor' => $vendor,
         ]);
@@ -68,6 +74,8 @@ class ObligationVendorController extends Controller
 
     public function update(Request $request, Vendor $vendor): RedirectResponse
     {
+        $this->authorize('obligation.manage_vendors');
+
         $validated = $request->validate([
             'vendor_name' => ['required', 'string', 'max:255'],
             'contact_person' => ['nullable', 'string', 'max:255'],
@@ -85,6 +93,8 @@ class ObligationVendorController extends Controller
 
     public function destroy(Vendor $vendor): RedirectResponse
     {
+        $this->authorize('obligation.manage_vendors');
+
         $vendor->delete();
 
         return redirect()->route('obligations.vendors')->with('status', 'Vendor deleted successfully.');

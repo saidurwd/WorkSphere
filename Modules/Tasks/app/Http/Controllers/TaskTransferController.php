@@ -3,13 +3,13 @@
 namespace Modules\Tasks\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Tasks\Models\Task;
-use Modules\Tasks\Models\TaskTransfer;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Modules\Tasks\Models\Task;
+use Modules\Tasks\Models\TaskTransfer;
 
 class TaskTransferController extends Controller
 {
@@ -38,6 +38,8 @@ class TaskTransferController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->authorize('create', Task::class);
+
         $validated = $request->validate([
             'task_id' => ['required', 'exists:tasks,id'],
             'from_user_id' => ['nullable', 'exists:users,id'],
@@ -51,6 +53,8 @@ class TaskTransferController extends Controller
         ]);
 
         $task = Task::findOrFail($validated['task_id']);
+
+        $this->authorize('transfer', $task);
 
         $validated['from_user_id'] = $validated['from_user_id'] ?? $task->responsible_user_id;
         $validated['transferred_by'] = $validated['transferred_by'] ?? $request->user()->id;
@@ -74,6 +78,8 @@ class TaskTransferController extends Controller
 
     public function destroy(TaskTransfer $taskTransfer): RedirectResponse
     {
+        $this->authorize('transfer', $taskTransfer->task);
+
         $disk = config('uploads.disk');
 
         if ($taskTransfer->file_attache && Storage::disk($disk)->exists($taskTransfer->file_attache)) {
