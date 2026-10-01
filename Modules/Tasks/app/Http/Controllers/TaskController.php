@@ -3,17 +3,17 @@
 namespace Modules\Tasks\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Tasks\Events\TaskAssigned;
-use Modules\Tasks\Events\TaskCompleted;
-use Modules\Tasks\Events\TaskCreated;
-use Modules\Tasks\Events\TaskUpdated;
-use Modules\Projects\Models\Project;
-use Modules\Tasks\Models\Task;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Modules\Projects\Models\Project;
+use Modules\Tasks\Events\TaskAssigned;
+use Modules\Tasks\Events\TaskCompleted;
+use Modules\Tasks\Events\TaskCreated;
+use Modules\Tasks\Events\TaskUpdated;
+use Modules\Tasks\Models\Task;
 
 class TaskController extends Controller
 {
@@ -22,7 +22,7 @@ class TaskController extends Controller
         $user = Auth::user();
         $query = Task::query()->with(['responsibleUser', 'project', 'taskTransfers'])->orderByDesc('due_date');
 
-        if (! $this->canManageAllTasks($user)) {
+        if (! $user->hasPermission('task.view')) {
             $query->where(function ($q) use ($user) {
                 $q->where('user_id', $user->id)
                     ->orWhere('responsible_user_id', $user->id);
@@ -92,7 +92,7 @@ class TaskController extends Controller
         $user = Auth::user();
         $tasksQuery = Task::query();
 
-        if (! $this->canManageAllTasks($user)) {
+        if (! $user->hasPermission('task.view')) {
             $tasksQuery->where(function ($q) use ($user) {
                 $q->where('user_id', $user->id)
                     ->orWhere('responsible_user_id', $user->id);
@@ -236,7 +236,7 @@ class TaskController extends Controller
 
     public function show(Task $task): View
     {
-        $this->authorizeTask($task);
+        $this->authorize('view', $task);
 
         $task->load([
             'user',
@@ -260,6 +260,8 @@ class TaskController extends Controller
 
     public function create(): View
     {
+        $this->authorize('create', Task::class);
+
         return view('tasks.create', [
             'users' => User::orderBy('name')->get(['id', 'name']),
             'projects' => Project::orderBy('name')->get(['id', 'name']),
@@ -268,6 +270,8 @@ class TaskController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->authorize('create', Task::class);
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -296,7 +300,7 @@ class TaskController extends Controller
 
     public function edit(Task $task): View
     {
-        $this->authorizeTask($task);
+        $this->authorize('update', $task);
 
         return view('tasks.edit', [
             'task' => $task,
@@ -307,7 +311,7 @@ class TaskController extends Controller
 
     public function update(Request $request, Task $task): RedirectResponse
     {
-        $this->authorizeTask($task);
+        $this->authorize('update', $task);
 
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
@@ -348,7 +352,7 @@ class TaskController extends Controller
 
     public function storeRemark(Request $request, Task $task): RedirectResponse
     {
-        $this->authorizeTask($task);
+        $this->authorize('addRemark', $task);
 
         $validated = $request->validate([
             'remark' => ['required', 'string', 'max:2000'],
@@ -368,28 +372,11 @@ class TaskController extends Controller
 
     public function destroy(Task $task): RedirectResponse
     {
-        $this->authorizeTask($task);
+        $this->authorize('delete', $task);
 
         $task->delete();
 
         return redirect()->route('tasks.index')->with('success', 'Task deleted successfully.');
-    }
-
-    private function authorizeTask(Task $task): void
-    {
-        if ($this->canManageAllTasks(Auth::user())) {
-            return;
-        }
-
-        if ($task->user_id !== Auth::id() && $task->responsible_user_id !== Auth::id()) {
-            abort(403);
-        }
-    }
-
-    private function canManageAllTasks(mixed $user): bool
-    {
-        return method_exists($user, 'hasRole')
-            && $user->hasRole('super-admin');
     }
 
     private function storeAttachment(Request $request): ?string

@@ -11,10 +11,10 @@ return new class extends Migration
         if (Schema::hasTable('tasks')) {
             Schema::table('tasks', function (Blueprint $table) {
                 if (! Schema::hasColumn('tasks', 'obligation_id')) {
-                    $table->foreignId('obligation_id')->nullable()->constrained()->nullOnDelete()->after('project_id');
+                    $table->foreignId('obligation_id')->nullable()->constrained()->nullOnDelete();
                 }
                 if (! Schema::hasColumn('tasks', 'task_no')) {
-                    $table->string('task_no')->nullable()->after('obligation_id');
+                    $table->string('task_no')->nullable();
                 }
                 if (! Schema::hasIndex('tasks', ['obligation_id'])) {
                     $table->index('obligation_id');
@@ -25,10 +25,32 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasTable('tasks')) {
+            return;
+        }
+
         Schema::table('tasks', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('obligation_id');
-            $table->dropColumn('task_no');
-            $table->dropIndex(['obligation_id']);
+            $hasObligationId = Schema::hasColumn('tasks', 'obligation_id');
+
+            if ($hasObligationId) {
+                // Order matters and differs per driver: MySQL refuses to drop an index
+                // that a live foreign key depends on, SQLite refuses to drop a column
+                // that a live index depends on. Dropping FK -> index -> column is the
+                // only sequence both accept.
+                $table->dropForeign(['obligation_id']);
+            }
+
+            if (Schema::hasIndex('tasks', ['obligation_id'])) {
+                $table->dropIndex(['obligation_id']);
+            }
+
+            if ($hasObligationId) {
+                $table->dropColumn('obligation_id');
+            }
+
+            if (Schema::hasColumn('tasks', 'task_no')) {
+                $table->dropColumn('task_no');
+            }
         });
     }
 };

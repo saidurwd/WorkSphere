@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class LoginLogService
 {
-    public function record(Request $request, string $event, string $email, ?User $user = null, ?string $failureReason = null): LoginLog
+    public function record(Request $request, string $event, string $email, ?User $user = null, ?string $reason = null): LoginLog
     {
         return DB::transaction(fn (): LoginLog => LoginLog::query()->create([
             'user_id' => $user?->id,
@@ -18,7 +18,7 @@ class LoginLogService
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
             'device' => $this->describeDevice($request),
-            'failure_reason' => $failureReason,
+            'failure_reason' => $reason,
             'attempted_at' => now(),
         ]));
     }

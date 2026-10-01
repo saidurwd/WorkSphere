@@ -2,18 +2,21 @@
 
 namespace Modules\Obligations\Models;
 
+use App\Models\Company;
+use App\Models\Department;
+use App\Models\Location;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use App\Models\User;
-use App\Models\Company;
-use App\Models\Department;
-use App\Models\Location;
 use Modules\Tasks\Models\Task;
 
 class Obligation extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'obligation_no',
         'title',

@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
 
 class ActivityLog extends Model
 {
@@ -23,6 +22,8 @@ class ActivityLog extends Model
     {
         return [
             'record_id' => 'integer',
+            'old_value' => 'array',
+            'new_value' => 'array',
             'created_at' => 'datetime',
         ];
     }

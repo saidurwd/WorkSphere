@@ -16,8 +16,26 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasTable('tasks')) {
+            return;
+        }
+
         Schema::table('tasks', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('project_id');
+            $hasProjectId = Schema::hasColumn('tasks', 'project_id');
+
+            if ($hasProjectId) {
+                // FK -> index -> column: MySQL will not drop an index a live foreign
+                // key depends on, SQLite will not drop a column a live index covers.
+                $table->dropForeign(['project_id']);
+            }
+
+            if (Schema::hasIndex('tasks', ['project_id'])) {
+                $table->dropIndex(['project_id']);
+            }
+
+            if ($hasProjectId) {
+                $table->dropColumn('project_id');
+            }
         });
     }
 };

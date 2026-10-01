@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Obligations\Models\Obligation;
 
 class Company extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['company_code', 'company_name', 'address', 'city', 'country', 'status'];
 
     protected function casts(): array

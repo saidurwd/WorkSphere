@@ -3,11 +3,11 @@
 namespace Modules\Projects\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Projects\Models\Project;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Modules\Projects\Models\Project;
 
 class ProjectController extends Controller
 {
@@ -18,7 +18,7 @@ class ProjectController extends Controller
             ->withCount('tasks')
             ->latest('created_at');
 
-        if (! $this->canManageAllProjects($user)) {
+        if (! $user->hasPermission('project.view')) {
             $query->where('user_id', $user->id);
         }
 
@@ -44,7 +44,7 @@ class ProjectController extends Controller
 
     public function show(Project $project): View
     {
-        $this->authorizeProject($project);
+        $this->authorize('view', $project);
 
         $project->load(['user']);
         $tasks = $project->tasks()
@@ -61,11 +61,15 @@ class ProjectController extends Controller
 
     public function create(): View
     {
+        $this->authorize('create', Project::class);
+
         return view('projects.create');
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $this->authorize('create', Project::class);
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -78,7 +82,7 @@ class ProjectController extends Controller
 
     public function edit(Project $project): View
     {
-        $this->authorizeProject($project);
+        $this->authorize('update', $project);
 
         return view('projects.edit', [
             'project' => $project,
@@ -87,7 +91,7 @@ class ProjectController extends Controller
 
     public function update(Request $request, Project $project): RedirectResponse
     {
-        $this->authorizeProject($project);
+        $this->authorize('update', $project);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -101,27 +105,10 @@ class ProjectController extends Controller
 
     public function destroy(Project $project): RedirectResponse
     {
-        $this->authorizeProject($project);
+        $this->authorize('delete', $project);
 
         $project->delete();
 
         return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');
-    }
-
-    private function authorizeProject(Project $project): void
-    {
-        if ($this->canManageAllProjects(Auth::user())) {
-            return;
-        }
-
-        if ($project->user_id !== Auth::id()) {
-            abort(403);
-        }
-    }
-
-    private function canManageAllProjects(mixed $user): bool
-    {
-        return method_exists($user, 'hasRole')
-            && $user->hasRole('super-admin');
     }
 }

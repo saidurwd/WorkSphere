@@ -12,8 +12,8 @@
                     <label for="event-filter" class="form-label">Event</label>
                     <select id="event-filter" name="event" class="form-select">
                         <option value="">All Events</option>
-                        @foreach ($events as $event)
-                            <option value="{{ $event }}" @selected(request('event') === $event)>{{ $event }}</option>
+                        @foreach ($types as $type)
+                            <option value="{{ $type }}" @selected(request('event') === $type)>{{ $type }}</option>
                         @endforeach
                     </select>
                 </div>

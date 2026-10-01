@@ -15,6 +15,8 @@ class DatabaseBackupController extends Controller
 
     private const DIRECTORY = 'backups';
 
+    public function __construct(private readonly MysqlDumpExport $exporter) {}
+
     public function index(): View
     {
         $backups = $this->listBackups();
@@ -38,7 +40,7 @@ class DatabaseBackupController extends Controller
         $filename = $safeName.'.sql';
         $path = self::DIRECTORY.'/'.$filename;
 
-        $dump = (new MysqlDumpExport)->dump();
+        $dump = $this->exporter->dump();
 
         Storage::disk(self::DISK)->put($path, $dump);
 
