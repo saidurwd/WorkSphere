@@ -172,8 +172,14 @@ class DashboardPerformanceTest extends TestCase
 
         // A fixed panel count, not a per-row figure. Every widget caps its output
         // and aggregates in SQL, so this stays flat.
+        //
+        // The ceiling was 40 when this test was written and the dashboard issued
+        // 48: `User::roleSlugs()` was uncached, so every policy and Gate check
+        // re-queried the role join — 40 of them. Caching it brought the render to
+        // 9. 20 leaves room for a widget or two without permitting the old shape
+        // back in.
         $this->assertLessThan(
-            40,
+            20,
             $queries,
             sprintf('A dashboard render issued %d queries at 30 rows per source.', $queries),
         );

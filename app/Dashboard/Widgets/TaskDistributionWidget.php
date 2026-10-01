@@ -64,6 +64,10 @@ class TaskDistributionWidget implements DashboardWidget
             'status' => $row->status,
             'label' => StatusBadge::label($row->status),
             'variant' => StatusBadge::variant($row->status),
+            // `label`, `value` and `color` are the keys x-donut-chart and x-legend
+            // read. `count` is kept for the totals, `pct` for the table.
+            'color' => self::colorFor(StatusBadge::variant($row->status)),
+            'value' => (int) $row->total,
             'count' => (int) $row->total,
             'pct' => $total === 0 ? 0 : (int) round(((int) $row->total / $total) * 100),
         ]);
