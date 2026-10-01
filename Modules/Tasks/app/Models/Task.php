@@ -194,7 +194,7 @@ class Task extends Model
      */
     public function scopeActive(Builder $query): void
     {
-        $query->whereIn('status', [
+        $query->whereIn($query->qualifyColumn('status'), [
             WorkItemStatus::Pending->value,
             WorkItemStatus::InProgress->value,
             WorkItemStatus::OnHold->value,
@@ -207,8 +207,25 @@ class Task extends Model
     public function scopeOverdue(Builder $query): void
     {
         $query->active()
-            ->whereNotNull('due_date')
-            ->whereDate('due_date', '<', now()->toDateString());
+            ->whereNotNull($query->qualifyColumn('due_date'))
+            ->whereDate($query->qualifyColumn('due_date'), '<', now()->toDateString());
+    }
+
+    /**
+     * Open work due within an inclusive date range.
+     *
+     * Present on both Task and Todo so a widget spanning the two can call the
+     * same scope on either — the absence of this is what made
+     * `UpcomingDeadlinesWidget` fail against Tasks.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeDueBetween(Builder $query, string $from, string $to): void
+    {
+        $query->active()
+            ->whereNotNull($query->qualifyColumn('due_date'))
+            ->whereDate($query->qualifyColumn('due_date'), '>=', $from)
+            ->whereDate($query->qualifyColumn('due_date'), '<=', $to);
     }
 
     /**
@@ -234,7 +251,7 @@ class Task extends Model
             default => [$status],
         };
 
-        $query->whereIn('status', $values);
+        $query->whereIn($query->qualifyColumn('status'), $values);
     }
 
     // ---- Sub-tasks ---------------------------------------------------------

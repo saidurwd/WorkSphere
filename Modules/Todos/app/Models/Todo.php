@@ -185,7 +185,7 @@ class Todo extends Model
      */
     public function scopeActive(Builder $query): void
     {
-        $query->whereIn('status', WorkItemStatus::openValues());
+        $query->whereIn($query->qualifyColumn('status'), WorkItemStatus::openValues());
     }
 
     /**
@@ -194,8 +194,8 @@ class Todo extends Model
     public function scopeOverdue(Builder $query): void
     {
         $query->active()
-            ->whereNotNull('due_date')
-            ->whereDate('due_date', '<', now()->toDateString());
+            ->whereNotNull($query->qualifyColumn('due_date'))
+            ->whereDate($query->qualifyColumn('due_date'), '<', now()->toDateString());
     }
 
     /**
@@ -204,9 +204,9 @@ class Todo extends Model
     public function scopeDueBetween(Builder $query, string $from, string $to): void
     {
         $query->active()
-            ->whereNotNull('due_date')
-            ->whereDate('due_date', '>=', $from)
-            ->whereDate('due_date', '<=', $to);
+            ->whereNotNull($query->qualifyColumn('due_date'))
+            ->whereDate($query->qualifyColumn('due_date'), '>=', $from)
+            ->whereDate($query->qualifyColumn('due_date'), '<=', $to);
     }
 
     /**
@@ -232,7 +232,7 @@ class Todo extends Model
             default => [$status],
         };
 
-        $query->whereIn('status', $values);
+        $query->whereIn($query->qualifyColumn('status'), $values);
     }
 
     /**
