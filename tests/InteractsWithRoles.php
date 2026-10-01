@@ -17,12 +17,17 @@ trait InteractsWithRoles
     /**
      * @param  list<string>  $permissions
      */
-    protected function userWithPermissions(array $permissions, string $slug = 'test-role'): User
+    protected function userWithPermissions(array $permissions, ?string $slug = null): User
     {
+        // Auto-unique so a test may call this more than once without colliding on
+        // the roles.slug unique index.
+        static $counter = 0;
+        $slug ??= 'test-role-'.(++$counter);
+
         $user = User::factory()->create();
 
         $role = Role::query()->create([
-            'name' => ucfirst($slug),
+            'name' => ucfirst(str_replace('-', ' ', $slug)),
             'slug' => $slug,
         ]);
 

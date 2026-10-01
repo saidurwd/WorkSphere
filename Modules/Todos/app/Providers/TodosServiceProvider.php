@@ -18,6 +18,27 @@ class TodosServiceProvider extends ModuleServiceProvider
     protected string $nameLower = 'todos';
 
     /**
+     * Command classes to register.
+     *
+     * Deliberately empty for now: `todos:overdue`, `todos:due-soon`,
+     * `todos:generate`, `todos:skip` and the shared `reminders:dispatch` are
+     * Phase 6 work, together with the scheduler entries that call them.
+     * Registering classes that do not exist yet would fatal the provider.
+     *
+     * @var array<int, class-string>
+     */
+    protected array $commands = [];
+
+    /**
+     * Provider classes to register.
+     *
+     * @var array<int, class-string>
+     */
+    protected array $providers = [
+        EventServiceProvider::class,
+    ];
+
+    /**
      * Make this module's views resolvable by their existing relative names,
      * e.g. view('todos.index'), in addition to the module namespace.
      */

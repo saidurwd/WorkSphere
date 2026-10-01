@@ -24,6 +24,8 @@ use Modules\Meetings\Models\MeetingActionItem;
 use Modules\Obligations\Models\Obligation;
 use Modules\Projects\Models\Project;
 use Modules\Tasks\Models\Task;
+use Modules\Todos\Models\Todo;
+use Modules\Todos\Policies\TodoPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -41,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
         Obligation::class => ObligationPolicy::class,
         User::class => UserPolicy::class,
         Role::class => RolePolicy::class,
+        Todo::class => TodoPolicy::class,
     ];
 
     /**
