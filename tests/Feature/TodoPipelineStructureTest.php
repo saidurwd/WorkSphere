@@ -103,6 +103,64 @@ class TodoPipelineStructureTest extends TestCase
         }
     }
 
+    /**
+     * A listener that reads a property its event never declares fails at RUNTIME,
+     * not at build time — and if it sits inside a scheduler's try/catch it is
+     * silently swallowed into a "failed" count. This compares the two shapes
+     * directly, by reflection, so the mismatch cannot survive a review.
+     */
+    public function test_every_listener_only_reads_properties_its_event_declares(): void
+    {
+        $problems = [];
+
+        foreach ($this->listenerEventMap() as $listener => $event) {
+            $declared = array_map(
+                static fn (\ReflectionProperty $property): string => $property->getName(),
+                (new \ReflectionClass($event))->getProperties(\ReflectionProperty::IS_PUBLIC),
+            );
+
+            $source = (string) file_get_contents(
+                (new \ReflectionClass($listener))->getFileName()
+            );
+
+            preg_match('/function handle\([^)]*\$event[^)]*\)[^{]*\{(.*)\n    \}/s', $source, $body);
+
+            $reads = [];
+            preg_match_all('/\$event->(\w+)/', $body[1] ?? $source, $matches);
+
+            foreach (array_unique($matches[1]) as $property) {
+                if (! in_array($property, $declared, true)) {
+                    $problems[] = class_basename($listener).' reads $event->'.$property
+                        .', which '.class_basename($event).' does not declare';
+                }
+            }
+        }
+
+        $this->assertSame([], $problems, implode("\n", $problems));
+    }
+
+    /**
+     * @return array<class-string, class-string>
+     */
+    private function listenerEventMap(): array
+    {
+        $map = [];
+
+        foreach ($this->moduleClasses('Modules\Todos\Listeners', 'Modules/Todos/app/Listeners') as $listener) {
+            $source = (string) file_get_contents((new \ReflectionClass($listener))->getFileName());
+
+            if (preg_match('/function handle\(([A-Za-z\\|]+) \$event\)/', $source, $matches)) {
+                foreach (explode('|', $matches[1]) as $event) {
+                    if (class_exists($event)) {
+                        $map[$listener] = $event;
+                    }
+                }
+            }
+        }
+
+        return $map;
+    }
+
     public function test_every_event_has_a_registered_listener(): void
     {
         $events = self::moduleClasses('Modules\Todos\Events', 'Modules/Todos/app/Events');

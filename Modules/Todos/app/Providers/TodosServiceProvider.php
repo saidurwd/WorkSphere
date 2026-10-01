@@ -3,6 +3,10 @@
 namespace Modules\Todos\Providers;
 
 use Illuminate\Support\Facades\View;
+use Modules\Todos\Console\Commands\GenerateTodoOccurrencesCommand;
+use Modules\Todos\Console\Commands\SendTodoDueSoonCommand;
+use Modules\Todos\Console\Commands\SendTodoOverdueCommand;
+use Modules\Todos\Console\Commands\SkipTodoOccurrenceCommand;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class TodosServiceProvider extends ModuleServiceProvider
@@ -27,7 +31,12 @@ class TodosServiceProvider extends ModuleServiceProvider
      *
      * @var array<int, class-string>
      */
-    protected array $commands = [];
+    protected array $commands = [
+        SendTodoOverdueCommand::class,
+        SendTodoDueSoonCommand::class,
+        GenerateTodoOccurrencesCommand::class,
+        SkipTodoOccurrenceCommand::class,
+    ];
 
     /**
      * Provider classes to register.

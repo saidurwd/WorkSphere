@@ -5,6 +5,7 @@ namespace Modules\Todos\Services;
 use App\Enums\WorkItemStatus;
 use App\Models\User;
 use App\Services\ActivityLogger;
+use App\Services\ReminderScheduler;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Modules\Todos\Events\TodoAssigned;
@@ -47,6 +48,7 @@ class TodoService
     public function __construct(
         private readonly ActivityLogger $activity,
         private readonly TodoRecurrenceService $recurrence,
+        private readonly ReminderScheduler $reminders,
     ) {}
 
     /**
@@ -90,6 +92,12 @@ class TodoService
             $after = $todo->only(array_keys($attributes));
 
             $this->log($todo, 'updated', $before, $after, $actor);
+
+            // A due-date change invalidates the existing reminder plan, so it is
+            // rebuilt here rather than left to fire about the old date.
+            if (array_key_exists('due_date', $attributes) || array_key_exists('due_time', $attributes)) {
+                $this->reminders->scheduleForTodo($todo, createdBy: $actor);
+            }
 
             return $todo;
         });
@@ -147,6 +155,8 @@ class TodoService
                 'completed_at' => $todo->completed_at?->toDateTimeString(),
                 'completed_by' => $actor->id,
             ], $actor);
+
+            $this->reminders->cancelForTodo($todo);
 
             TodoCompleted::dispatch($todo, $actor->id);
 
@@ -219,6 +229,8 @@ class TodoService
                 'status' => $todo->status->value,
                 'archived_from' => $todo->archived_from,
             ], $actor);
+
+            $this->reminders->cancelForTodo($todo);
 
             return $todo;
         });

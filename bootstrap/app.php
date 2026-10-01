@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\WorkSphereSchedule;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
@@ -22,11 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(fn () => route('login'));
     })
     ->withSchedule(function (Schedule $schedule) {
-        $schedule->command('obligations:process')->dailyAt('08:00');
-        $schedule->command('actions:remind')->dailyAt('09:00');
-        $schedule->command('actions:overdue')->dailyAt('09:30');
-        $schedule->command('tasks:remind')->dailyAt('09:00');
-        $schedule->command('tasks:overdue')->dailyAt('09:30');
+        // Defined in a class rather than inline so it can be asserted without the
+        // container — see App\Console\WorkSphereSchedule for why.
+        (new WorkSphereSchedule($schedule))->register();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

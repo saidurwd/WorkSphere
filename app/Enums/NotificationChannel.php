@@ -42,6 +42,23 @@ enum NotificationChannel: string
         return [self::Database->value, self::Mail->value];
     }
 
+    /**
+     * The deliverable channels as enum cases, for callers that iterate.
+     *
+     * `Sms` and `InApp` are declared but unwired, so iterating `cases()` and
+     * treating every entry as a real channel produces a preference check over
+     * channels nothing is ever sent down.
+     *
+     * @return list<self>
+     */
+    public static function deliverableCases(): array
+    {
+        return array_values(array_filter(
+            self::cases(),
+            fn (self $channel): bool => in_array($channel->value, self::deliverableValues(), true),
+        ));
+    }
+
     public function label(): string
     {
         return match ($this) {

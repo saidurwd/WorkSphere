@@ -65,7 +65,14 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    // GAP-046. The business timezone, UTC+06:00. It was UTC, which meant a
+    // reminder set for "09:00 local" was stored as 09:00 UTC and fired three
+    // hours before the office opened — and `dailyAt('09:00')` in the schedule
+    // meant server-local time, which is not necessarily either.
+    //
+    // A named zone rather than a fixed "+06:00" offset so the intent survives a
+    // future zone change; Asia/Dhaka observes no DST, so it is exactly +06:00.
+    'timezone' => 'Asia/Dhaka',
 
     /*
     |--------------------------------------------------------------------------

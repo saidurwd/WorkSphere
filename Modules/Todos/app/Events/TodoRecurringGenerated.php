@@ -20,5 +20,6 @@ class TodoRecurringGenerated
     public function __construct(
         public Todo $todo,
         public int $previousTodoId,
+        public ?int $actorId = null,
     ) {}
 }
