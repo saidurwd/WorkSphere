@@ -119,6 +119,8 @@
     "GET|projects|projects.index|auth,web",
     "GET|reset-password/{token}|password.reset|guest,web",
     "GET|sanctum/csrf-cookie|sanctum.csrf-cookie|web",
+    "GET|search/suggest|search.suggest|auth,web",
+    "GET|search|search|auth,web",
     "GET|storage/{path}|storage.local|",
     "GET|task-transfers|task-transfers.index|auth,web",
     "GET|tasks/create|tasks.create|auth,web",

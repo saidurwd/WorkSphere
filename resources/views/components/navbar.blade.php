@@ -33,8 +33,12 @@
 @endphp
 
 <nav class="app-header navbar navbar-expand-md bg-body">
-    <div class="container-fluid">
-        <ul class="navbar-nav me-auto">
+    {{-- Three columns: left, centre search, right. `me-auto`/`ms-auto` are gone —
+         the centre claims the free space with `flex-grow-1` and centres its own
+         content, which is what puts the box in the middle rather than merely
+         after the brand. --}}
+    <div class="container-fluid d-flex align-items-center">
+        <ul class="navbar-nav flex-shrink-0">
             <li class="nav-item">
                 <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" aria-label="Toggle navigation">
                     <i class="bi bi-list"></i>
@@ -46,7 +50,54 @@
                     <i class="bi bi-house-door me-1"></i>{{ config('app.name', 'Laravel') }}
                 </a>
             </li>
+
+            {{-- Below `md` the centred box is hidden, so search would be
+                 unreachable on a phone. This keeps it one tap away. --}}
+            @auth
+                <li class="nav-item d-md-none">
+                    <a href="{{ route('search') }}" class="nav-link" aria-label="Search">
+                        <i class="bi bi-search"></i>
+                    </a>
+                </li>
+            @endauth
         </ul>
+
+        {{-- Global search box, centred. Type-ahead comes from a JSON endpoint and is
+             rendered with textContent, never innerHTML: every title is user-authored
+             text from five modules. Permissions are enforced server-side by the same
+             service the full search page uses. --}}
+        @auth
+            <div class="navbar-search flex-grow-1 d-none d-md-flex justify-content-center px-3">
+                <div class="position-relative w-100" style="max-width: 520px;" data-search-box
+                     data-search-endpoint="{{ route('search.suggest') }}">
+                    <form action="{{ route('search') }}" method="GET" role="search" class="d-flex">
+                        <label for="navbar-search" class="visually-hidden">Search</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-body border-end-0">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input id="navbar-search" type="search" name="q"
+                                   class="form-control border-start-0 ps-0"
+                                   placeholder="Search…" maxlength="120"
+                                   autocomplete="off" role="combobox"
+                                   aria-expanded="false" aria-controls="navbar-search-results"
+                                   aria-autocomplete="list"
+                                   aria-describedby="navbar-search-status"
+                                   data-search-input>
+                        </div>
+                    </form>
+
+                    {{-- aria-live so a screen reader hears the result count once a
+                         debounced search finishes, not on every keystroke. --}}
+                    <p id="navbar-search-status" class="visually-hidden" role="status" aria-live="polite"></p>
+
+                    <div id="navbar-search-results"
+                         class="dropdown-menu show p-0 shadow d-none"
+                         style="width: min(92vw, 520px); max-height: 420px; overflow-y: auto; left: 0; top: 100%;"
+                         role="listbox" aria-label="Search results"></div>
+                </div>
+            </div>
+        @endauth
 
         <ul class="navbar-nav ms-auto align-items-center">
             @auth

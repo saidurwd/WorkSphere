@@ -2,6 +2,11 @@
 
 namespace App\Search;
 
+use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
+
 /**
  * One searchable entity, declared once.
  *
@@ -13,7 +18,7 @@ namespace App\Search;
 final class SearchableEntity
 {
     /**
-     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $model
+     * @param  class-string<Model>  $model
      * @param  list<string>  $fields  Columns a term is matched against.
      * @param  string  $permission  Permission required to see a hit at all.
      * @param  string  $route  Named route a hit links to.
@@ -43,7 +48,7 @@ final class SearchableEntity
      * `obligation.view` must not receive obligation rows *or a count that reveals
      * how many exist*.
      */
-    public function isVisibleTo(\App\Models\User $user): bool
+    public function isVisibleTo(User $user): bool
     {
         return $user->hasPermission($this->permission);
     }
@@ -55,7 +60,7 @@ final class SearchableEntity
     {
         $route = $this->route;
 
-        if (! \Illuminate\Support\Facades\Route::has($route)) {
+        if (! Route::has($route)) {
             return null;
         }
 
@@ -65,6 +70,17 @@ final class SearchableEntity
     /**
      * A short excerpt with the match highlighted, so a hit can be judged without
      * opening it.
+     *
+     * The result is the ONE place in the search UI that is emitted with `{!! !!}`,
+     * because highlighting needs markup. That makes escaping here a
+     * responsibility rather than a convenience: this text is user-authored, and
+     * rendering it unescaped would be a stored cross-site-scripting hole on the
+     * search page.
+     *
+     * The order matters. The source is escaped FIRST and the term is matched
+     * against the escaped text using an escaped pattern, so a description
+     * containing `<script>` renders as text and a term containing `&lt;` cannot
+     * break the highlight wrapper.
      */
     public function excerpt(mixed $record, string $term, int $length = 160): string
     {
@@ -74,16 +90,17 @@ final class SearchableEntity
             return '';
         }
 
-        $excerpt = \Illuminate\Support\Str::limit($source, $length);
+        $excerpt = e(Str::limit($source, $length));
 
         if ($term === '') {
             return $excerpt;
         }
 
-        return preg_replace(
-            '/('.preg_quote($term, '/').')/iu',
-            '<mark>$1</mark>',
-            $excerpt,
-        ) ?? $excerpt;
+        $pattern = '/('.preg_quote(e($term), '/').')/iu';
+
+        $highlighted = @preg_replace($pattern, '<mark>$1</mark>', $excerpt);
+
+        // A malformed pattern must never take the page down over a highlight.
+        return $highlighted ?? $excerpt;
     }
 }

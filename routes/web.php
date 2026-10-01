@@ -12,6 +12,8 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SearchSuggestController;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
@@ -31,6 +33,20 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware(['web', 'auth'])->post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+
+/*
+|--------------------------------------------------------------------------
+| Global search (GAP-035)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['web', 'auth'])->group(function (): void {
+    Route::get('search', SearchController::class)->name('search');
+
+    // Type-ahead for the navbar box. JSON, so the client never has to trust a
+    // server-rendered fragment it would have to inject as HTML.
+    Route::get('search/suggest', SearchSuggestController::class)->name('search.suggest');
+});
 
 /*
 |--------------------------------------------------------------------------
