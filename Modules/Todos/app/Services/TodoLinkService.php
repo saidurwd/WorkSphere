@@ -8,6 +8,7 @@ use App\Services\ActivityLogger;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use Modules\Meetings\Models\Meeting;
 use Modules\Meetings\Models\MeetingActionItem;
 use Modules\Obligations\Models\Obligation;
@@ -67,7 +68,7 @@ class TodoLinkService
         $class = self::ALLOWED_LINKABLES[$morphKey][0] ?? null;
 
         if ($class === null) {
-            throw InvalidArgumentException(sprintf(
+            throw new InvalidArgumentException(sprintf(
                 'Unknown linkable type [%s]. Allowed: %s.',
                 $morphKey,
                 implode(', ', self::linkableTypes()),
@@ -91,7 +92,7 @@ class TodoLinkService
         $target = $class::query()->find($targetId);
 
         if ($target === null) {
-            throw InvalidArgumentException(sprintf(
+            throw new InvalidArgumentException(sprintf(
                 'Cannot link to %s #%d: no such record.',
                 $class,
                 $targetId,
@@ -129,7 +130,7 @@ class TodoLinkService
             $link = $todo->links()->whereKey($linkId)->first();
 
             if ($link === null) {
-                throw InvalidArgumentException('That link does not belong to this To-Do.');
+                throw new InvalidArgumentException('That link does not belong to this To-Do.');
             }
 
             $attributes = [

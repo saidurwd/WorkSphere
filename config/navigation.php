@@ -105,6 +105,19 @@ return [
         ],
 
         [
+            'label' => 'To-Dos',
+            'icon' => 'check-square',
+            'route' => 'todos.index',
+            'active' => ['todos.*'],
+            'children' => [
+                ['label' => 'My To-Dos', 'icon' => 'inbox', 'route' => 'todos.index', 'active' => ['todos.index']],
+                ['label' => 'Inbox', 'icon' => 'download', 'route' => 'todos.inbox', 'active' => ['todos.inbox']],
+                ['label' => 'Calendar', 'icon' => 'calendar', 'route' => 'todos.calendar', 'active' => ['todos.calendar']],
+                ['label' => 'Reports', 'icon' => 'bar-chart', 'route' => 'todos.reports', 'active' => ['todos.reports']],
+            ],
+        ],
+
+        [
             'label' => 'Administration',
             'icon' => 'shield-lock',
             'admin' => true,

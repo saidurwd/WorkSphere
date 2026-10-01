@@ -78,6 +78,8 @@ class AppServiceProvider extends ServiceProvider
         'obligation.delete_notification_logs' => '@super-admin',
         'task.view_reports' => 'report.view',
         'task.delete_notification_logs' => '@super-admin',
+        'todo.view_all' => 'todos.view_all',
+        'todo.delete_notification_logs' => '@super-admin',
     ];
 
     /**

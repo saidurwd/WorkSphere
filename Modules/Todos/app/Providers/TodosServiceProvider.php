@@ -36,6 +36,7 @@ class TodosServiceProvider extends ModuleServiceProvider
      */
     protected array $providers = [
         EventServiceProvider::class,
+        RouteServiceProvider::class,
     ];
 
     /**

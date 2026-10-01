@@ -79,12 +79,7 @@
                                 <td>{{ $item->assignedDepartment->department_name ?? 'N/A' }}</td>
                                 <td>{{ $item->due_date ? $item->due_date->format('M d, Y') : 'N/A' }}</td>
                                 <td>
-                                    <x-badge :variant="match ($item->status) {
-                                        'completed' => 'success',
-                                        'in_progress' => 'primary',
-                                        'on_hold' => 'warning',
-                                        default => 'secondary',
-                                    }">{{ ucwords(str_replace('_', ' ', $item->status)) }}</x-badge>
+                                    <x-badge :variant="\App\Support\StatusBadge::variant($item->status)">
                                     @if($item->isOverdue())
                                         <x-badge variant="danger">Overdue</x-badge>
                                     @endif

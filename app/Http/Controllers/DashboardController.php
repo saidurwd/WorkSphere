@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 use Modules\Meetings\Models\Meeting;
 use Modules\Meetings\Models\MeetingActionItem;
 use Modules\Obligations\Models\Obligation;
 use Modules\Obligations\Models\ObligationType;
 use Modules\Tasks\Models\Task;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
@@ -162,10 +162,8 @@ class DashboardController extends Controller
                 'subtitle' => 'Due '.$task->due_date->format('M d, Y'),
                 'url' => route('tasks.edit', $task),
                 'badge' => [
-                    'text' => ucfirst($task->priority),
-                    'variant' => $task->priority === 'high'
-                        ? 'danger'
-                        : ($task->priority === 'medium' ? 'primary' : 'secondary'),
+                    'text' => StatusBadge::label($task->priority),
+                    'variant' => StatusBadge::priorityVariant($task->priority),
                 ],
             ];
         };
@@ -180,12 +178,7 @@ class DashboardController extends Controller
                 'url' => route('obligations.show', $o),
                 'badge' => [
                     'text' => ucfirst($o->risk_level),
-                    'variant' => match ($o->risk_level) {
-                        'critical' => 'danger',
-                        'high' => 'warning',
-                        'medium' => 'primary',
-                        'low' => 'secondary',
-                    },
+                    'variant' => StatusBadge::priorityVariant($o->risk_level),
                 ],
             ];
         };
