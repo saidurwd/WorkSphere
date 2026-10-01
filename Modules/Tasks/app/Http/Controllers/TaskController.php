@@ -2,7 +2,9 @@
 
 namespace Modules\Tasks\Http\Controllers;
 
+use App\Enums\WorkItemStatus;
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,6 +16,7 @@ use Modules\Tasks\Events\TaskCompleted;
 use Modules\Tasks\Events\TaskCreated;
 use Modules\Tasks\Events\TaskUpdated;
 use Modules\Tasks\Models\Task;
+use Modules\Tasks\Services\TaskRemarkSynchroniser;
 
 class TaskController extends Controller
 {
@@ -22,11 +25,12 @@ class TaskController extends Controller
         $user = Auth::user();
         $query = Task::query()->with(['responsibleUser', 'project', 'taskTransfers'])->orderByDesc('due_date');
 
+        // Must match TaskPolicy::view exactly, including watchers. Filtering the
+        // list by a stricter rule than the policy would hide a task the user can
+        // legitimately open; filtering it by a looser one would list tasks they
+        // get 403 on.
         if (! $user->hasPermission('task.view')) {
-            $query->where(function ($q) use ($user) {
-                $q->where('user_id', $user->id)
-                    ->orWhere('responsible_user_id', $user->id);
-            });
+            $query->forUser($user);
         }
 
         $filters = [
@@ -44,9 +48,10 @@ class TaskController extends Controller
                 $q->where('title', 'like', $search)
                     ->orWhere('description', 'like', $search);
             });
-        })->when(in_array($filters['status'], ['pending', 'in_progress', 'completed'], true), function ($q) use ($filters) {
-            $q->where('status', $filters['status']);
-        })->when(in_array($filters['priority'], ['low', 'medium', 'high'], true), function ($q) use ($filters) {
+        })->when(
+            WorkItemStatus::tryFrom($filters['status']) !== null,
+            fn ($q) => $q->where('status', $filters['status'])
+        )->when(in_array($filters['priority'], ['low', 'medium', 'high'], true), function ($q) use ($filters) {
             $q->where('priority', $filters['priority']);
         })->when($filters['responsible_user_id'] > 0, function ($q) use ($filters) {
             $q->where('responsible_user_id', $filters['responsible_user_id']);
@@ -251,10 +256,20 @@ class TaskController extends Controller
             'taskTransfers.fromUser',
             'taskTransfers.toUser',
             'taskTransfers.transferredBy',
+            // GAP-025: sub-tasks and shared tags, both rendered on the detail page.
+            'subtasks',
+            'tags:id,name,slug,color',
         ]);
 
         return view('tasks.show', [
             'task' => $task,
+            // GAP-025: the per-task timeline. Paged so a long history does not
+            // load every entry into the detail page.
+            'activityLog' => ActivityLog::query()
+                ->where('module_name', Task::class)
+                ->where('record_id', $task->id)
+                ->latest('id')
+                ->paginate(10),
         ]);
     }
 
@@ -366,6 +381,12 @@ class TaskController extends Controller
         $validated['user_id'] = Auth::id();
 
         $task->remarks()->create($validated);
+
+        // GAP-048: dual-write into the shared comments table so one comment
+        // stream can span Tasks, Meetings and To-Dos. The legacy row above is
+        // untouched, so every existing screen and mail keeps working.
+        app(TaskRemarkSynchroniser::class)
+            ->mirror($task, $task->remarks()->latest('id')->firstOrFail());
 
         return back()->with('success', 'Remark added successfully.');
     }

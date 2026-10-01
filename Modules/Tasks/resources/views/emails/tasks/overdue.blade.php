@@ -14,8 +14,8 @@ The following task is now overdue:
 <x-mail::table>
 | Detail | Information |
 | :----- | :---------- |
-| **Priority** | {{ ucfirst($task->priority) }} |
-| **Status** | {{ ucfirst(str_replace('_', ' ', $task->status)) }} |
+| **Priority** | {{ \App\Support\StatusBadge::label($task->priority) }} |
+| **Status** | {{ \App\Support\StatusBadge::label($task->status) }} |
 | **Due Date** | {{ $task->due_date->format('F j, Y') }} |
 </x-mail::table>
 

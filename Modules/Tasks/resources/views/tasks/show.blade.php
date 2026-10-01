@@ -33,13 +33,13 @@ $statusAccent = $task->status === 'completed' ? 'var(--success)' : ($task->statu
             <div class="card" style="border-left: 4px solid {{ $statusAccent }};">
                 <div class="card-body" style="padding: 1rem 1.25rem;">
                     <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted-foreground); font-weight: 600;">Status</div>
-                    <div style="margin-top: 0.35rem; font-size: 1.05rem; font-weight: 600; color: var(--card-foreground);">{{ ucwords(str_replace('_', ' ', $task->status)) }}</div>
+                    <div style="margin-top: 0.35rem; font-size: 1.05rem; font-weight: 600; color: var(--card-foreground);">{{ \App\Support\StatusBadge::label($task->status) }}</div>
                 </div>
             </div>
             <div class="card" style="border-left: 4px solid var(--primary);">
                 <div class="card-body" style="padding: 1rem 1.25rem;">
                     <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted-foreground); font-weight: 600;">Priority</div>
-                    <div style="margin-top: 0.35rem; font-size: 1.05rem; font-weight: 600; color: var(--card-foreground);">{{ ucfirst($task->priority) }}</div>
+                    <div style="margin-top: 0.35rem; font-size: 1.05rem; font-weight: 600; color: var(--card-foreground);">{{ \App\Support\StatusBadge::label($task->priority) }}</div>
                 </div>
             </div>
             <div class="card" style="border-left: 4px solid {{ $task->isOverdue() ? 'var(--danger)' : ($task->isToday() ? 'var(--warning)' : 'var(--success)') }};">
@@ -61,8 +61,8 @@ $statusAccent = $task->status === 'completed' ? 'var(--success)' : ($task->statu
             <div class="card-header">
                 <h2 class="card-title">Overview</h2>
                 <div style="display: flex; gap: 0.5rem;">
-                    <span class="badge {{ $priorityClass }}">{{ ucfirst($task->priority) }} Priority</span>
-                    <span class="badge {{ $statusClass }}">{{ ucwords(str_replace('_', ' ', $task->status)) }}</span>
+                    <span class="badge {{ $priorityClass }}">{{ \App\Support\StatusBadge::label($task->priority) }} Priority</span>
+                    <span class="badge {{ $statusClass }}">{{ \App\Support\StatusBadge::label($task->status) }}</span>
                     @if($task->isOverdue())
                     <span class="badge text-bg-danger">Overdue</span>
                     @endif
@@ -224,6 +224,158 @@ $statusAccent = $task->status === 'completed' ? 'var(--success)' : ($task->statu
                 @else
                 <x-empty-state title="No transfers yet" description="This task has not been transferred." />
                 @endif
+            </div>
+
+            {{-- Sub-tasks — GAP-025. The list is a plain card rather than a shared
+                 component: the entries carry per-row controls that no existing
+                 component renders. --}}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Sub-tasks ({{ $task->subtasks()->count() }})</h3>
+                </div>
+                <ul class="list-group list-group-flush">
+                    @forelse ($task->subtasks as $subtask)
+                        <li class="list-group-item d-flex align-items-center justify-content-between gap-2">
+                            <span>
+                                <x-badge :variant="\App\Support\StatusBadge::variant($subtask->status)">
+                                    {{ \App\Support\StatusBadge::label($subtask->status) }}
+                                </x-badge>
+                                {{ $subtask->title }}
+                            </span>
+                            <span class="text-body-secondary small">
+                                {{ $subtask->due_date?->format('M d, Y') ?? 'No date' }}
+                            </span>
+                        </li>
+                    @empty
+                        <li class="list-group-item text-body-secondary">No sub-tasks yet.</li>
+                    @endforelse
+                </ul>
+
+                @can('createSubtask', $task)
+                    <div class="card-footer">
+                        <form action="{{ route('tasks.subtasks.store', $task) }}" method="POST" class="d-flex gap-2">
+                            @csrf
+                            <label for="subtask-title" class="visually-hidden">Sub-task title</label>
+                            <input id="subtask-title" type="text" name="title" class="form-control"
+                                   placeholder="Add a sub-task…" maxlength="255" required>
+                            <button type="submit" class="btn btn-outline-primary">Add</button>
+                        </form>
+                    </div>
+                @endcan
+            </div>
+
+            {{-- Time tracking — GAP-025. `actual_minutes` is a cache of the entries
+                 below; both are shown so the figure and its source agree. --}}
+            <div class="card mb-3">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h3 class="card-title mb-0">Time</h3>
+                    <span class="text-body-secondary small">
+                        {{ $task->actual_minutes ?? 0 }} of {{ $task->estimated_minutes ?? 0 }} min
+                    </span>
+                </div>
+
+                <ul class="list-group list-group-flush">
+                    @forelse ($task->timeEntries()->with('user')->orderByDesc('logged_on')->get() as $entry)
+                        <li class="list-group-item d-flex align-items-center justify-content-between gap-2">
+                            <span>
+                                {{ $entry->logged_on->format('M d, Y') }}
+                                <span class="text-body-secondary">· {{ $entry->user?->name ?? 'Removed user' }}</span>
+                                @if ($entry->note)
+                                    <span class="text-body-secondary small d-block">{{ $entry->note }}</span>
+                                @endif
+                            </span>
+                            <span class="d-flex align-items-center gap-2">
+                                <span class="badge text-bg-secondary">{{ $entry->minutes }} min</span>
+                                @can('logTime', $task)
+                                    <form action="{{ route('tasks.time-entries.destroy', [$task, $entry]) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-link text-danger p-0"
+                                                aria-label="Remove time entry for {{ $entry->logged_on->format('M d, Y') }}">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </form>
+                                @endcan
+                            </span>
+                        </li>
+                    @empty
+                        <li class="list-group-item text-body-secondary">No time logged.</li>
+                    @endforelse
+                </ul>
+
+                @can('logTime', $task)
+                    <div class="card-footer">
+                        <form action="{{ route('tasks.time-entries.store', $task) }}" method="POST" class="row g-2 align-items-end">
+                            @csrf
+                            <div class="col-auto">
+                                <label for="entry-minutes" class="form-label">Minutes</label>
+                                <input id="entry-minutes" type="number" name="minutes" class="form-control form-control-sm"
+                                       min="1" max="1440" value="30" required>
+                            </div>
+                            <div class="col-auto">
+                                <label for="entry-date" class="form-label">Date</label>
+                                <input id="entry-date" type="date" name="logged_on" class="form-control form-control-sm"
+                                       value="{{ now()->toDateString() }}" required>
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Log</button>
+                            </div>
+                        </form>
+                    </div>
+                @endcan
+            </div>
+
+            {{-- Shared tags — GAP-048. One vocabulary across Tasks, Meetings and
+                 To-Dos, so a tag applied here is findable from any of them. --}}
+            <div class="card mb-3">
+                <div class="card-header"><h3 class="card-title mb-0">Tags</h3></div>
+                <div class="card-body d-flex flex-wrap gap-2">
+                    @forelse ($task->tags as $tag)
+                        <span class="badge d-inline-flex align-items-center gap-1"
+                              style="background-color: {{ $tag->color ?? 'var(--bs-secondary)' }};">
+                            {{ $tag->name }}
+                            @can('update', $task)
+                                <form action="{{ route('tasks.tags.destroy', [$task, $tag]) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm p-0 border-0 text-white"
+                                            style="line-height: 1;"
+                                            aria-label="Remove tag {{ $tag->name }}">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </form>
+                            @endcan
+                        </span>
+                    @empty
+                        <span class="text-body-secondary">No tags.</span>
+                    @endforelse
+
+                    @can('update', $task)
+                        <form action="{{ route('tasks.tags.store', $task) }}" method="POST" class="d-flex gap-2 ms-auto">
+                            @csrf
+                            <label for="task-tag" class="visually-hidden">Add a tag</label>
+                            <input id="task-tag" type="text" name="tag" class="form-control form-control-sm"
+                                   placeholder="Add a tag…" maxlength="100" required>
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">Add</button>
+                        </form>
+                    @endcan
+                </div>
+            </div>
+
+            {{-- Activity timeline — GAP-025. Fed by ActivityObserver on Task and by
+                 the service-level writes (sub-tasks, time, reparenting). --}}
+            <div class="card mb-3">
+                <div class="card-header"><h3 class="card-title mb-0">Activity</h3></div>
+                <ul class="list-group list-group-flush">
+                    @forelse ($activityLog as $entry)
+                        <li class="list-group-item d-flex justify-content-between gap-2">
+                            <span class="text-capitalize">{{ str_replace('_', ' ', $entry->action) }}</span>
+                            <small class="text-body-secondary">{{ $entry->created_at->diffForHumans() }}</small>
+                        </li>
+                    @empty
+                        <li class="list-group-item text-body-secondary">Nothing recorded yet.</li>
+                    @endforelse
+                </ul>
             </div>
         </div>
     </div>

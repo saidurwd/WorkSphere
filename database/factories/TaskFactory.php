@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\Priority;
+use App\Enums\WorkItemStatus;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Modules\Tasks\Models\Task;
@@ -56,6 +57,41 @@ class TaskFactory extends Factory
         return $this->state(fn (): array => [
             'status' => 'completed',
             'completed_at' => now(),
+        ]);
+    }
+
+    /**
+     * A sub-task. The parent is passed in rather than generated so a test can build
+     * an explicit hierarchy.
+     */
+    public function withParent(Task $parent): static
+    {
+        return $this->state(fn (): array => ['parent_id' => $parent->id]);
+    }
+
+    /**
+     * A task with no deadline. `due_date` is nullable from Phase 8 — GAP-026 — so
+     * this is a real state, not a fixture oddity.
+     */
+    public function undated(): static
+    {
+        return $this->state(fn (): array => ['due_date' => null]);
+    }
+
+    /**
+     * Every status `tasks.status` allows after the Phase 8 widening, so a view
+     * that cannot render one of them is caught here rather than in production.
+     */
+    public function inAnyStatus(): static
+    {
+        return $this->state(fn (): array => [
+            'status' => fake()->randomElement([
+                WorkItemStatus::Pending->value,
+                WorkItemStatus::InProgress->value,
+                WorkItemStatus::OnHold->value,
+                WorkItemStatus::Completed->value,
+                WorkItemStatus::Cancelled->value,
+            ]),
         ]);
     }
 
