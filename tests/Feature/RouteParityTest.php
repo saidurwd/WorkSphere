@@ -90,6 +90,37 @@ class RouteParityTest extends TestCase
         $this->assertSame($expected, $actual);
     }
 
+    /**
+     * Phase 8 GAP-028 wired meeting templates, which had models and two tables and
+     * no route at all. Pinned for the same reason as the other sets.
+     */
+    public function test_the_meeting_template_routes_are_exactly_what_was_declared(): void
+    {
+        $expected = [
+            'meetings.templates.index',
+            'meetings.templates.create',
+            'meetings.templates.store',
+            'meetings.templates.show',
+            'meetings.templates.edit',
+            'meetings.templates.update',
+            'meetings.templates.destroy',
+            'meetings.templates.schedule',
+        ];
+
+        $actual = [];
+
+        foreach (Route::getRoutes() as $route) {
+            if (str_starts_with((string) $route->getName(), 'meetings.templates.')) {
+                $actual[] = $route->getName();
+            }
+        }
+
+        sort($expected);
+        sort($actual);
+
+        $this->assertSame($expected, $actual);
+    }
+
     public function test_the_todo_surface_is_exactly_what_was_declared(): void
     {
         $expected = [

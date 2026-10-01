@@ -33,8 +33,12 @@ class MeetingTemplate extends Model
         return $this->belongsTo(MeetingType::class, 'meeting_type_id');
     }
 
+    /**
+     * The foreign key is explicit: `hasMany(MeetingTemplateAgenda::class)` infers
+     * `meeting_template_agenda_id`, but the column is `template_id`.
+     */
     public function agendaItems(): HasMany
     {
-        return $this->hasMany(MeetingTemplateAgenda::class);
+        return $this->hasMany(MeetingTemplateAgenda::class, 'template_id');
     }
 }

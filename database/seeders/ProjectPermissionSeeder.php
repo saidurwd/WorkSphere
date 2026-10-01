@@ -35,6 +35,7 @@ class ProjectPermissionSeeder extends Seeder
         'meeting.create',
         'meeting.edit',
         'meeting.delete',
+        'meeting.manage_templates',
         'meeting.manage_participants',
         'meeting.manage_agenda',
         'meeting.manage_discussion',

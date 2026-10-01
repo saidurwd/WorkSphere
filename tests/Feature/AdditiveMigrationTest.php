@@ -49,6 +49,9 @@ class AdditiveMigrationTest extends TestCase
         'notification_logs' => ['subject_type', 'subject_id', 'dedupe_key'],
         'activity_logs' => ['subject_type', 'subject_id', 'user_agent'],
         'tasks' => ['parent_id', 'estimated_minutes', 'actual_minutes'],
+        // Phase 8 GAP-030 — the structured location reference, alongside the
+        // free-text `location`, which is untouched.
+        'meetings' => ['location_id', 'template_id'],
     ];
 
     /**
@@ -56,7 +59,7 @@ class AdditiveMigrationTest extends TestCase
      * Phase 8's six Task migrations. Both are additive, so the exact-removal
      * assertion below has to name what *both* added.
      */
-    private const ADDITIVE_MIGRATIONS = 20;
+    private const ADDITIVE_MIGRATIONS = 23;
 
     public function test_every_pre_existing_table_still_exists(): void
     {
@@ -120,10 +123,12 @@ class AdditiveMigrationTest extends TestCase
             'notification_logs.dedupe_key',
             'notification_logs.subject_id',
             'notification_logs.subject_type',
-            // Phase 8 GAP-025/026.
+            // Phase 8 GAP-025/026 and GAP-030.
             'tasks.actual_minutes',
             'tasks.estimated_minutes',
             'tasks.parent_id',
+            'meetings.location_id',
+            'meetings.template_id',
         ];
 
         // removedColumns() walks PRE_EXISTING in declaration order, so both sides

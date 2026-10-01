@@ -13,6 +13,7 @@ use Modules\Meetings\Http\Controllers\MeetingNotificationLogController;
 use Modules\Meetings\Http\Controllers\MeetingParticipantController;
 use Modules\Meetings\Http\Controllers\MeetingReportController;
 use Modules\Meetings\Http\Controllers\MeetingTagController;
+use Modules\Meetings\Http\Controllers\MeetingTemplateController;
 use Modules\Meetings\Http\Controllers\MeetingTypeController;
 
 /*
@@ -57,6 +58,19 @@ Route::middleware(['web', 'auth'])->prefix('meetings')->name('meetings.')->group
     Route::get('/notification-logs', [MeetingNotificationLogController::class, 'index'])->name('notification-logs.index');
     Route::delete('/notification-logs', [MeetingNotificationLogController::class, 'destroyAll'])->name('notification-logs.destroy-all');
     Route::delete('/notification-logs/{log}', [MeetingNotificationLogController::class, 'destroy'])->name('notification-logs.destroy');
+    // Templates — GAP-028. Declared before `/{meeting}` so `meeting-templates`
+    // cannot be captured as a meeting id.
+    Route::prefix('meeting-templates')->name('templates.')->group(function () {
+        Route::get('/', [MeetingTemplateController::class, 'index'])->name('index');
+        Route::get('create', [MeetingTemplateController::class, 'create'])->name('create');
+        Route::post('/', [MeetingTemplateController::class, 'store'])->name('store');
+        Route::get('{template}', [MeetingTemplateController::class, 'show'])->name('show');
+        Route::get('{template}/edit', [MeetingTemplateController::class, 'edit'])->name('edit');
+        Route::put('{template}', [MeetingTemplateController::class, 'update'])->name('update');
+        Route::delete('{template}', [MeetingTemplateController::class, 'destroy'])->name('destroy');
+        Route::post('{template}/schedule', [MeetingTemplateController::class, 'schedule'])->name('schedule');
+    });
+
     Route::get('/{meeting}', [MeetingController::class, 'show'])->name('show');
     Route::get('/{meeting}/print', [MeetingController::class, 'print'])->name('print');
     Route::get('/{meeting}/edit', [MeetingController::class, 'edit'])->name('edit');
@@ -118,4 +132,3 @@ Route::middleware(['web', 'auth'])->prefix('meetings')->name('meetings.')->group
         Route::delete('/{attachment}', [MeetingAttachmentController::class, 'destroy'])->name('destroy');
     });
 });
-

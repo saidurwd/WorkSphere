@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Modules\Meetings\Models\Meeting;
 use Modules\Meetings\Models\MeetingAttachment;
+use Modules\Meetings\Services\MeetingAttachmentSynchroniser;
 
 class MeetingAttachmentController extends Controller
 {
@@ -43,7 +44,17 @@ class MeetingAttachmentController extends Controller
             $validated['meeting_id'] = $meeting->id;
             $validated['uploaded_by'] = auth()->id();
 
-            MeetingAttachment::create($validated);
+            // `$validated` still carries the uploaded `file`, which is not a
+            // column; it has already been consumed above.
+            $attachment = MeetingAttachment::create(
+                collect($validated)->except('file')->all()
+            );
+
+            // GAP-048: dual-write into the shared attachments table. No file is
+            // copied — both rows point at the same object. The disk recorded is the
+            // one actually used; moving to the private disk is Phase 11's job.
+            app(MeetingAttachmentSynchroniser::class)
+                ->mirror($meeting, $attachment, 'public');
         }
 
         return redirect()->route('meetings.show', $meeting)->with('success', 'Attachment uploaded successfully.');
