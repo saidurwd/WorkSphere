@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
@@ -31,6 +32,15 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware(['web', 'auth'])->post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+
+/*
+|--------------------------------------------------------------------------
+| Global search (GAP-035)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['web', 'auth'])->get('search', SearchController::class)
+    ->name('search');
 
 /*
 |--------------------------------------------------------------------------
