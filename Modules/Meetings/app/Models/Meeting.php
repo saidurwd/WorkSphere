@@ -5,6 +5,7 @@ namespace Modules\Meetings\Models;
 use App\Models\Attachment;
 use App\Models\Comment;
 use App\Models\Department;
+use App\Models\Location;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\SoftDeletes;
@@ -29,6 +30,11 @@ class Meeting extends Model
         'chairperson_id',
         'department_id',
         'location',
+        // GAP-030 — the structured location reference. `location` (free text)
+        // stays fillable and is the fallback when no `locations` row is chosen.
+        'location_id',
+        // Traceability for a meeting built from a template.
+        'template_id',
         'meeting_date',
         'start_time',
         'end_time',
@@ -127,6 +133,20 @@ class Meeting extends Model
      * relation can become the only one; until then both are populated and this is
      * the one cross-module queries use.
      */
+    /**
+     * The structured location row, when one was chosen. `location` remains the
+     * free-text fallback for meetings whose venue is not a known location.
+     */
+    public function locationRecord(): BelongsTo
+    {
+        return $this->belongsTo(Location::class, 'location_id');
+    }
+
+    public function template(): BelongsTo
+    {
+        return $this->belongsTo(MeetingTemplate::class, 'template_id');
+    }
+
     public function sharedTags(): MorphToMany
     {
         return $this->morphToMany(Tag::class, 'taggable')->withTimestamps();

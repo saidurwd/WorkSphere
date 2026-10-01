@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Priority;
 use App\Models\Company;
 use App\Models\Department;
 use App\Models\Location;
@@ -39,7 +40,11 @@ class ObligationFactory extends Factory
             'auto_renew' => false,
             'recurrence_type' => null,
             'recurrence_interval' => null,
-            'priority' => fake()->randomElement(['low', 'medium', 'high', 'critical']),
+            // `critical` is a risk_level value, not a priority one. Leaking it in
+            // here produced rows that the shared Priority enum cannot represent —
+            // and a factory row only fails when something casts it, so the failure
+            // surfaced as an unrelated random failure.
+            'priority' => fake()->randomElement(Priority::values()),
             'risk_level' => fake()->randomElement(['low', 'medium', 'high', 'critical']),
             'estimated_cost' => fake()->randomFloat(2, 1000, 100000),
             'currency' => 'BDT',

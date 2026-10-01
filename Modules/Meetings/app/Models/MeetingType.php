@@ -36,6 +36,8 @@ class MeetingType extends Model
 
     public function templates(): HasMany
     {
-        return $this->hasMany(MeetingTemplate::class);
+        // The column is `meeting_type_id`, which is not what `hasMany` would infer
+        // from `MeetingTemplate` alone in every Laravel version.
+        return $this->hasMany(MeetingTemplate::class, 'meeting_type_id');
     }
 }

@@ -14,8 +14,8 @@ The following task has been marked as completed:
 <x-mail::table>
 | Detail | Information |
 | :----- | :---------- |
-| **Priority** | {{ ucfirst($task->priority) }} |
-| **Status** | {{ ucfirst(str_replace('_', ' ', $task->status)) }} |
+| **Priority** | {{ \App\Support\StatusBadge::label($task->priority) }} |
+| **Status** | {{ \App\Support\StatusBadge::label($task->status) }} |
 | **Due Date** | {{ $task->due_date->format('F j, Y') }} |
 | **Completed At** | {{ $task->completed_at ? $task->completed_at->format('F j, Y g:i A') : 'N/A' }} |
 </x-mail::table>

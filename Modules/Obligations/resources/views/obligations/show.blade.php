@@ -18,17 +18,22 @@
 
 @php
     $remaining = now()->startOfDay()->diffInDays($obligation->expiry_date, false);
-    $riskBadge = match ($obligation->risk_level) {
-        'critical' => 'text-bg-danger',
-        'high' => 'badge-warning',
-        'medium' => 'badge-primary',
-        'low' => 'text-bg-secondary',
-    };
-    $priorityBadge = match ($obligation->priority) {
-        'critical' => 'text-bg-danger',
-        'high' => 'badge-warning',
-        'medium' => 'badge-primary',
-        'low' => 'text-bg-secondary',
+
+    // Priority goes through the shared map (GAP-020). The inline arms this
+    // replaced had no `default`, so any value outside low|medium|high|critical
+    // threw — and `obligations.priority` is an unconstrained string, so nothing
+    // stopped a fifth value being written. They also used `badge-warning`, which
+    // is not a Bootstrap 5 class; the contextual utility is `text-bg-warning`.
+    $priorityBadge = 'text-bg-'.\App\Support\StatusBadge::priorityVariant($obligation->priority);
+
+    // risk_level has no shared enum yet (it is a separate vocabulary, and
+    // `critical` belongs to it), so it keeps a local map — with a default, so an
+    // unexpected value degrades to neutral instead of throwing.
+    $riskBadge = 'text-bg-'.match ($obligation->risk_level) {
+        'critical' => 'danger',
+        'high' => 'warning',
+        'medium' => 'info',
+        default => 'secondary',
     };
 @endphp
 

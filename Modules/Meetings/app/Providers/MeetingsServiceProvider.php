@@ -2,9 +2,12 @@
 
 namespace Modules\Meetings\Providers;
 
-use Nwidart\Modules\Support\ModuleServiceProvider;
-use Illuminate\Support\Facades\View;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Support\Facades\View;
+use Modules\Meetings\Console\Commands\BackfillMeetingPlatformTablesCommand;
+use Modules\Meetings\Console\Commands\SendActionOverdueCommand;
+use Modules\Meetings\Console\Commands\SendActionRemindersCommand;
+use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class MeetingsServiceProvider extends ModuleServiceProvider
 {
@@ -32,8 +35,9 @@ class MeetingsServiceProvider extends ModuleServiceProvider
      * @var string[]
      */
     protected array $commands = [
-        \Modules\Meetings\Console\Commands\SendActionOverdueCommand::class,
-        \Modules\Meetings\Console\Commands\SendActionRemindersCommand::class,
+        SendActionOverdueCommand::class,
+        SendActionRemindersCommand::class,
+        BackfillMeetingPlatformTablesCommand::class,
     ];
 
     /**
@@ -48,8 +52,8 @@ class MeetingsServiceProvider extends ModuleServiceProvider
 
     /**
      * Define module schedules.
-     * 
-     * @param $schedule
+     *
+     * @param  $schedule
      */
     // protected function configureSchedules(Schedule $schedule): void
     // {
