@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use App\Models\Employee;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\RolePermission;
@@ -47,9 +48,17 @@ trait InteractsWithRoles
     }
 
     /**
-     * A super-admin bypasses every policy through Gate::before.
+     * A super-admin bypasses every policy through `Gate::before`.
+     *
+     * Note what that does NOT do: it grants no permissions. `hasPermission()` reads
+     * `role_permissions`, so a super-admin with an empty permission set still
+     * passes every policy check while failing every hand-written
+     * `if (! $user->hasPermission(...))` narrowing in a list query. Pass
+     * `$permissions` when the test needs the list path to open too.
+     *
+     * @param  list<string>  $permissions
      */
-    protected function superAdmin(): User
+    protected function superAdmin(array $permissions = []): User
     {
         $user = User::factory()->create();
 
@@ -60,6 +69,17 @@ trait InteractsWithRoles
 
         $user->roles()->attach($role->id);
 
+        foreach ($permissions as $permission) {
+            $model = Permission::query()->firstOrCreate(['permission_name' => $permission]);
+
+            RolePermission::query()->firstOrCreate([
+                'role_id' => $role->id,
+                'permission_id' => $model->id,
+            ]);
+        }
+
+        $user->forgetPermissionCache();
+
         return $user->fresh();
     }
 
@@ -69,6 +89,25 @@ trait InteractsWithRoles
     protected function plainUser(): User
     {
         return User::factory()->create();
+    }
+
+    /**
+     * A user belonging to a department.
+     *
+     * `users` has no `department_id`; the department is reached through
+     * `employees`. Anything that scopes visibility by department — `TodoScope`'s
+     * Team clause, for one — reads it from there, so a helper that skipped the
+     * employee row would test the null branch and pass for the wrong reason.
+     */
+    protected function userInDepartment(?int $departmentId): User
+    {
+        $user = $this->plainUser();
+
+        $employee = Employee::factory()->create(['department_id' => $departmentId]);
+
+        $user->update(['employee_id' => $employee->id]);
+
+        return $user->fresh();
     }
 
     /**

@@ -10,9 +10,13 @@ use Illuminate\Validation\Rule;
 /**
  * Edit a To-Do's fields.
  *
- * `status` is deliberately absent: a status change goes through TodoService's
- * transition graph (§3.2), not through a bulk field update. Accepting it here
- * would let a form bypass the transition rules entirely.
+ * `status` is `prohibited`, not merely absent: a status change goes through
+ * TodoService's transition graph (§3.2), not through a bulk field update.
+ * Leaving the rule out would mean a payload carrying `status` passes validation
+ * and is silently dropped by `safe()->all()` — the client believes it moved the
+ * To-Do and is told nothing. `prohibited` turns that into a 422 naming the field.
+ * The web form does not submit `status` (the lifecycle buttons are separate
+ * routes), so nothing on the existing UI is affected.
  */
 class UpdateTodoRequest extends FormRequest
 {
@@ -27,6 +31,7 @@ class UpdateTodoRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'status' => ['prohibited'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
             'priority' => ['required', Rule::enum(Priority::class)],

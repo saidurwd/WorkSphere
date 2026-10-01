@@ -2,11 +2,16 @@
 
 namespace Modules\Meetings\Providers;
 
+use App\Support\RegistersApiRoutes;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
 
 class RouteServiceProvider extends ServiceProvider
 {
+    // Declares the module's API convention in one place — see the trait for why
+    // nwidart's own `prefix('api')` is not used (GAP-017, `/api/api/…`).
+    use RegistersApiRoutes;
+
     protected string $name = 'Meetings';
 
     /**
@@ -36,15 +41,5 @@ class RouteServiceProvider extends ServiceProvider
     protected function mapWebRoutes(): void
     {
         Route::middleware('web')->group(module_path($this->name, '/routes/web.php'));
-    }
-
-    /**
-     * Define the "api" routes for the application.
-     *
-     * These routes are typically stateless.
-     */
-    protected function mapApiRoutes(): void
-    {
-        Route::middleware('api')->prefix('api')->name('api.')->group(module_path($this->name, '/routes/api.php'));
     }
 }

@@ -3,56 +3,39 @@
 namespace Modules\Todos\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Comment;
-use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Modules\Todos\Events\TodoCommented;
-use Modules\Todos\Events\TodoMentioned;
 use Modules\Todos\Http\Requests\StoreTodoCommentRequest;
 use Modules\Todos\Models\Todo;
+use Modules\Todos\Services\TodoCommentService;
 
 /**
  * Comments on a To-Do.
  *
  * Writes to the shared `comments` table, not a To-Do-specific one — §4.5 exists
  * precisely so Meetings and To-Dos stop each having their own. A mention is
- * resolved from the body here rather than accepted as a submitted list, so a user
- * cannot silence a mention they never typed.
+ * resolved from the body by the request rather than accepted as a submitted list,
+ * so a user cannot silence a mention they never typed.
+ *
+ * The write, its activity row and its notifications all live in
+ * `TodoCommentService`, which the API controller uses too — two controllers
+ * remembering the same three steps is how a comment ends up created without its
+ * notification.
  */
 class TodoCommentController extends Controller
 {
-    public function __construct(private readonly ActivityLogger $activity) {}
+    public function __construct(private readonly TodoCommentService $comments) {}
 
     public function store(StoreTodoCommentRequest $request, Todo $todo): RedirectResponse
     {
         $this->authorize('comment', $todo);
 
-        $comment = $todo->comments()->create([
-            'user_id' => $request->user()->id,
-            'parent_id' => $request->integer('parent_id') ?: null,
-            'body' => $request->validated('body'),
-            'mentions' => $request->mentionedUserIds() ?: null,
-        ]);
-
-        $this->activity->record(
-            Todo::class,
+        $this->comments->store(
+            $request->user(),
             $todo,
-            'commented',
-            null,
-            ['comment_id' => $comment->id],
-            $request->user()->id,
+            $request->validated('body'),
+            $request->integer('parent_id') ?: null,
+            $request->mentionedUserIds(),
         );
-
-        $mentioned = $request->mentionedUserIds();
-
-        // Dispatched here, inside the request, so both the comment and its
-        // notifications exist before the response is sent.
-        TodoCommented::dispatch($comment, $request->user()->id);
-
-        if ($mentioned !== []) {
-            TodoMentioned::dispatch($comment, $mentioned, $request->user()->id);
-        }
 
         return back()->with('success', 'Comment added.');
     }

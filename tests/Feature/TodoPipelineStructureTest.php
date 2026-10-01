@@ -63,7 +63,7 @@ class TodoPipelineStructureTest extends TestCase
     {
         $callers = [];
 
-        foreach (glob(base_path('Modules/Todos/app/**/*.php')) ?: [] as $file) {
+        foreach ($this->phpFilesIn('Modules/Todos/app') as $file) {
             $source = (string) file_get_contents($file);
 
             if (! str_contains($source, '->deliver(')) {
@@ -91,7 +91,7 @@ class TodoPipelineStructureTest extends TestCase
     public function test_no_controller_or_service_sends_mail_directly(): void
     {
         foreach (['app/Http/Controllers', 'Modules/Todos/app/Http/Controllers'] as $directory) {
-            foreach (glob(base_path($directory.'/**/*.php')) ?: [] as $file) {
+            foreach ($this->phpFilesIn($directory) as $file) {
                 $source = (string) file_get_contents($file);
 
                 $this->assertStringNotContainsString(
@@ -189,13 +189,66 @@ class TodoPipelineStructureTest extends TestCase
         $this->assertStringContainsString('TodoReopened::dispatch', $serviceSource);
         $this->assertStringContainsString('TodoAssigned::dispatch', $serviceSource);
 
-        foreach (glob(base_path('Modules/Todos/app/Http/Controllers/**/*.php')) ?: [] as $file) {
+        foreach ($this->controllerSources() as $file) {
             $this->assertStringNotContainsString(
                 '::dispatch(',
-                (string) file_get_contents($file),
-                "{$file} dispatches an event directly.",
+                $file['source'],
+                "{$file['path']} dispatches an event directly.",
             );
         }
+    }
+
+    /**
+     * Every controller in the module, at any depth, with its source.
+     *
+     * @return list<array{path: string, source: string}>
+     */
+    private function controllerSources(): array
+    {
+        return array_map(
+            fn (string $path): array => [
+                'path' => $path,
+                'source' => (string) file_get_contents($path),
+            ],
+            $this->phpFilesIn('Modules/Todos/app/Http/Controllers'),
+        );
+    }
+
+    /**
+     * Every PHP file under a directory, at ANY depth.
+     *
+     * Recursive on purpose. `glob('…/**\/*.php')` matches exactly one directory
+     * level, not arbitrarily many — so while every controller sat directly in
+     * `Controllers/`, that pattern matched an EMPTY list and the "controllers must
+     * not dispatch events" rule was passing vacuously. It only started looking
+     * when Phase 12 introduced `Controllers/Api/`, and immediately caught a real
+     * violation. A guard that inspects nothing is not a guard.
+     *
+     * @return list<string>
+     */
+    private function phpFilesIn(string $relativePath): array
+    {
+        $root = base_path($relativePath);
+
+        if (! is_dir($root)) {
+            return [];
+        }
+
+        $paths = [];
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS),
+        );
+
+        foreach ($iterator as $file) {
+            if ($file->isFile() && $file->getExtension() === 'php') {
+                $paths[] = $file->getPathname();
+            }
+        }
+
+        sort($paths);
+
+        return $paths;
     }
 
     public function test_every_service_mutation_is_wrapped_in_a_transaction(): void

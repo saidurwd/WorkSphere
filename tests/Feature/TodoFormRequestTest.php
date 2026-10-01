@@ -13,6 +13,7 @@ use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Validator as ValidatorInstance;
+use Modules\Todos\Http\Requests\AssignTodoRequest;
 use Modules\Todos\Http\Requests\RecurrenceTodoRequest;
 use Modules\Todos\Http\Requests\StoreTodoCommentRequest;
 use Modules\Todos\Http\Requests\StoreTodoRequest;
@@ -179,13 +180,53 @@ class TodoFormRequestTest extends TestCase
         $this->assertFalse($this->validate(StoreTodoRequest::class, $this->validTodo())->fails());
     }
 
-    public function test_update_does_not_accept_status(): void
+    public function test_update_rejects_status_outright(): void
     {
         // Status is a transition, not a field. Accepting it here would let a form
         // bypass the §3.2 graph entirely.
-        $rules = (new UpdateTodoRequest)->rules();
+        //
+        // `prohibited`, not merely absent: with no rule at all the field would
+        // validate and be dropped by `safe()->all()`, so a client would be told
+        // 200 while the To-Do stayed where it was. `prohibited` answers 422 and
+        // names the field.
+        $this->assertSame(['prohibited'], (new UpdateTodoRequest)->rules()['status']);
 
-        $this->assertArrayNotHasKey('status', $rules);
+        $validator = $this->validate(UpdateTodoRequest::class, [
+            'title' => 'Renamed',
+            'priority' => 'high',
+            'visibility' => 'personal',
+            'status' => 'completed',
+        ]);
+
+        $this->assertTrue($validator->errors()->has('status'));
+    }
+
+    public function test_assigning_accepts_a_null_assignee(): void
+    {
+        // Returning a To-Do to the unassigned inbox is a real operation, so the key
+        // must be allowed to be present-and-null. `required` would reject it — and
+        // because rules run in order, `['required', 'nullable']` never reaches the
+        // `nullable` at all.
+        $validator = $this->validate(AssignTodoRequest::class, ['assignee_id' => null]);
+
+        $this->assertFalse($validator->errors()->has('assignee_id'));
+    }
+
+    public function test_assigning_still_requires_the_key_to_be_present(): void
+    {
+        // `present`, not `sometimes`: omitting the field entirely would be an
+        // ambiguous "leave it alone", and the endpoint has no other meaning to
+        // give it.
+        $validator = $this->validate(AssignTodoRequest::class, []);
+
+        $this->assertTrue($validator->errors()->has('assignee_id'));
+    }
+
+    public function test_assigning_rejects_an_unknown_user(): void
+    {
+        $validator = $this->validate(AssignTodoRequest::class, ['assignee_id' => 999999]);
+
+        $this->assertTrue($validator->errors()->has('assignee_id'));
     }
 
     public function test_update_requires_the_vocabulary_fields_it_edits(): void
