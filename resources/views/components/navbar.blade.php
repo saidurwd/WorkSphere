@@ -3,34 +3,33 @@
     $initials = strtoupper(substr($user?->name ?? 'U', 0, 2));
 
     $recentNotifications = collect();
+    $unreadCount = 0;
 
     if ($user) {
-        $obligationNotifications = \Modules\Obligations\Models\NotificationLog::query()
-            ->where('user_id', $user->id)
-            ->orderByDesc('created_at')
-            ->limit(10)
-            ->get(['id', 'subject', 'status', 'created_at', 'notification_type as type']);
+        // GAP-021: one table, one query.
+        //
+        // This used to fan out across obligation_notification_logs,
+        // task_notification_logs and meeting_notification_logs and merge the
+        // results in PHP — three queries plus a merge on every page render, and
+        // the "unread" count was really "how many rows are in the last 10 of
+        // each of three logs", which double-counted and could not be marked read.
+        //
+        // `notifications` is Laravel's own table, so a notification is genuinely
+        // read or genuinely unread, and marking one read is a single UPDATE.
+        //
+        // unreadNotifications() is the "unread" half and the listing is one
+        // paginated query: counting and listing the same rows twice would put the
+        // cost straight back.
+        $recentNotifications = $user->notifications()
+            ->where('type', \App\Support\NotificationPresenter::NOTIFICATION_CLASSES)
+            ->latest()
+            ->limit(8)
+            ->get();
 
-        $taskNotifications = \Modules\Tasks\Models\TaskNotificationLog::query()
-            ->where('user_id', $user->id)
-            ->orderByDesc('created_at')
-            ->limit(10)
-            ->get(['id', 'subject', 'status', 'created_at', 'notification_type as type']);
-
-        $meetingNotifications = \Modules\Meetings\Models\MeetingNotificationLog::query()
-            ->where('user_id', $user->id)
-            ->orderByDesc('created_at')
-            ->limit(10)
-            ->get(['id', 'subject', 'status', 'created_at', 'notification_type as type']);
-
-        $recentNotifications = $obligationNotifications
-            ->merge($taskNotifications)
-            ->merge($meetingNotifications)
-            ->sortByDesc('created_at')
-            ->take(8);
+        $unreadCount = $user->unreadNotifications()
+            ->where('type', \App\Support\NotificationPresenter::NOTIFICATION_CLASSES)
+            ->count();
     }
-
-    $unreadCount = $recentNotifications->count();
 @endphp
 
 <nav class="app-header navbar navbar-expand-md bg-body">
@@ -64,35 +63,25 @@
                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-lg p-0" style="width: 380px; max-height: 420px; overflow: hidden;">
                         <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
                             <span class="fw-semibold">Notifications</span>
-                            <a href="{{ route('obligations.notifications') }}" class="btn btn-sm btn-link p-0 text-decoration-none">View All</a>
+                            <a href="{{ route('notifications.index') }}" class="btn btn-sm btn-link p-0 text-decoration-none">View All</a>
                         </div>
 
                         <div class="overflow-auto" style="max-height: 320px;">
-                            @forelse($recentNotifications as $notification)
+                            @forelse ($recentNotifications as $notification)
                                 @php
-                                    $timeAgo = $notification->created_at->diffForHumans();
-                                    $icon = match(true) {
-                                        str_contains($notification->type, 'task') => 'bi-check2-square',
-                                        str_contains($notification->type, 'meeting') => 'bi-calendar-week',
-                                        str_contains($notification->type, 'obligation') => 'bi-file-earmark-text',
-                                        default => 'bi-bell',
-                                    };
-                                    $iconBg = match(true) {
-                                        str_contains($notification->type, 'task') => 'bg-primary',
-                                        str_contains($notification->type, 'meeting') => 'bg-success',
-                                        str_contains($notification->type, 'obligation') => 'bg-warning',
-                                        default => 'bg-secondary',
-                                    };
+                                    $presented = \App\Support\NotificationPresenter::present($notification);
                                 @endphp
-                                <a href="{{ route('obligations.notifications') }}" class="dropdown-item d-flex align-items-start gap-3 py-2 border-bottom text-decoration-none text-body">
+                                <a href="{{ $presented['url'] }}"
+                                   class="dropdown-item d-flex align-items-start gap-3 py-2 border-bottom text-decoration-none text-body">
                                     <div class="flex-shrink-0 mt-1">
-                                        <div class="rounded-circle {{ $iconBg }} d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                                            <i class="bi {{ $icon }} text-white"></i>
+                                        <div class="rounded-circle {{ $presented['background'] }} d-flex align-items-center justify-content-center"
+                                             style="width: 36px; height: 36px;">
+                                            <i class="bi {{ $presented['icon'] }} text-white"></i>
                                         </div>
                                     </div>
                                     <div class="flex-grow-1 overflow-hidden">
-                                        <p class="mb-1 text-truncate fw-medium">{{ $notification->subject }}</p>
-                                        <small class="text-body-secondary">{{ $timeAgo }}</small>
+                                        <p class="mb-1 text-truncate fw-medium">{{ $presented['title'] }}</p>
+                                        <small class="text-body-secondary">{{ $presented['timeAgo'] }}</small>
                                     </div>
                                 </a>
                             @empty
@@ -103,9 +92,14 @@
                             @endforelse
                         </div>
 
-                        @if($recentNotifications->count() > 0)
+                        @if ($recentNotifications->isNotEmpty())
                             <div class="px-3 py-2 border-top text-center">
-                                <a href="{{ route('obligations.notifications') }}" class="btn btn-sm btn-primary w-100">View All Notifications</a>
+                                <form method="POST" action="{{ route('notifications.read-all') }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary w-100">
+                                        Mark all as read
+                                    </button>
+                                </form>
                             </div>
                         @endif
                     </div>
@@ -153,7 +147,7 @@
                                 <a href="{{ route('dashboard.index') }}" class="text-center text-decoration-none">
                                     <i class="bi bi-person d-block mb-1"></i>Profile
                                 </a>
-                                <a href="{{ route('obligations.notifications') }}" class="text-center text-decoration-none">
+                                <a href="{{ route('notifications.index') }}" class="text-center text-decoration-none">
                                     <i class="bi bi-bell d-block mb-1"></i>Notifications
                                 </a>
                             </div>

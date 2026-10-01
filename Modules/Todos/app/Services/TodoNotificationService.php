@@ -54,12 +54,18 @@ class TodoNotificationService
      * The channels a user actually receives for this type. A user may opt out of
      * email while keeping in-app, so this cannot be a constant.
      *
+     * Only *deliverable* channels are considered. NotificationChannel also
+     * declares Sms and InApp as reserved-but-unwired cases; including them here
+     * would report a user as still having a channel they had not opted out of
+     * when no notification is actually sent down it, which makes the preference
+     * check meaningless.
+     *
      * @return list<NotificationChannel>
      */
     public function channelsFor(User $user, NotificationType $type): array
     {
         return array_values(array_filter(
-            NotificationChannel::cases(),
+            NotificationChannel::deliverableCases(),
             fn (NotificationChannel $channel): bool => $this->shouldNotify($user, $type, $channel),
         ));
     }

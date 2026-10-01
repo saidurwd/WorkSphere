@@ -11,34 +11,7 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseBackupController;
-use Modules\Meetings\Http\Controllers\MeetingActionItemController;
-use Modules\Meetings\Http\Controllers\MeetingAgendaController;
-use Modules\Meetings\Http\Controllers\MeetingAttachmentController;
-use Modules\Meetings\Http\Controllers\MeetingCalendarController;
-use Modules\Meetings\Http\Controllers\MeetingController;
-use Modules\Meetings\Http\Controllers\MeetingDashboardController;
-use Modules\Meetings\Http\Controllers\MeetingDecisionController;
-use Modules\Meetings\Http\Controllers\MeetingMinutesController;
-use Modules\Meetings\Http\Controllers\MeetingNotificationLogController;
-use Modules\Meetings\Http\Controllers\MeetingParticipantController;
-use Modules\Meetings\Http\Controllers\MeetingReportController;
-use Modules\Meetings\Http\Controllers\MeetingTagController;
-use Modules\Meetings\Http\Controllers\MeetingTypeController;
-use Modules\Obligations\Http\Controllers\ObligationCalendarController;
-use Modules\Obligations\Http\Controllers\ObligationController;
-use Modules\Obligations\Http\Controllers\ObligationDashboardController;
-use Modules\Obligations\Http\Controllers\ObligationDocumentController;
-use Modules\Obligations\Http\Controllers\ObligationDocumentListController;
-use Modules\Obligations\Http\Controllers\ObligationMyTaskController;
-use Modules\Obligations\Http\Controllers\ObligationNotificationController;
-use Modules\Obligations\Http\Controllers\ObligationRenewalController;
-use Modules\Obligations\Http\Controllers\ObligationRenewalListController;
-use Modules\Obligations\Http\Controllers\ObligationReportController;
-use Modules\Obligations\Http\Controllers\ObligationVendorController;
-use Modules\Projects\Http\Controllers\ProjectController;
-use Modules\Tasks\Http\Controllers\TaskController;
-use Modules\Tasks\Http\Controllers\TaskNotificationLogController;
-use Modules\Tasks\Http\Controllers\TaskTransferController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
@@ -59,9 +32,22 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['web', 'auth'])->post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
+/*
+|--------------------------------------------------------------------------
+| Notification centre (GAP-021)
+|--------------------------------------------------------------------------
+|
+| Reads the `notifications` table rather than the three per-module delivery
+| logs. The logs record what the system *attempted*, including failures; this
+| records what the user has *received*, and can therefore be marked read.
+|
+*/
 
-
-
+Route::middleware(['web', 'auth'])->prefix('notifications')->name('notifications.')->group(function (): void {
+    Route::get('/', [NotificationController::class, 'index'])->name('index');
+    Route::post('read-all', [NotificationController::class, 'markAllRead'])->name('read-all');
+    Route::post('{notification}/read', [NotificationController::class, 'markRead'])->name('read');
+});
 
 Route::middleware(['web', 'auth'])->prefix('dashboard')->name('dashboard.')->group(function () {
     Route::get('/', [DashboardController::class, '__invoke'])->name('index');
@@ -119,4 +105,3 @@ Route::middleware(['web', 'auth', 'admin'])
         Route::get('security-events', [SecurityEventController::class, 'index'])->name('security-events.index');
         Route::get('security-events/{securityEvent}', [SecurityEventController::class, 'show'])->name('security-events.show');
     });
-

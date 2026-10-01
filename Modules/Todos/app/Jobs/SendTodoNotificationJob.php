@@ -43,14 +43,24 @@ abstract class SendTodoNotificationJob implements ShouldQueue
     {
         $type = $this->type();
 
+        $delivered = false;
+
         foreach ($notifications->recipientsFor($this->todo, $type, $this->actorId) as $recipient) {
-            $notifications->deliver(
+            $delivered = $notifications->deliver(
                 $recipient,
                 $this->todo,
                 $type,
                 $this->discriminator,
                 $this->actorName($notifications),
-            );
+            ) || $delivered;
+        }
+
+        // Recorded only once a recipient was actually notified. This is what lets
+        // the scheduler skip the To-Do tomorrow without a join against
+        // notification_logs, and it is written after the send rather than before
+        // so a crash cannot mark an unsent notification as delivered.
+        if ($delivered) {
+            $this->todo->forceFill(['last_reminded_at' => now()])->saveQuietly();
         }
     }
 
