@@ -25,11 +25,11 @@ use Illuminate\Support\Facades\Route;
 Route::redirect('/', '/login');
 
 Route::middleware('guest')->group(function () {
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
-    Route::post('login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
+    Route::get('login', [AuthenticatedSessionController::class, 'create'])->middleware('throttle:60,1')->name('login');
+    Route::post('login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:login')->name('login.store');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
-    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
+    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('throttle:login')->name('password.email');
     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
     Route::post('reset-password', [NewPasswordController::class, 'store'])->name('password.update');
 });
@@ -43,11 +43,11 @@ Route::middleware(['web', 'auth'])->post('logout', [AuthenticatedSessionControll
 */
 
 Route::middleware(['web', 'auth'])->group(function (): void {
-    Route::get('search', SearchController::class)->name('search');
+    Route::get('search', SearchController::class)->middleware('throttle:search')->name('search');
 
     // Type-ahead for the navbar box. JSON, so the client never has to trust a
     // server-rendered fragment it would have to inject as HTML.
-    Route::get('search/suggest', SearchSuggestController::class)->name('search.suggest');
+    Route::get('search/suggest', SearchSuggestController::class)->middleware('throttle:search')->name('search.suggest');
 });
 
 /*
@@ -68,7 +68,7 @@ Route::middleware(['web', 'auth'])->group(function (): void {
 |
 */
 
-Route::middleware(['web', 'auth', 'admin'])->prefix('admin/reference')->name('admin.reference.')->group(function (): void {
+Route::middleware(['web', 'auth', 'admin', 'throttle:admin'])->prefix('admin/reference')->name('admin.reference.')->group(function (): void {
     Route::get('{resource}', [ReferenceDataController::class, 'index'])->name('index');
     Route::get('{resource}/create', [ReferenceDataController::class, 'create'])->name('create');
     Route::post('{resource}', [ReferenceDataController::class, 'store'])->name('store');
@@ -79,10 +79,10 @@ Route::middleware(['web', 'auth', 'admin'])->prefix('admin/reference')->name('ad
 
 Route::middleware(['web', 'auth'])->prefix('reports')->name('reports.')->group(function (): void {
     Route::get('tasks', [ReportController::class, 'tasks'])->name('tasks');
-    Route::get('tasks/export', [ReportController::class, 'exportCompletion'])->name('tasks.export');
+    Route::get('tasks/export', [ReportController::class, 'exportCompletion'])->middleware('throttle:export')->name('tasks.export');
     Route::get('task-workload', [ReportController::class, 'taskWorkload'])->name('workload');
-    Route::get('task-workload/export', [ReportController::class, 'exportWorkload'])->name('workload.export');
-    Route::get('task-distribution/export', [ReportController::class, 'exportDistribution'])->name('distribution.export');
+    Route::get('task-workload/export', [ReportController::class, 'exportWorkload'])->middleware('throttle:export')->name('workload.export');
+    Route::get('task-distribution/export', [ReportController::class, 'exportDistribution'])->middleware('throttle:export')->name('distribution.export');
 });
 
 /*

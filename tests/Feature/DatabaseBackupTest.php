@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Services\MysqlDumpExport;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -74,7 +75,10 @@ class DatabaseBackupTest extends TestCase
                 'name' => 'smoke-test',
             ]);
 
-        $response->assertRedirect(route('dashboard.database-backups.index'));
+        // Phase 11 made this `back()`: the store is an action on the index
+        // screen, which a plain `admin` can no longer reach now that backups are
+        // super-admin only. A redirect to a forbidden page would be a dead end.
+        $response->assertRedirect();
         $response->assertSessionHas('success');
 
         $files = Storage::disk('local')->files('backups');
@@ -92,7 +96,15 @@ class DatabaseBackupTest extends TestCase
         $files = Storage::disk('local')->files('backups');
 
         $this->assertNotEmpty($files);
-        $this->assertSame('SELECT 1;', Storage::disk('local')->get($files[0]));
+
+        // Phase 11: the dump is ENCRYPTED at rest. A stored file readable in
+        // plaintext would make a stolen backup a full data disclosure, so the
+        // stored bytes are asserted NOT to be the dump and the decrypted value
+        // asserted to be it.
+        $stored = Storage::disk('local')->get($files[0]);
+
+        $this->assertStringNotContainsString('SELECT 1;', $stored);
+        $this->assertSame('SELECT 1;', Crypt::decryptString($stored));
     }
 
     public function test_store_sanitises_the_supplied_backup_name(): void
@@ -123,6 +135,10 @@ class DatabaseBackupTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', 'application/sql');
+
+        // The download is the one place the plaintext exists again. This test
+        // uses the default fake payload, which is what was stored.
+        $this->assertSame('-- fake dump', $response->streamedContent());
     }
 
     public function test_download_missing_file_returns_404(): void
@@ -145,7 +161,7 @@ class DatabaseBackupTest extends TestCase
         $response = $this->actingAs($this->adminUser())
             ->delete(route('dashboard.database-backups.destroy', $filename));
 
-        $response->assertRedirect(route('dashboard.database-backups.index'));
+        $response->assertRedirect();
         Storage::disk('local')->assertMissing('backups/'.$filename);
     }
 }

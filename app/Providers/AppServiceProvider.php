@@ -83,6 +83,16 @@ class AppServiceProvider extends ServiceProvider
         // strings with no gate behind them, which denies every caller — a report
         // screen that is unreachable for everyone rather than for the unpermitted.
         'report.view' => 'report.view',
+        /*
+         * super-admin only, NOT `admin`. A database backup is the entire system:
+         * credentials, personal data, hashes. Phase 11 raised this from the
+         * `admin` role, which let a lower-privileged administrator download
+         * everything.
+         *
+         * Checked by ROLE rather than by a permission, because granting this via a
+         * permission would make it as broad as whatever grants permissions.
+         */
+        'super-admin-only' => '@super-admin',
         'task.view_all' => 'task.view_all',
         'todo.view_all' => 'todos.view_all',
         'todo.delete_notification_logs' => '@super-admin',

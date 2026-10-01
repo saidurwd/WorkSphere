@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Enums\Visibility;
 use App\Enums\WorkItemStatus;
-use App\Models\Employee;
 use App\Models\User;
 use Database\Factories\DepartmentFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -339,18 +338,5 @@ class TodoPolicyTest extends TestCase
 
         $this->assertSame(1, Todo::query()->search('open')->count());
         $this->assertSame(5, Todo::query()->search(null)->count());
-    }
-
-    private function userInDepartment(?int $departmentId): User
-    {
-        $user = $this->plainUser();
-
-        $employee = Employee::factory()->create([
-            'department_id' => $departmentId,
-        ]);
-
-        $user->update(['employee_id' => $employee->id]);
-
-        return $user->fresh();
     }
 }
