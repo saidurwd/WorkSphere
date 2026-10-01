@@ -2,18 +2,20 @@
 
 namespace Modules\Meetings\Models;
 
+use App\Models\Department;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\User;
-use App\Models\Department;
-use Modules\Meetings\Models\MeetingActionItem;
 
 #[SoftDeletes]
 class Meeting extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'meeting_no',
         'title',

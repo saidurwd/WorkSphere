@@ -2,12 +2,14 @@
 
 namespace Modules\Obligations\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Modules\Obligations\Models\Obligation;
 
 class ObligationType extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'type_name',
         'description',

@@ -10,6 +10,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         DB::statement("ALTER TABLE locations MODIFY COLUMN status ENUM('active', 'inactive') NOT NULL DEFAULT 'active'");
     }
 
@@ -18,6 +22,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         DB::statement("ALTER TABLE locations MODIFY COLUMN status VARCHAR(255) NOT NULL DEFAULT 'active'");
     }
 };

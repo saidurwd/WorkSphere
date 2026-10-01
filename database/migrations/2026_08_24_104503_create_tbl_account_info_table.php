@@ -2,12 +2,17 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
+        if (! $this->connectionAvailable()) {
+            return;
+        }
+
         if (! Schema::connection('sqlsrv')->hasTable('tblAccountInfo')) {
             Schema::connection('sqlsrv')->create('tblAccountInfo', function (Blueprint $table) {
                 $table->id();
@@ -39,6 +44,26 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! $this->connectionAvailable()) {
+            return;
+        }
+
         Schema::connection('sqlsrv')->dropIfExists('tblAccountInfo');
+    }
+
+    /**
+     * `tblAccountInfo` lives in an optional external SQL Server reporting database.
+     * When that server is unreachable the migration must skip cleanly instead of
+     * aborting the whole migration chain for every other database.
+     */
+    protected function connectionAvailable(): bool
+    {
+        try {
+            DB::connection('sqlsrv')->getPdo();
+
+            return true;
+        } catch (Throwable) {
+            return false;
+        }
     }
 };

@@ -3,21 +3,21 @@
 namespace Modules\Meetings\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Department;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 use Modules\Meetings\Events\MeetingCancelled;
 use Modules\Meetings\Events\MeetingCompleted;
 use Modules\Meetings\Events\MeetingCreated;
 use Modules\Meetings\Events\MeetingStarted;
 use Modules\Meetings\Events\MeetingUpdated;
-use App\Models\Department;
 use Modules\Meetings\Models\Meeting;
 use Modules\Meetings\Models\MeetingType;
-use Modules\Tasks\Models\Task;
-use App\Models\User;
 use Modules\Meetings\Services\MeetingService;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
+use Modules\Tasks\Models\Task;
 
 class MeetingController extends Controller
 {
@@ -28,7 +28,7 @@ class MeetingController extends Controller
         $user = Auth::user();
         $query = Meeting::query()->with(['type', 'organizer', 'department']);
 
-        if (! $this->canManageAll($user)) {
+        if (! $user->hasPermission('meeting.view')) {
             $query->where(function ($q) use ($user) {
                 $q->where('organizer_id', $user->id)
                     ->orWhereHas('participants', function ($q2) use ($user) {
@@ -73,6 +73,8 @@ class MeetingController extends Controller
 
     public function create(): View
     {
+        $this->authorize('create', Meeting::class);
+
         $types = MeetingType::orderBy('sort_order')->get();
         $users = User::orderBy('name')->get(['id', 'name']);
         $departments = Department::orderBy('department_name')->get();
@@ -82,6 +84,8 @@ class MeetingController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->authorize('create', Meeting::class);
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'meeting_type_id' => ['required', 'exists:meeting_types,id'],
@@ -111,6 +115,8 @@ class MeetingController extends Controller
 
     public function show(Meeting $meeting): View
     {
+        $this->authorize('view', $meeting);
+
         $meeting->load([
             'type',
             'organizer',
@@ -139,6 +145,8 @@ class MeetingController extends Controller
 
     public function print(Meeting $meeting): View
     {
+        $this->authorize('print', $meeting);
+
         $meeting->load([
             'type',
             'organizer',
@@ -163,6 +171,8 @@ class MeetingController extends Controller
 
     public function edit(Meeting $meeting): View
     {
+        $this->authorize('update', $meeting);
+
         $types = MeetingType::orderBy('sort_order')->get();
         $users = User::orderBy('name')->get(['id', 'name']);
         $departments = Department::orderBy('department_name')->get();
@@ -172,6 +182,8 @@ class MeetingController extends Controller
 
     public function update(Request $request, Meeting $meeting): RedirectResponse
     {
+        $this->authorize('update', $meeting);
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'meeting_type_id' => ['required', 'exists:meeting_types,id'],
@@ -197,6 +209,8 @@ class MeetingController extends Controller
 
     public function destroy(Meeting $meeting): RedirectResponse
     {
+        $this->authorize('delete', $meeting);
+
         if (in_array($meeting->status, ['completed', 'approved'], true)) {
             return back()->with('error', 'Completed or approved meetings cannot be deleted.');
         }
@@ -208,6 +222,8 @@ class MeetingController extends Controller
 
     public function start(Meeting $meeting): RedirectResponse
     {
+        $this->authorize('transition', $meeting);
+
         $this->meetingService->start($meeting);
 
         event(new MeetingStarted($meeting->fresh()));
@@ -217,6 +233,8 @@ class MeetingController extends Controller
 
     public function complete(Meeting $meeting): RedirectResponse
     {
+        $this->authorize('transition', $meeting);
+
         $this->meetingService->complete($meeting);
 
         event(new MeetingCompleted($meeting->fresh()));
@@ -226,15 +244,12 @@ class MeetingController extends Controller
 
     public function cancel(Meeting $meeting): RedirectResponse
     {
+        $this->authorize('transition', $meeting);
+
         $this->meetingService->cancel($meeting);
 
         event(new MeetingCancelled($meeting->fresh()));
 
         return back()->with('success', 'Meeting cancelled.');
-    }
-
-    private function canManageAll(mixed $user): bool
-    {
-        return method_exists($user, 'hasRole') && $user->hasRole('super-admin');
     }
 }

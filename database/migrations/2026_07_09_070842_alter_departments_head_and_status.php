@@ -17,12 +17,14 @@ return new class extends Migration
 
             $table->foreignId('head_of_department_id')
                 ->nullable()
-                ->after('department_code')
+
                 ->constrained('employees')
                 ->nullOnDelete();
         });
 
-        DB::statement("ALTER TABLE departments MODIFY COLUMN status ENUM('active', 'inactive') NOT NULL DEFAULT 'active'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE departments MODIFY COLUMN status ENUM('active', 'inactive') NOT NULL DEFAULT 'active'");
+        }
     }
 
     /**
@@ -30,7 +32,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE departments MODIFY COLUMN status VARCHAR(255) NOT NULL DEFAULT 'active'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE departments MODIFY COLUMN status VARCHAR(255) NOT NULL DEFAULT 'active'");
+        }
 
         Schema::table('departments', function (Blueprint $table) {
             $table->dropConstrainedForeignId('head_of_department_id');

@@ -2,20 +2,23 @@
 
 namespace Modules\Tasks\Models;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\User;
+use Modules\Meetings\Models\MeetingActionItem;
 use Modules\Obligations\Models\Obligation;
 use Modules\Projects\Models\Project;
-use Modules\Meetings\Models\MeetingActionItem;
 
 #[Fillable(['title', 'description', 'priority', 'status', 'due_date', 'completed_at', 'user_id', 'responsible_user_id', 'project_id', 'attachment', 'obligation_id', 'task_no'])]
 #[Hidden(['pivot'])]
 class Task extends Model
 {
+    use HasFactory;
+
     protected function casts(): array
     {
         return [

@@ -5,15 +5,18 @@ namespace Database\Factories;
 use App\Models\Company;
 use App\Models\Department;
 use App\Models\Location;
-use Modules\Obligations\Models\ObligationCategory;
-use Modules\Obligations\Models\ObligationType;
 use App\Models\User;
-use Modules\Obligations\Models\Vendor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use Modules\Obligations\Models\Obligation;
+use Modules\Obligations\Models\ObligationCategory;
+use Modules\Obligations\Models\ObligationType;
+use Modules\Obligations\Models\Vendor;
 
 class ObligationFactory extends Factory
 {
+    protected $model = Obligation::class;
+
     public function definition(): array
     {
         return [

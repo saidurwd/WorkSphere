@@ -29,11 +29,11 @@ class SecurityEventController extends Controller
             $query->whereDate('attempted_at', '<=', $request->string('date_to'));
         }
 
-        $events = LoginLog::query()->securityEvents()->select('event')->distinct()->orderBy('event')->pluck('event');
+        $types = LoginLog::query()->securityEvents()->select('event')->distinct()->orderBy('event')->pluck('event');
 
         $events = $query->latest('attempted_at')->paginate(30)->withQueryString();
 
-        return view('admin.security-events.index', compact('events'));
+        return view('admin.security-events.index', compact('events', 'types'));
     }
 
     public function show(LoginLog $securityEvent): View

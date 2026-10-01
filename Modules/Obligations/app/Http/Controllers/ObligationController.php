@@ -6,17 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\Department;
 use App\Models\Location;
-use Modules\Obligations\Models\Obligation;
-use Modules\Obligations\Models\ObligationActivityLog;
-use Modules\Obligations\Models\ObligationCategory;
-use Modules\Obligations\Models\ObligationType;
 use App\Models\User;
-use Modules\Obligations\Models\Vendor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Modules\Obligations\Models\Obligation;
+use Modules\Obligations\Models\ObligationActivityLog;
+use Modules\Obligations\Models\ObligationCategory;
+use Modules\Obligations\Models\ObligationType;
+use Modules\Obligations\Models\Vendor;
 
 class ObligationController extends Controller
 {
@@ -26,7 +26,7 @@ class ObligationController extends Controller
         $query = Obligation::query()
             ->with(['type', 'category', 'company', 'department', 'location', 'vendor', 'owner', 'backupUser', 'approver']);
 
-        if (! $this->canManageAll($user)) {
+        if (! $user->hasPermission('obligation.view')) {
             $query->where(function ($q) use ($user) {
                 $q->where('owner_user_id', $user->id)
                     ->orWhereHas('responsibilities', function ($q2) use ($user) {
@@ -103,6 +103,8 @@ class ObligationController extends Controller
 
     public function create(): View
     {
+        $this->authorize('create', Obligation::class);
+
         return view('obligations.create', [
             'types' => ObligationType::where('active', true)->orderBy('type_name')->get(['id', 'type_name']),
             'categories' => ObligationCategory::where('active', true)->orderBy('category_name')->get(['id', 'category_name']),
@@ -116,6 +118,8 @@ class ObligationController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->authorize('create', Obligation::class);
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -155,6 +159,8 @@ class ObligationController extends Controller
 
     public function show(Obligation $obligation): View
     {
+        $this->authorize('view', $obligation);
+
         $obligation->load([
             'type',
             'category',
@@ -182,6 +188,8 @@ class ObligationController extends Controller
 
     public function edit(Obligation $obligation): View
     {
+        $this->authorize('update', $obligation);
+
         return view('obligations.edit', [
             'obligation' => $obligation,
             'types' => ObligationType::where('active', true)->orderBy('type_name')->get(['id', 'type_name']),
@@ -196,6 +204,8 @@ class ObligationController extends Controller
 
     public function update(Request $request, Obligation $obligation): RedirectResponse
     {
+        $this->authorize('update', $obligation);
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -233,14 +243,11 @@ class ObligationController extends Controller
 
     public function destroy(Obligation $obligation): RedirectResponse
     {
+        $this->authorize('delete', $obligation);
+
         $obligation->delete();
 
         return redirect()->route('obligations.index')->with('success', 'Obligation deleted successfully.');
-    }
-
-    private function canManageAll(mixed $user): bool
-    {
-        return method_exists($user, 'hasRole') && $user->hasRole('super-admin');
     }
 
     private function logActivity(Obligation $obligation, string $action, ?array $oldValue, ?array $newValue, ?string $remarks = null): void

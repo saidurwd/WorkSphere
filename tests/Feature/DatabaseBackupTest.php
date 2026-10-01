@@ -4,12 +4,15 @@ namespace Tests\Feature;
 
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Services\MysqlDumpExport;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class DatabaseBackupTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -31,9 +34,20 @@ class DatabaseBackupTest extends TestCase
         return $user;
     }
 
-    private function usesMysql(): bool
+    /**
+     * The real dump needs a live MySQL server. The controller takes its exporter
+     * by injection, so the request path is exercised against a deterministic dump
+     * and the SQL that dump contains is asserted separately in
+     * {@see MysqlDumpExportTest}.
+     */
+    private function fakeExporter(string $sql = '-- fake dump'): MysqlDumpExport
     {
-        return DB::connection()->getDriverName() === 'mysql';
+        $exporter = $this->createMock(MysqlDumpExport::class);
+        $exporter->method('dump')->willReturn($sql);
+
+        $this->app->instance(MysqlDumpExport::class, $exporter);
+
+        return $exporter;
     }
 
     public function test_index_page_loads(): void
@@ -45,9 +59,15 @@ class DatabaseBackupTest extends TestCase
         $response->assertSee('Database Backup');
     }
 
+    public function test_anonymous_user_is_redirected_to_login(): void
+    {
+        $this->get(route('dashboard.database-backups.index'))
+            ->assertRedirect(route('login'));
+    }
+
     public function test_store_creates_a_backup_file(): void
     {
-        $this->markTestSkippedIfNotMysql();
+        $this->fakeExporter();
 
         $response = $this->actingAs($this->adminUser())
             ->post(route('dashboard.database-backups.store'), [
@@ -62,30 +82,35 @@ class DatabaseBackupTest extends TestCase
         $this->assertStringStartsWith('backups/smoke-test_', $files[0]);
     }
 
-    public function test_backup_file_contains_expected_mysql_directives(): void
+    public function test_store_persists_the_exported_dump(): void
     {
-        $this->markTestSkippedIfNotMysql();
+        $this->fakeExporter('SELECT 1;');
 
         $this->actingAs($this->adminUser())
-            ->post(route('dashboard.database-backups.store'));
+            ->post(route('dashboard.database-backups.store'), ['name' => 'content']);
 
         $files = Storage::disk('local')->files('backups');
+
         $this->assertNotEmpty($files);
+        $this->assertSame('SELECT 1;', Storage::disk('local')->get($files[0]));
+    }
 
-        $content = Storage::disk('local')->get($files[0]);
+    public function test_store_sanitises_the_supplied_backup_name(): void
+    {
+        $this->fakeExporter();
 
-        $this->assertStringContainsString('FLUSH TABLES WITH READ LOCK', $content);
-        $this->assertStringContainsString('LOCK TABLES', $content);
-        $this->assertStringContainsString('DROP TABLE IF EXISTS', $content);
-        $this->assertStringContainsString('DISABLE KEYS', $content);
-        $this->assertStringContainsString('ENABLE KEYS', $content);
-        $this->assertStringContainsString('CREATE TABLE', $content);
-        $this->assertStringContainsString('UNLOCK TABLES', $content);
+        $this->actingAs($this->adminUser())
+            ->post(route('dashboard.database-backups.store'), ['name' => '../../etc/passwd']);
+
+        $files = Storage::disk('local')->files('backups');
+
+        $this->assertNotEmpty($files);
+        $this->assertStringNotContainsString('/', basename($files[0]));
     }
 
     public function test_download_returns_sql_file(): void
     {
-        $this->markTestSkippedIfNotMysql();
+        $this->fakeExporter();
 
         $this->actingAs($this->adminUser())
             ->post(route('dashboard.database-backups.store'));
@@ -102,15 +127,14 @@ class DatabaseBackupTest extends TestCase
 
     public function test_download_missing_file_returns_404(): void
     {
-        $response = $this->actingAs($this->adminUser())
-            ->get(route('dashboard.database-backups.download', 'does-not-exist.sql'));
-
-        $response->assertStatus(404);
+        $this->actingAs($this->adminUser())
+            ->get(route('dashboard.database-backups.download', 'does-not-exist.sql'))
+            ->assertStatus(404);
     }
 
     public function test_destroy_removes_backup_file(): void
     {
-        $this->markTestSkippedIfNotMysql();
+        $this->fakeExporter();
 
         $this->actingAs($this->adminUser())
             ->post(route('dashboard.database-backups.store'));
@@ -123,12 +147,5 @@ class DatabaseBackupTest extends TestCase
 
         $response->assertRedirect(route('dashboard.database-backups.index'));
         Storage::disk('local')->assertMissing('backups/'.$filename);
-    }
-
-    private function markTestSkippedIfNotMysql(): void
-    {
-        if (! $this->usesMysql()) {
-            $this->markTestSkipped('Database backup dump requires a MySQL connection.');
-        }
     }
 }

@@ -2,10 +2,13 @@
 
 namespace Modules\Obligations\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Vendor extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'vendor_name',
         'contact_person',

@@ -16,10 +16,26 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasTable('tasks')) {
+            return;
+        }
+
         Schema::table('tasks', function (Blueprint $table) {
-            $table->dropIndex(['responsible_user_id']);
-            $table->dropForeign(['responsible_user_id']);
-            $table->dropColumn('responsible_user_id');
+            $hasColumn = Schema::hasColumn('tasks', 'responsible_user_id');
+
+            // FK -> index -> column. MySQL will not drop an index a live foreign key
+            // depends on; SQLite will not drop a column a live index covers.
+            if ($hasColumn) {
+                $table->dropForeign(['responsible_user_id']);
+            }
+
+            if (Schema::hasIndex('tasks', ['responsible_user_id'])) {
+                $table->dropIndex(['responsible_user_id']);
+            }
+
+            if ($hasColumn) {
+                $table->dropColumn('responsible_user_id');
+            }
         });
     }
 };
