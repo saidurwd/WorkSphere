@@ -94,6 +94,52 @@ class RouteParityTest extends TestCase
      * Phase 8 GAP-028 wired meeting templates, which had models and two tables and
      * no route at all. Pinned for the same reason as the other sets.
      */
+    /**
+     * Phase 9 added global search. Pinned like every other deliberate addition.
+     */
+    public function test_the_search_route_is_exactly_what_phase_nine_declared(): void
+    {
+        $names = [];
+
+        foreach (Route::getRoutes() as $route) {
+            if ($route->getName() === 'search') {
+                $names[] = 'search';
+            }
+        }
+
+        $this->assertSame(['search'], $names);
+    }
+
+    /**
+     * Phase 9 added the navbar type-ahead endpoint alongside the search page.
+     */
+    public function test_the_search_routes_are_exactly_what_phase_nine_declared(): void
+    {
+        $expected = ['search', 'search.suggest'];
+        $actual = [];
+
+        foreach (Route::getRoutes() as $route) {
+            $name = (string) $route->getName();
+
+            if (in_array($name, $expected, true)) {
+                $actual[] = $name;
+            }
+        }
+
+        sort($expected);
+        sort($actual);
+
+        $this->assertSame($expected, $actual);
+    }
+
+    public function test_search_is_authenticated(): void
+    {
+        $route = collect(Route::getRoutes())->first(fn ($candidate): bool => $candidate->getName() === 'search');
+
+        $this->assertNotNull($route);
+        $this->assertContains('auth', $route->gatherMiddleware());
+    }
+
     public function test_the_meeting_template_routes_are_exactly_what_was_declared(): void
     {
         $expected = [

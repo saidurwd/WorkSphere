@@ -142,8 +142,8 @@
 
                                     <div class="small text-body-secondary">
                                         @if ($entity->statusColumn && $row->{$entity->statusColumn} !== null)
-                                            <x-badge variant="secondary">
-                                                {{ ucwords(str_replace('_', ' ', (string) $row->{$entity->statusColumn})) }}
+                                            <x-badge :variant="\App\Support\StatusBadge::variant($row->{$entity->statusColumn})">
+                                                {{ \App\Support\StatusBadge::label($row->{$entity->statusColumn}) }}
                                             </x-badge>
                                         @endif
                                         @if ($entity->dateColumn && $row->{$entity->dateColumn} !== null)
@@ -201,20 +201,24 @@
         }
 
         // `/` focuses the box from anywhere, unless the user is already typing.
-        document.addEventListener('keydown', function (event) {
-            if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey) {
-                return;
-            }
+        // The navbar registers its own handler first; this one only runs when no
+        // navbar box is present, so the two never fight over the shortcut.
+        if (!document.querySelector('[data-search-box]')) {
+            document.addEventListener('keydown', function (event) {
+                if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey) {
+                    return;
+                }
 
-            const active = document.activeElement;
-            if (active && ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName)) {
-                return;
-            }
+                const active = document.activeElement;
+                if (active && ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName)) {
+                    return;
+                }
 
-            event.preventDefault();
-            input?.focus();
-            input?.select();
-        });
+                event.preventDefault();
+                input?.focus();
+                input?.select();
+            });
+        }
 
         // "All modules" clears the per-module selection rather than adding to it.
         const all = document.getElementById('module-all');

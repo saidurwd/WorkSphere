@@ -28,5 +28,11 @@
     "css": [
       "assets/app-DgP4dPZn.css"
     ]
+  },
+  "resources/js/search-box.js": {
+    "file": "assets/search-box-aHDuYEdc.js",
+    "name": "search-box",
+    "src": "resources/js/search-box.js",
+    "isEntry": true
   }
 }

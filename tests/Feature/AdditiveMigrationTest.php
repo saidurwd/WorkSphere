@@ -59,7 +59,7 @@ class AdditiveMigrationTest extends TestCase
      * Phase 8's six Task migrations. Both are additive, so the exact-removal
      * assertion below has to name what *both* added.
      */
-    private const ADDITIVE_MIGRATIONS = 23;
+    private const ADDITIVE_MIGRATIONS = 24;
 
     public function test_every_pre_existing_table_still_exists(): void
     {

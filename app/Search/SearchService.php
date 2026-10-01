@@ -134,7 +134,12 @@ class SearchService
             ->values()
             ->all();
 
-        return array_values(array_map('strval', $rows));
+        // `pluck` returns cast values, so a status column arrives as an enum
+        // instance rather than a string — `strval` on one is a TypeError.
+        return array_values(array_map(
+            static fn (mixed $status): string => $status instanceof \BackedEnum ? $status->value : (string) $status,
+            $rows,
+        ));
     }
 
     /**
