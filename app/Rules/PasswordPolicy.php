@@ -3,6 +3,7 @@
 namespace App\Rules;
 
 use Closure;
+use Illuminate\Contracts\Validation\ValidationRule;
 
 /**
  * Password policy — GAP-041.
@@ -12,7 +13,7 @@ use Closure;
  * and because a policy that can be weakened silently in an environment file is
  * not a policy.
  */
-class PasswordPolicy
+class PasswordPolicy implements ValidationRule
 {
     /**
      * Minimum accepted length. Eight is the floor; twelve is what is recommended.

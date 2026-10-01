@@ -48,24 +48,34 @@ return new class extends Migration
             );
         }
 
-        // The existing foreign key is `ON DELETE SET NULL`, which MySQL rejects
-        // against a NOT NULL column ("needed in a foreign key constraint"). It has
-        // to be re-declared as RESTRICT: a user account whose employee record is
-        // about to disappear must block the delete rather than lose its link.
-        Schema::table('users', function (Blueprint $table): void {
-            $table->dropForeign(['employee_id']);
-        });
+        // Whether a foreign key exists at all is install-dependent: the migration
+        // that added the column declares one, but at least one database in the
+        // wild does not have it. Dropping unconditionally fails there with
+        // "Can't DROP FOREIGN KEY", and adding one unconditionally would silently
+        // introduce a constraint the install never had.
+        $hadForeignKey = Schema::hasForeignKey('users', ['employee_id']);
+
+        if ($hadForeignKey) {
+            Schema::table('users', function (Blueprint $table): void {
+                $table->dropForeign(['employee_id']);
+            });
+        }
 
         Schema::table('users', function (Blueprint $table): void {
             $table->unsignedBigInteger('employee_id')->nullable(false)->change();
         });
 
-        Schema::table('users', function (Blueprint $table): void {
-            $table->foreign('employee_id')
-                ->references('id')
-                ->on('employees')
-                ->restrictOnDelete();
-        });
+        if ($hadForeignKey) {
+            // MySQL rejects `ON DELETE SET NULL` against a NOT NULL column, so an
+            // existing key must be re-declared as RESTRICT: an employee with a
+            // user account must block the delete rather than lose the link.
+            Schema::table('users', function (Blueprint $table): void {
+                $table->foreign('employee_id')
+                    ->references('id')
+                    ->on('employees')
+                    ->restrictOnDelete();
+            });
+        }
     }
 
     public function down(): void
@@ -74,19 +84,25 @@ return new class extends Migration
             return;
         }
 
-        Schema::table('users', function (Blueprint $table): void {
-            $table->dropForeign(['employee_id']);
-        });
+        $hasForeignKey = Schema::hasForeignKey('users', ['employee_id']);
+
+        if ($hasForeignKey) {
+            Schema::table('users', function (Blueprint $table): void {
+                $table->dropForeign(['employee_id']);
+            });
+        }
 
         Schema::table('users', function (Blueprint $table): void {
             $table->unsignedBigInteger('employee_id')->nullable()->change();
         });
 
-        Schema::table('users', function (Blueprint $table): void {
-            $table->foreign('employee_id')
-                ->references('id')
-                ->on('employees')
-                ->nullOnDelete();
-        });
+        if ($hasForeignKey) {
+            Schema::table('users', function (Blueprint $table): void {
+                $table->foreign('employee_id')
+                    ->references('id')
+                    ->on('employees')
+                    ->nullOnDelete();
+            });
+        }
     }
 };

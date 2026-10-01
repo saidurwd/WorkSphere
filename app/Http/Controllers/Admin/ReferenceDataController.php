@@ -139,6 +139,7 @@ class ReferenceDataController extends Controller
             'rows' => $rows,
             'filters' => $request->only(['search', 'status']),
             'options' => $this->options(),
+            'resources' => $this->resourceLabels(),
         ]);
     }
 
@@ -171,7 +172,7 @@ class ReferenceDataController extends Controller
 
     public function edit(string $resource, int $id): View
     {
-        $this->authorize('update', User::class);
+        $this->authorize('updateAny', User::class);
         $descriptor = $this->descriptor($resource);
 
         return view('admin.reference.edit', [
@@ -184,7 +185,7 @@ class ReferenceDataController extends Controller
 
     public function update(Request $request, string $resource, int $id): RedirectResponse
     {
-        $this->authorize('update', User::class);
+        $this->authorize('updateAny', User::class);
         $descriptor = $this->descriptor($resource);
 
         $row = $descriptor['model']::query()->findOrFail($id);
@@ -198,7 +199,7 @@ class ReferenceDataController extends Controller
 
     public function destroy(string $resource, int $id): RedirectResponse
     {
-        $this->authorize('delete', User::class);
+        $this->authorize('deleteAny', User::class);
         $descriptor = $this->descriptor($resource);
 
         $row = $descriptor['model']::query()->findOrFail($id);

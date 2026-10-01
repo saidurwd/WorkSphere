@@ -25,6 +25,29 @@ class UserPolicy
         return $user->hasPermission('user.manage') || $user->hasRole('super-admin');
     }
 
+    /**
+     * Class-scoped variants.
+     *
+     * `authorize('update', User::class)` passes the CLASS rather than a record, so
+     * Laravel calls the ability with the user alone. Without these the Gate reaches
+     * `update()`, which needs a model, and dies with an ArgumentCountError instead
+     * of denying — a 500 where a 403 belongs.
+     */
+    public function updateAny(User $user): bool
+    {
+        return $this->update($user, $user);
+    }
+
+    public function deleteAny(User $user): bool
+    {
+        return $this->delete($user, $user);
+    }
+
+    public function manageRolesAny(User $user): bool
+    {
+        return $this->manageRoles($user, $user);
+    }
+
     public function update(User $user, User $model): bool
     {
         return $this->isSelf($user, $model)
