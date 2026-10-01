@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\LoginLogController;
+use App\Http\Controllers\Admin\ReferenceDataController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SecurityEventController;
 use App\Http\Controllers\Admin\UserController;
@@ -54,6 +55,27 @@ Route::middleware(['web', 'auth'])->group(function (): void {
 | Shared reports (GAP-036) and CSV export (GAP-050)
 |--------------------------------------------------------------------------
 */
+
+/*
+|--------------------------------------------------------------------------
+| Reference data administration (GAP-041)
+|--------------------------------------------------------------------------
+|
+| employees, companies, departments and locations had models and no routes at
+| all, so this data could only be changed with raw SQL — which is how it ends up
+| frozen at whatever the seeder wrote. One controller serves all four from a
+| descriptor, which is what keeps their validation from drifting apart.
+|
+*/
+
+Route::middleware(['web', 'auth', 'admin'])->prefix('admin/reference')->name('admin.reference.')->group(function (): void {
+    Route::get('{resource}', [ReferenceDataController::class, 'index'])->name('index');
+    Route::get('{resource}/create', [ReferenceDataController::class, 'create'])->name('create');
+    Route::post('{resource}', [ReferenceDataController::class, 'store'])->name('store');
+    Route::get('{resource}/{id}/edit', [ReferenceDataController::class, 'edit'])->name('edit');
+    Route::put('{resource}/{id}', [ReferenceDataController::class, 'update'])->name('update');
+    Route::delete('{resource}/{id}', [ReferenceDataController::class, 'destroy'])->name('destroy');
+});
 
 Route::middleware(['web', 'auth'])->prefix('reports')->name('reports.')->group(function (): void {
     Route::get('tasks', [ReportController::class, 'tasks'])->name('tasks');

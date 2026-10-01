@@ -2,15 +2,13 @@
 
 namespace Database\Seeders;
 
-use Modules\Obligations\Models\ApprovalWorkflow;
-use Modules\Obligations\Models\ApprovalWorkflowStep;
 use App\Models\Company;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
 use Modules\Obligations\Models\EscalationRule;
 use Modules\Obligations\Models\NotificationRule;
 use Modules\Obligations\Models\ObligationCategory;
 use Modules\Obligations\Models\ObligationType;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 
 class ComplianceObligationSeeder extends Seeder
 {
@@ -23,7 +21,6 @@ class ComplianceObligationSeeder extends Seeder
         $this->seedObligationCategories();
         $this->seedNotificationRules();
         $this->seedEscalationRules();
-        $this->seedApprovalWorkflows();
     }
 
     private function seedCompanies(): void
@@ -171,29 +168,6 @@ class ComplianceObligationSeeder extends Seeder
                     ],
                     ['active' => true]
                 );
-            }
-        }
-    }
-
-    private function seedApprovalWorkflows(): void
-    {
-        $workflow = ApprovalWorkflow::firstOrCreate(
-            ['name' => 'Standard Renewal Approval'],
-            [
-                'description' => 'Default approval workflow for obligation renewals',
-                'active' => true,
-            ]
-        );
-
-        if ($workflow->steps()->count() === 0) {
-            $steps = [
-                ['step_order' => 1, 'approver_type' => 'Department Head', 'required' => true],
-                ['step_order' => 2, 'approver_type' => 'Finance Manager', 'required' => true],
-                ['step_order' => 3, 'approver_type' => 'Managing Director', 'required' => false],
-            ];
-
-            foreach ($steps as $step) {
-                ApprovalWorkflowStep::create(array_merge($step, ['approval_workflow_id' => $workflow->id]));
             }
         }
     }

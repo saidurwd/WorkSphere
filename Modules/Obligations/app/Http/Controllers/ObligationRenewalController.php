@@ -9,9 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Modules\Obligations\Models\Obligation;
-use Modules\Obligations\Models\ObligationActivityLog;
 use Modules\Obligations\Models\ObligationRenewal;
 use Modules\Obligations\Models\Vendor;
+use Modules\Obligations\Services\ObligationActivitySynchroniser;
 use Modules\Obligations\Services\ObligationRecurrenceService;
 
 class ObligationRenewalController extends Controller
@@ -85,15 +85,16 @@ class ObligationRenewalController extends Controller
                 'estimated_cost' => $validated['cost'] ?? $obligation->estimated_cost,
             ]);
 
-            ObligationActivityLog::create([
-                'obligation_id' => $obligation->id,
-                'user_id' => Auth::id(),
-                'action' => 'RENEWED',
-                'new_value' => json_encode($validated),
-                'remarks' => 'Obligation renewed',
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-            ]);
+            app(ObligationActivitySynchroniser::class)->record(
+                $obligation,
+                'RENEWED',
+                null,
+                $validated,
+                'Obligation renewed',
+                Auth::id(),
+                $request->ip(),
+                $request->userAgent(),
+            );
         });
 
         return redirect()->route('obligations.show', $obligation)->with('success', 'Obligation renewed successfully.');

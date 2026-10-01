@@ -41,6 +41,21 @@ class AdditiveMigrationTest extends TestCase
     ];
 
     /**
+     * Tables a later phase was explicitly approved to remove, with the reason.
+     *
+     * "Additive" is the rule, not an absolute: Phase 8 removed a pair of tables
+     * nothing read. Declaring the drop here keeps the guard's purpose intact —
+     * any OTHER table that disappears still fails — rather than switching the
+     * assertion off.
+     *
+     * @var array<string, string>
+     */
+    private const DECLARED_DROPS = [
+        'approval_workflows' => 'Phase 8 GAP-031: a second approval mechanism alongside obligations.approver_user_id; no route, controller or query anywhere.',
+        'approval_workflow_steps' => 'Phase 8 GAP-031: the child half of the same unused pair.',
+    ];
+
+    /**
      * Columns added to a pre-existing table, by the phase that added them.
      *
      * @var array<string, list<string>>
@@ -52,6 +67,10 @@ class AdditiveMigrationTest extends TestCase
         // Phase 8 GAP-030 — the structured location reference, alongside the
         // free-text `location`, which is untouched.
         'meetings' => ['location_id', 'template_id'],
+
+        // Phase 8 GAP-031 — escalation rules may now be scoped to a department or
+        // a company. Both are nullable, so an existing rule stays global.
+        'escalation_rules' => ['department_id', 'company_id'],
     ];
 
     /**
@@ -59,20 +78,46 @@ class AdditiveMigrationTest extends TestCase
      * Phase 8's six Task migrations. Both are additive, so the exact-removal
      * assertion below has to name what *both* added.
      */
-    private const ADDITIVE_MIGRATIONS = 24;
+    private const ADDITIVE_MIGRATIONS = 26;
 
     public function test_every_pre_existing_table_still_exists(): void
     {
         $missing = array_values(array_filter(
             self::PRE_EXISTING,
-            fn (string $table): bool => ! Schema::hasTable($table),
+            fn (string $table): bool => ! Schema::hasTable($table) && ! isset(self::DECLARED_DROPS[$table]),
         ));
 
         $this->assertSame(
             [],
             $missing,
-            'Migrations must be additive. These pre-existing tables are gone: '.implode(', ', $missing)
+            'Migrations must be additive. These pre-existing tables are gone without an approved decision: '
+            .implode(', ', $missing)
         );
+    }
+
+    /**
+     * A declared drop actually dropped — otherwise declaring one would silently
+     * permit a table nobody removed to disappear later.
+     */
+    public function test_every_declared_drop_really_dropped_its_table(): void
+    {
+        foreach (array_keys(self::DECLARED_DROPS) as $table) {
+            $this->assertFalse(
+                Schema::hasTable($table),
+                "{$table} is declared as dropped but still exists: ".self::DECLARED_DROPS[$table]
+            );
+        }
+    }
+
+    /**
+     * Every declared drop carries a reason, so the list cannot grow into a
+     * blanket permission to delete.
+     */
+    public function test_every_declared_drop_states_why(): void
+    {
+        foreach (self::DECLARED_DROPS as $table => $reason) {
+            $this->assertNotSame('', trim($reason), "{$table} has no stated reason.");
+        }
     }
 
     /**
@@ -107,6 +152,10 @@ class AdditiveMigrationTest extends TestCase
         $this->artisan('migrate:rollback', ['--step' => self::ADDITIVE_MIGRATIONS]);
 
         foreach (self::PRE_EXISTING as $table) {
+            if (isset(self::DECLARED_DROPS[$table])) {
+                continue;
+            }
+
             $this->assertTrue(Schema::hasTable($table), "{$table} vanished on rollback.");
         }
 
@@ -129,6 +178,8 @@ class AdditiveMigrationTest extends TestCase
             'tasks.parent_id',
             'meetings.location_id',
             'meetings.template_id',
+            'escalation_rules.company_id',
+            'escalation_rules.department_id',
         ];
 
         // removedColumns() walks PRE_EXISTING in declaration order, so both sides
