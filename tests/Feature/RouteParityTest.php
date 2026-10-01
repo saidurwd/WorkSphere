@@ -132,6 +132,44 @@ class RouteParityTest extends TestCase
         $this->assertSame($expected, $actual);
     }
 
+    /**
+     * Phase 10 added the shared reports layer. Pinned like every other addition.
+     */
+    public function test_the_report_routes_are_exactly_what_phase_ten_declared(): void
+    {
+        $expected = [
+            'reports.tasks',
+            'reports.tasks.export',
+            'reports.workload',
+            'reports.workload.export',
+            'reports.distribution.export',
+        ];
+
+        $actual = [];
+
+        foreach (Route::getRoutes() as $route) {
+            if (str_starts_with((string) $route->getName(), 'reports.')) {
+                $actual[] = $route->getName();
+            }
+        }
+
+        sort($expected);
+        sort($actual);
+
+        $this->assertSame($expected, $actual);
+    }
+
+    public function test_every_report_route_requires_authentication(): void
+    {
+        foreach (Route::getRoutes() as $route) {
+            if (! str_starts_with((string) $route->getName(), 'reports.')) {
+                continue;
+            }
+
+            $this->assertContains('auth', $route->gatherMiddleware());
+        }
+    }
+
     public function test_search_is_authenticated(): void
     {
         $route = collect(Route::getRoutes())->first(fn ($candidate): bool => $candidate->getName() === 'search');

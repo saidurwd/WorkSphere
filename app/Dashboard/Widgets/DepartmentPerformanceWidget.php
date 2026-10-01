@@ -62,11 +62,9 @@ class DepartmentPerformanceWidget implements DashboardWidget
             ->groupBy('departments.id', 'departments.department_name')
             ->orderByDesc(DB::raw('COUNT(*)'))
             ->limit(10)
-            ->get([
-                'departments.department_name',
-                DB::raw('COUNT(*) AS total'),
-                DB::raw('SUM(CASE WHEN tasks.status = ? THEN 1 ELSE 0 END) AS completed', ['completed']),
-            ])
+            ->selectRaw('COUNT(*) AS total')
+            ->selectRaw('SUM(CASE WHEN tasks.status = ? THEN 1 ELSE 0 END) AS completed', ['completed'])
+            ->get(['departments.department_name'])
             ->map(fn ($row): array => [
                 'department' => $row->department_name,
                 'total' => (int) $row->total,

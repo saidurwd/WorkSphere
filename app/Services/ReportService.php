@@ -41,15 +41,20 @@ class ReportService
             ->groupBy('users.id', 'users.name')
             ->orderByDesc(DB::raw('COUNT(*)'));
 
-        return $query->get([
-            'users.id as assignee_id',
-            'users.name as assignee',
-            DB::raw('COUNT(*) AS created_total'),
-            DB::raw('SUM(CASE WHEN tasks.status = ? THEN 1 ELSE 0 END) AS completed_total', ['completed']),
-            DB::raw('SUM(CASE WHEN tasks.status <> ? AND tasks.due_date IS NOT NULL AND tasks.due_date < ? THEN 1 ELSE 0 END) AS overdue_total', [
+        // NOTE: the conditional aggregates use selectRaw() rather than a
+        // DB::raw inside the get() column list. A DB::raw with bindings placed
+        // there registers them ahead of the where-bindings, so the date filter
+        // received the literal 'completed' and the report silently returned
+        // nothing. selectRaw appends in the correct order.
+
+        return $query
+            ->selectRaw('COUNT(*) AS created_total')
+            ->selectRaw('SUM(CASE WHEN tasks.status = ? THEN 1 ELSE 0 END) AS completed_total', ['completed'])
+            ->selectRaw('SUM(CASE WHEN tasks.status <> ? AND tasks.due_date IS NOT NULL AND tasks.due_date < ? THEN 1 ELSE 0 END) AS overdue_total', [
                 'completed', now()->toDateString(),
-            ]),
-        ]);
+            ])
+            ->addSelect(['users.id as assignee_id', 'users.name as assignee'])
+            ->get();
     }
 
     /**
@@ -65,12 +70,10 @@ class ReportService
             ->whereDate('tasks.created_at', '<=', $to)
             ->groupBy('task_projects.id', 'task_projects.name')
             ->orderByDesc(DB::raw('COUNT(*)'))
-            ->get([
-                'task_projects.id as project_id',
-                'task_projects.name as project',
-                DB::raw('COUNT(*) AS total'),
-                DB::raw('SUM(CASE WHEN tasks.status = ? THEN 1 ELSE 0 END) AS completed', ['completed']),
-            ]);
+            ->selectRaw('COUNT(*) AS total')
+            ->selectRaw('SUM(CASE WHEN tasks.status = ? THEN 1 ELSE 0 END) AS completed', ['completed'])
+            ->addSelect(['task_projects.id as project_id', 'task_projects.name as project'])
+            ->get();
     }
 
     /**
@@ -86,15 +89,13 @@ class ReportService
             ->whereNotNull('tasks.responsible_user_id')
             ->groupBy('users.id', 'users.name')
             ->orderByDesc(DB::raw('COUNT(*)'))
-            ->get([
-                'users.id as assignee_id',
-                'users.name as assignee',
-                DB::raw('COUNT(*) AS total'),
-                DB::raw('SUM(CASE WHEN tasks.status = ? THEN 1 ELSE 0 END) AS completed', ['completed']),
-                DB::raw('SUM(CASE WHEN tasks.status <> ? AND tasks.due_date IS NOT NULL AND tasks.due_date < ? THEN 1 ELSE 0 END) AS overdue', [
-                    'completed', now()->toDateString(),
-                ]),
-            ]);
+            ->selectRaw('COUNT(*) AS total')
+            ->selectRaw('SUM(CASE WHEN tasks.status = ? THEN 1 ELSE 0 END) AS completed', ['completed'])
+            ->selectRaw('SUM(CASE WHEN tasks.status <> ? AND tasks.due_date IS NOT NULL AND tasks.due_date < ? THEN 1 ELSE 0 END) AS overdue', [
+                'completed', now()->toDateString(),
+            ])
+            ->addSelect(['users.id as assignee_id', 'users.name as assignee'])
+            ->get();
     }
 
     /**
@@ -108,7 +109,9 @@ class ReportService
             ->groupBy('status', 'priority')
             ->orderBy('status')
             ->orderBy('priority')
-            ->get(['status', 'priority', DB::raw('COUNT(*) AS total')]);
+            ->selectRaw('COUNT(*) AS total')
+            ->addSelect(['status', 'priority'])
+            ->get();
     }
 
     /**

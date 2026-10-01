@@ -79,6 +79,11 @@ class AppServiceProvider extends ServiceProvider
         'task.view_reports' => 'report.view',
         'task.delete_notification_logs' => '@super-admin',
         'meeting.manage_templates' => 'meeting.manage_templates',
+        // Reports and management views. Previously these were `authorize('report.view')`
+        // strings with no gate behind them, which denies every caller — a report
+        // screen that is unreachable for everyone rather than for the unpermitted.
+        'report.view' => 'report.view',
+        'task.view_all' => 'task.view_all',
         'todo.view_all' => 'todos.view_all',
         'todo.delete_notification_logs' => '@super-admin',
     ];

@@ -113,7 +113,7 @@
                     </div>
                 @else
                     <x-detail-list :items="$distribution->map(fn ($row): array => [
-                        'label' => ucwords(str_replace('_', ' ', (string) $row->status)).' · '.ucfirst((string) $row->priority),
+                        'label' => \App\Support\StatusBadge::label($row->status).' · '.\App\Support\StatusBadge::label($row->priority),
                         'value' => (string) $row->total,
                     ])->values()->all()" />
                 @endif

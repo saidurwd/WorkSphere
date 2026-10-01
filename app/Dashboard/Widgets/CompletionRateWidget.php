@@ -58,11 +58,9 @@ class CompletionRateWidget implements DashboardWidget
             ->groupBy('users.id', 'users.name')
             ->orderByDesc(DB::raw('COUNT(*)'))
             ->limit(10)
-            ->get([
-                'users.name as assignee',
-                DB::raw('COUNT(*) AS created_total'),
-                DB::raw('SUM(CASE WHEN tasks.status = ? THEN 1 ELSE 0 END) AS completed_total', ['completed']),
-            ])
+            ->selectRaw('COUNT(*) AS created_total')
+            ->selectRaw('SUM(CASE WHEN tasks.status = ? THEN 1 ELSE 0 END) AS completed_total', ['completed'])
+            ->get(['users.name as assignee'])
             ->map(fn ($row): array => [
                 'assignee' => $row->assignee,
                 'created' => (int) $row->created_total,

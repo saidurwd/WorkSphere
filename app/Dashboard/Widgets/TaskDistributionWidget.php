@@ -54,7 +54,9 @@ class TaskDistributionWidget implements DashboardWidget
         $rows = $this->visibleTasks($user)
             ->groupBy('status')
             ->orderByDesc(DB::raw('COUNT(*)'))
-            ->get(['status', DB::raw('COUNT(*) AS total')]);
+            ->selectRaw('COUNT(*) AS total')
+            ->addSelect(['status'])
+            ->get();
 
         $total = (int) $rows->sum('total');
 

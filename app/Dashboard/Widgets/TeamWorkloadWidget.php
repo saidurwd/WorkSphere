@@ -63,12 +63,9 @@ class TeamWorkloadWidget implements DashboardWidget
             ->groupBy('users.id', 'users.name')
             ->orderByDesc(DB::raw('COUNT(*)'))
             ->limit(10)
-            ->get([
-                'users.id as assignee_id',
-                'users.name as assignee',
-                DB::raw('COUNT(*) AS open_total'),
-                DB::raw('SUM(CASE WHEN tasks.due_date IS NOT NULL AND tasks.due_date < ? THEN 1 ELSE 0 END) AS overdue_total', [$today]),
-            ])
+            ->selectRaw('COUNT(*) AS open_total')
+            ->selectRaw('SUM(CASE WHEN tasks.due_date IS NOT NULL AND tasks.due_date < ? THEN 1 ELSE 0 END) AS overdue_total', [$today])
+            ->get(['users.id as assignee_id', 'users.name as assignee'])
             ->map(fn ($row): array => [
                 'assignee' => $row->assignee,
                 'open' => (int) $row->open_total,
