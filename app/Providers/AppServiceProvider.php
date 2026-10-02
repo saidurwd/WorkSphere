@@ -128,6 +128,23 @@ class AppServiceProvider extends ServiceProvider
         'task.view_all' => 'task.view_all',
         'todo.view_all' => 'todos.view_all',
         'todo.delete_notification_logs' => '@super-admin',
+
+        /*
+         * Notification delivery logs.
+         *
+         * ONE PERMISSION PER MODULE rather than a shared `notification.view_logs`,
+         * for the same reason the `system.*` gates are one per screen: a To-Do
+         * operator diagnosing a failed assignment has no reason to read the
+         * obligation delivery log, and granting the shared permission would hand
+         * them both.
+         *
+         * Separate from the `*.delete_notification_logs` gates, which stay
+         * super-admin only. Deleting delivery evidence destroys the only record
+         * that an attempt was ever made; reading it is an operational need.
+         */
+        'task.view_notification_logs' => 'task.view_notification_logs',
+        'meeting.view_notification_logs' => 'meeting.view_notification_logs',
+        'obligation.view_notification_logs' => 'obligation.view_notification_logs',
     ];
 
     /**

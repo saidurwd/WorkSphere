@@ -12,6 +12,7 @@ use Modules\Meetings\Models\MeetingNotificationLog;
 use Modules\Meetings\Models\MeetingParticipant;
 use Modules\Obligations\Models\Vendor;
 use Modules\Tasks\Models\TaskNotificationLog;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\InteractsWithRoles;
 use Tests\TestCase;
 
@@ -201,6 +202,70 @@ class NestedResourceAuthorizationTest extends TestCase
             ->assertRedirect();
 
         $this->assertDatabaseMissing('meeting_notification_logs', ['id' => $log->id]);
+    }
+
+    // ---- Notification logs: reading is permissioned, deleting is role-gated --
+
+    /**
+     * The four delivery-log screens, and the permission each one authorizes.
+     *
+     * @return array<string, array{string, string, list<string>}>
+     */
+    public static function notificationLogScreens(): array
+    {
+        return [
+            'task' => [
+                '/tasks/notification-logs',
+                'task.view_notification_logs',
+                ['task.view'],
+            ],
+            'meeting' => [
+                '/meetings/notification-logs',
+                'meeting.view_notification_logs',
+                ['meeting.view'],
+            ],
+            'obligation' => [
+                '/obligations/notifications',
+                'obligation.view_notification_logs',
+                ['obligation.view'],
+            ],
+        ];
+    }
+
+    /**
+     * @param  list<string>  $insufficient
+     */
+    #[DataProvider('notificationLogScreens')]
+    public function test_reading_a_notification_log_needs_its_own_permission(
+        string $uri,
+        string $permission,
+        array $insufficient,
+    ): void {
+        // The module's own view permission is not enough: it is scoped to what the
+        // caller owns or is responsible for, and a delivery log is not. Before the
+        // gate existed, this user got the screen.
+        $this->actingAs($this->userWithPermissions($insufficient))
+            ->get($uri)
+            ->assertForbidden();
+
+        $this->actingAs($this->userWithPermissions([$permission]))
+            ->get($uri)
+            ->assertOk();
+    }
+
+    #[DataProvider('notificationLogScreens')]
+    public function test_reading_a_notification_log_is_not_a_super_admin_privilege(
+        string $uri,
+        string $permission,
+        array $insufficient,
+    ): void {
+        // Reading is an operational need — diagnosing a notification that did not
+        // arrive — so it must not require the role that DELETING does. Otherwise
+        // the gate is set too high and nobody below super-admin can use the screen
+        // at all, which is the same defect as having no gate, pointed the other way.
+        $this->actingAs($this->userWithPermissions([$permission]))
+            ->get($uri)
+            ->assertOk();
     }
 
     // ---- Obligation sub-resources ----------------------------------------

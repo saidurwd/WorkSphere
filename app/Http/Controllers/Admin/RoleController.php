@@ -7,6 +7,8 @@ use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class RoleController extends Controller
@@ -56,13 +58,13 @@ class RoleController extends Controller
             'permissions.*' => ['exists:permissions,id'],
         ]);
 
-        $role = Role::query()->create($data);
+        $role = DB::transaction(function () use ($data): Role {
+            $role = Role::query()->create($this->roleAttributes($data));
 
-        if (! empty($data['permissions'])) {
-            $role->rolePermissions()->createMany(
-                collect($data['permissions'])->map(fn ($pid) => ['permission_id' => $pid])->all()
-            );
-        }
+            $role->syncPermissions($data['permissions'] ?? []);
+
+            return $role;
+        });
 
         return redirect()->route('admin.roles.index')->with('success', 'Role created.');
     }
@@ -115,16 +117,37 @@ class RoleController extends Controller
             'permissions.*' => ['exists:permissions,id'],
         ]);
 
-        $role->update($data);
+        DB::transaction(function () use ($data, $role): void {
+            $role->update($this->roleAttributes($data));
 
-        if (isset($data['permissions'])) {
-            $role->rolePermissions()->delete();
-            $role->rolePermissions()->createMany(
-                collect($data['permissions'])->map(fn ($pid) => ['permission_id' => $pid])->all()
-            );
-        }
+            // Only re-sync when the field was actually submitted. An update that
+            // omits it leaves the grants alone, which is what a partial edit from
+            // another screen should do.
+            if (array_key_exists('permissions', $data)) {
+                $role->syncPermissions($data['permissions']);
+            }
+        });
 
         return redirect()->route('admin.roles.index')->with('success', 'Role updated.');
+    }
+
+    /**
+     * The role's OWN columns, with the pivot ids taken out.
+     *
+     * `permissions` is a RELATION, not a column on `roles`. Passing the whole
+     * validated payload to the model asked Eloquent to mass-assign a column that
+     * does not exist, and it threw `MassAssignmentException: Add fillable
+     * property [permissions]` — so creating a role and saving one both failed
+     * outright. Adding `permissions` to `$fillable` would silence the error and
+     * leave the pivot unwritten, which is worse: the screen would appear to work
+     * and grant nothing.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function roleAttributes(array $data): array
+    {
+        return Arr::only($data, ['name', 'slug', 'description']);
     }
 
     public function destroy(Role $role): RedirectResponse

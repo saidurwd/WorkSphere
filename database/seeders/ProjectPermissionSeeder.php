@@ -11,8 +11,17 @@ use Illuminate\Support\Facades\DB;
 
 class ProjectPermissionSeeder extends Seeder
 {
-    /** @var list<string> */
-    private const PERMISSIONS = [
+    /**
+     * Every permission the application recognises.
+     *
+     * Public because it is the catalogue, not an implementation detail: the
+     * `PermissionCatalogTest` proves every gate names a permission from here, and
+     * the performance baseline grants the whole list so it measures the widest
+     * path rather than whatever a hand-copied subset happened to allow.
+     *
+     * @var list<string>
+     */
+    public const PERMISSIONS = [
         'report.view',
 
         // System administration, one per screen. See the gates block in
@@ -45,6 +54,7 @@ class ProjectPermissionSeeder extends Seeder
         'task.manage',
         'task.delete',
         'task.transfer',
+        'task.view_notification_logs',
         'meeting.view',
         'meeting.create',
         'meeting.edit',
@@ -65,6 +75,7 @@ class ProjectPermissionSeeder extends Seeder
         'meeting.manage_types',
         'meeting.manage_tags',
         'meeting.view_reports',
+        'meeting.view_notification_logs',
         'meeting.export',
         'obligation.view',
         'obligation.create',
@@ -78,6 +89,7 @@ class ProjectPermissionSeeder extends Seeder
         'obligation.manage_settings',
         'obligation.view_reports',
         'obligation.view_all_departments',
+        'obligation.view_notification_logs',
         // To-Do module — TODO-MODULE-SPECIFICATION.md §4. Additive: no existing
         // permission string is renamed or removed.
         'todos.view',

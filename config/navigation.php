@@ -29,9 +29,30 @@ return [
     |   permission  string|null   Permission required to SEE the node.
     |   permissions array         Permission set, ANY of which shows the node.
     |   admin       bool          Restrict to users holding an admin role.
+    |   super_admin bool          Restrict to the `super-admin` role specifically,
+    |                              for a screen whose controller checks the ROLE
+    |                              rather than a permission.
+    |   section     string        Heading emitted above the first node carrying it.
     |
-    | Three rules that the previous tree broke, and that are now enforced by
-    | `NavigationStructureTest`:
+    | ---- A node's `permission` MUST BE THE ONE ITS CONTROLLER CHECKS ----------
+    |
+    | A node gated on a permission the controller does not check advertises a
+    | screen that 403s, and a node gated on nothing that the controller does check
+    | hides a screen that works. Both were true here:
+    |
+    | - `To-Dos > Reports` was gated on `report.view`, but `TodoReportController`
+    |   authorizes `todo.view_all`. A user with both was shown a link to a 403.
+    | - `Tasks > Reports > Workload` was gated on the branch's `report.view`, but
+    |   `ReportController::taskWorkload()` authorizes `task.view_all` — a
+    |   deliberately different permission, because that report is about other
+    |   people's work.
+    | - `Obligations > Reports` was gated on `obligation.view_reports`, which
+    |   `ObligationReportController` never checks at all.
+    |
+    | `NavigationStructureTest::test_every_nav_node_names_a_permission_its_route_actually_checks`
+    | holds this shut from now on.
+    |
+    | ---- Four rules the previous tree broke, now enforced ---------------------
     |
     | 1. Every leaf's label is distinct from its parent's. "Obligations >
     |    Obligations" reads as a stutter and makes the parent unclickable in
@@ -41,6 +62,10 @@ return [
     | 3. Every screen is reachable. Four screens had routes, tests, and no way to
     |    be found: My Work, Task Reports, Meeting Templates and the identity
     |    Reference Data. Phase 8 built the last two and nothing ever linked them.
+    | 4. Reports are a BRANCH everywhere, never a leaf. Tasks had a Reports
+    |    branch, To-Dos and Obligations a flat leaf, Meetings a branch with seven
+    |    children — so the same word sat at two depths in the same menu, and
+    |    whether "Reports" was expandable depended on which module you were in.
     |
     */
 
@@ -82,7 +107,10 @@ return [
                 ['label' => 'My To-Dos', 'icon' => 'inbox', 'route' => 'todos.index', 'active' => ['todos.index', 'todos.show', 'todos.create', 'todos.edit']],
                 ['label' => 'Inbox', 'icon' => 'download', 'route' => 'todos.inbox'],
                 ['label' => 'Calendar', 'icon' => 'calendar3', 'route' => 'todos.calendar'],
-                ['label' => 'Reports', 'icon' => 'bar-chart', 'route' => 'todos.reports', 'permission' => 'report.view'],
+                // `todos.view_all`, NOT `report.view`: this screen reports on
+                // every user's To-Dos, which is the `view_all` question, and
+                // `report.view` is the permission for one's own completion summary.
+                ['label' => 'Reports', 'icon' => 'bar-chart-line', 'route' => 'todos.reports', 'permission' => 'todos.view_all'],
             ],
         ],
 
@@ -95,17 +123,18 @@ return [
                 ['label' => 'Overview', 'icon' => 'speedometer2', 'route' => 'tasks.dashboard'],
                 ['label' => 'All Tasks', 'icon' => 'list-task', 'route' => 'tasks.index', 'active' => ['tasks.index', 'tasks.show', 'tasks.create', 'tasks.edit']],
                 ['label' => 'Transfers', 'icon' => 'arrow-left-right', 'route' => 'task-transfers.index', 'permission' => 'task.transfer'],
-                // Diagnostic, but reachable before this reorganisation and therefore
-                // still reachable. Removing a working entry is a regression.
-                ['label' => 'Notification Logs', 'icon' => 'bell', 'route' => 'tasks.notification-logs.index', 'active' => ['tasks.notification-logs.*']],
+                // No permission on the branch: the two children disagree about
+                // what they need. Completion is a personal summary (`report.view`)
+                // and Workload reports on other people (`task.view_all`). A gate
+                // here would either hide Workload from a manager who has it, or
+                // show Completion to someone who does not.
                 [
                     'label' => 'Reports',
                     'icon' => 'bar-chart-line',
                     'active' => ['reports.tasks', 'reports.workload'],
-                    'permission' => 'report.view',
                     'children' => [
-                        ['label' => 'Completion', 'icon' => 'check2-circle', 'route' => 'reports.tasks'],
-                        ['label' => 'Workload', 'icon' => 'people', 'route' => 'reports.workload'],
+                        ['label' => 'Completion', 'icon' => 'check2-circle', 'route' => 'reports.tasks', 'permission' => 'report.view'],
+                        ['label' => 'Workload', 'icon' => 'people', 'route' => 'reports.workload', 'permission' => 'task.view_all'],
                     ],
                 ],
             ],
@@ -124,7 +153,6 @@ return [
                 ['label' => 'Register', 'icon' => 'calendar-week', 'route' => 'meetings.index', 'active' => ['meetings.index', 'meetings.show', 'meetings.create', 'meetings.edit', 'meetings.print']],
                 ['label' => 'Calendar', 'icon' => 'calendar3', 'route' => 'meetings.calendar'],
                 ['label' => 'Action Items', 'icon' => 'list-check', 'route' => 'meetings.action-items.index', 'active' => ['meetings.action-items.*']],
-                ['label' => 'Notification Logs', 'icon' => 'bell', 'route' => 'meetings.notification-logs.index', 'active' => ['meetings.notification-logs.*']],
                 // Wired in Phase 8 and reachable only by typing the URL until now.
                 ['label' => 'Templates', 'icon' => 'clipboard-check', 'route' => 'meetings.templates.index', 'active' => ['meetings.templates.*'], 'permission' => 'meeting.manage_templates'],
                 [
@@ -169,6 +197,9 @@ return [
                 ['label' => 'Renewals', 'icon' => 'arrow-repeat', 'route' => 'obligations.renewals'],
                 ['label' => 'Vendors', 'icon' => 'building', 'route' => 'obligations.vendors'],
                 ['label' => 'Documents', 'icon' => 'folder', 'route' => 'obligations.documents', 'permission' => 'obligation.manage_documents'],
+                // The only report this module has, so a leaf rather than a branch
+                // — but the label matches the other modules' "Reports" so the word
+                // means the same thing wherever it appears.
                 ['label' => 'Reports', 'icon' => 'bar-chart-line', 'route' => 'obligations.reports', 'permission' => 'obligation.view_reports'],
             ],
         ],
@@ -194,6 +225,34 @@ return [
                 ['label' => 'Scheduled Tasks', 'icon' => 'calendar-week', 'route' => 'admin.system.schedule.index', 'permission' => 'system.schedule'],
                 ['label' => 'Feature Flags', 'icon' => 'toggle2-on', 'route' => 'admin.system.flags.index', 'permission' => 'system.flags'],
                 ['label' => 'API Tokens', 'icon' => 'key', 'route' => 'admin.system.tokens.index', 'permission' => 'system.tokens'],
+            ],
+        ],
+
+        // ---- Diagnostics ----------------------------------------------------
+        // The four per-module notification delivery logs, together, because they
+        // answer one question — "did the system try to tell someone, and did it
+        // work?" — and an operator chasing a missing notification checks all four
+        // in the same sitting. Scattered as `Notification Logs` beside `All Tasks`
+        // and `Register`, they read as a working screen rather than a diagnostic,
+        // and they sat at two different depths in two different modules.
+        //
+        // Each keeps its OWN permission rather than sharing one. A To-Do operator
+        // diagnosing a failed assignment has no reason to read the obligation
+        // delivery log, and one shared permission would hand them both.
+        //
+        // `admin` rather than a permission on the parent: the branch is a grouping,
+        // not a capability. Each child states what it needs.
+
+        [
+            'label' => 'Diagnostics',
+            'icon' => 'clipboard-data',
+            'section' => 'Diagnostics',
+            'admin' => true,
+            'children' => [
+                ['label' => 'To-Do Notifications', 'icon' => 'check2-square', 'route' => 'todos.notification-logs.index', 'active' => ['todos.notification-logs.*'], 'permission' => 'todos.view_all'],
+                ['label' => 'Task Notifications', 'icon' => 'list-task', 'route' => 'tasks.notification-logs.index', 'active' => ['tasks.notification-logs.*'], 'permission' => 'task.view_notification_logs'],
+                ['label' => 'Meeting Notifications', 'icon' => 'journal-text', 'route' => 'meetings.notification-logs.index', 'active' => ['meetings.notification-logs.*'], 'permission' => 'meeting.view_notification_logs'],
+                ['label' => 'Obligation Notifications', 'icon' => 'file-earmark-text', 'route' => 'obligations.notifications', 'active' => ['obligations.notifications*'], 'permission' => 'obligation.view_notification_logs'],
             ],
         ],
 
@@ -242,7 +301,12 @@ return [
                     'label' => 'Infrastructure',
                     'icon' => 'server',
                     'children' => [
-                        ['label' => 'Database Backups', 'icon' => 'database', 'route' => 'dashboard.database-backups.index', 'active' => ['dashboard.database-backups.*'], 'permission' => 'database.backup'],
+                        // `super_admin`, NOT `database.backup`: the controller
+                        // authorizes `super-admin-only`, a ROLE check. The seeded
+                        // `database.backup` permission gates nothing, so naming it
+                        // here advertised the screen to every `admin` and refused it
+                        // to all of them.
+                        ['label' => 'Database Backups', 'icon' => 'database', 'route' => 'dashboard.database-backups.index', 'active' => ['dashboard.database-backups.*'], 'super_admin' => true],
                     ],
                 ],
             ],

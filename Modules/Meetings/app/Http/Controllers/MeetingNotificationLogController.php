@@ -12,6 +12,11 @@ class MeetingNotificationLogController extends Controller
 {
     public function index(Request $request): View
     {
+        // Administrative read: the log names every recipient and every subject.
+        // `meeting.view` is the permission for seeing meetings one may attend, not
+        // for reading everyone's notification traffic.
+        $this->authorize('meeting.view_notification_logs');
+
         $query = MeetingNotificationLog::query()
             ->with(['meeting', 'actionItem', 'user'])
             ->orderByDesc('created_at');

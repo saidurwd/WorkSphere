@@ -12,6 +12,13 @@ class TaskNotificationLogController extends Controller
 {
     public function index(Request $request): View
     {
+        // The log names every recipient and every subject it was sent about, so it
+        // is an administrative read rather than a personal one — the same reasoning
+        // `TodoNotificationLogController` applies. Without this the screen was
+        // reachable by anyone holding `task.view`, which is the permission for
+        // seeing one's own tasks, not everyone's notification traffic.
+        $this->authorize('task.view_notification_logs');
+
         $query = TaskNotificationLog::query()
             ->with(['task', 'user'])
             ->orderByDesc('created_at');

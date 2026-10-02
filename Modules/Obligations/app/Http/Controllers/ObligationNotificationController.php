@@ -12,6 +12,11 @@ class ObligationNotificationController extends Controller
 {
     public function index(): View
     {
+        // Administrative read: the log names every recipient and every subject.
+        // `obligation.view` is scoped by `ObligationScope` to the obligations a
+        // user owns or is responsible for, and the log is not.
+        $this->authorize('obligation.view_notification_logs');
+
         $query = NotificationLog::query()
             ->with(['obligation', 'obligation.type', 'obligation.department', 'user', 'rule']);
 

@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Enums\Role as RoleSlug;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +30,11 @@ use Illuminate\Support\Facades\Route;
  * 4. **A missing route does not take the page down.** A nav entry naming a route
  *    that has since been renamed would throw while rendering the layout, breaking
  *    every page including the 404. An unreachable node is dropped instead.
+ *
+ * Two role keys, because the application has two role levels and a node has to be
+ * able to say which one it means: `admin` accepts anything in
+ * `config('authorization.admin_roles')`, and `super_admin` names the one slug the
+ * database-backup screen is restricted to.
  */
 class NavigationMenu
 {
@@ -157,11 +163,25 @@ class NavigationMenu
     protected function filter(array $nodes, ?User $user): array
     {
         $isAdmin = $user?->hasAnyRole((array) config('authorization.admin_roles', [])) ?? false;
+        $isSuperAdmin = $user?->hasRole(RoleSlug::SuperAdmin->value) ?? false;
 
         $kept = [];
 
         foreach ($nodes as $node) {
             if (($node['admin'] ?? false) && ! $isAdmin) {
+                continue;
+            }
+
+            // A screen restricted to super-admin BY ROLE, not by permission. A
+            // database backup is the entire system — credentials, personal data,
+            // hashes — and `DatabaseBackupController` checks the role deliberately:
+            // a permission would be as broad as whatever grants permissions, so
+            // anyone who could hand out permissions could hand out backups.
+            //
+            // Without this the node can only be gated on a permission the
+            // controller ignores, which is how `Database Backups` came to be
+            // advertised to every `admin` and refused to all of them.
+            if (($node['super_admin'] ?? false) && ! $isSuperAdmin) {
                 continue;
             }
 
@@ -172,7 +192,22 @@ class NavigationMenu
             // A node whose route has been renamed is dropped rather than rendered:
             // `route()` would throw inside the layout and take every page down.
             if (! empty($node['children']) || $this->url($node) !== null) {
+                $wasBranch = ($node['children'] ?? []) !== [];
+
                 $node['children'] = $this->filter((array) ($node['children'] ?? []), $user);
+
+                // A branch whose children were ALL filtered away goes with them.
+                //
+                // This cannot be left to `prune()`, which runs afterwards: by then
+                // `children` has been overwritten with `[]`, which is exactly what a
+                // LEAF looks like, so the branch survives as a disclosure containing
+                // nothing — a dead row in the sidebar that looks like a rendering
+                // bug. It is the single most common way a permission-filtered menu
+                // ends up appearing broken.
+                if ($wasBranch && $node['children'] === []) {
+                    continue;
+                }
+
                 $kept[] = $node;
             }
         }
@@ -218,6 +253,25 @@ class NavigationMenu
     {
         if ($user === null) {
             return false;
+        }
+
+        /**
+         * A super-admin sees everything, and that is not a shortcut.
+         *
+         * `Gate::before` returns true for a super-admin on EVERY ability, so a menu
+         * that hides a node from them advertises less than the enforcement layer
+         * permits — the menu and the application disagree about the same account.
+         * The menu must not hide what the Gate allows, or an operator concludes the
+         * feature is missing when it is merely unseeded.
+         *
+         * Role-gated nodes (`super_admin`) are still enforced separately above; this
+         * covers PERMISSION-gated ones, which is where the drift appeared: the
+         * `system.*` permissions were added to the catalogue but not yet granted to
+         * an existing database, and the whole System section vanished for the very
+         * person who could most use it.
+         */
+        if ($user->hasRole(RoleSlug::SuperAdmin->value)) {
+            return true;
         }
 
         $hasSingle = isset($node['permission']);

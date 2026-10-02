@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Database\Seeders\ProjectPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
@@ -48,18 +49,16 @@ class PerformanceBaselineTest extends TestCase
     {
         $viewer = $this->seeded()->viewer;
 
-        // The widest permission set in the application, so the measured query is
-        // the expensive one — the unfiltered list rather than the narrowed one.
-        $this->userWithPermissions([
-            'todos.view_all', 'todos.create', 'todos.update_any', 'todos.delete',
-            'todos.assign', 'todos.comment', 'todos.restore', 'todos.manage_recurrence',
-            'task.view', 'task.create', 'task.update', 'task.delete', 'task.transfer',
-            'meeting.view', 'meeting.create', 'meeting.edit', 'meeting.delete',
-            'obligation.view', 'obligation.create', 'obligation.update', 'obligation.delete',
-            'obligation.approve', 'obligation.assign', 'obligation.renew',
-            'project.view', 'project.create', 'project.update', 'project.delete',
-            'report.view', 'task.view_all', 'report.export',
-        ], attachTo: $viewer);
+        /**
+         * Every permission in the catalogue, so the measured path is the widest one.
+         *
+         * A hand-written list drifts: a permission added later leaves its page
+         * returning 403, and the benchmark then measures an authorisation failure
+         * as though it were the page's cost. `PageBenchmark` builds its volumes
+         * for exactly that case — the viewer can see all of it — so the grant is
+         * total and taken from the catalogue rather than restated here.
+         */
+        $this->userWithPermissions(ProjectPermissionSeeder::PERMISSIONS, attachTo: $viewer);
 
         $overBudget = [];
         $rows = [];

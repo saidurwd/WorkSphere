@@ -49,7 +49,6 @@ class NavigationStructureTest extends TestCase
 
         // Diagnostic screens an ordinary user has no reason to open.
         'dashboard.ui-kit' => 'Design-system reference, under Dashboard.',
-        'todos.notification-logs.index' => 'Diagnostic; reachable from To-Do reports.',
     ];
 
     // ---- The tree is well-formed --------------------------------------------
@@ -266,6 +265,87 @@ class NavigationStructureTest extends TestCase
 
     // ---- Visibility ---------------------------------------------------------
 
+    /**
+     * The load-bearing assertion about permissions.
+     *
+     * A node gated on permission X promises the account holds X can open the
+     * screen. When the controller checks a DIFFERENT permission Y, that promise is
+     * false and the menu advertises a 403 — which is the whole failure mode
+     * `NavigationMenu` exists to prevent, arrived at from the other direction.
+     *
+     * All three of these were wrong in the tree this replaced, and none was
+     * visible from the config alone:
+     *
+     * - `To-Dos > Reports` was gated on `report.view`; `TodoReportController`
+     *   authorizes `todo.view_all`.
+     * - `Tasks > Reports > Workload` inherited the branch's `report.view`;
+     *   `ReportController::taskWorkload()` authorizes `task.view_all`.
+     * - The three notification-log screens had no `authorize()` on `index()` at
+     *   all, so their permissions gated nothing.
+     *
+     * The test drives real requests rather than reading the controllers, because
+     * the disagreement is between two files and only a request settles it. Admin
+     * nodes get an admin role, since `admin.system.*` and `admin.*` sit behind
+     * role middleware as well as a permission.
+     *
+     * A 404 is accepted alongside a 200: a screen may legitimately narrow its own
+     * result set rather than refusing the request. What must never happen is the
+     * node appearing for an account that then gets a 403.
+     */
+    public function test_every_nav_node_opens_for_an_account_holding_its_permission(): void
+    {
+        $refused = [];
+        $checked = 0;
+
+        $visit = function (array $nodes, bool $underAdmin) use (&$visit, &$refused, &$checked): void {
+            foreach ($nodes as $node) {
+                $underAdmin = $underAdmin || ($node['admin'] ?? false) === true;
+
+                if (($node['children'] ?? []) !== []) {
+                    $visit($node['children'], $underAdmin);
+
+                    continue;
+                }
+
+                $route = $node['route'] ?? null;
+                $permission = $node['permission'] ?? null;
+
+                if ($route === null || $permission === null) {
+                    continue;
+                }
+
+                // `adminWithout()` grants the role AND exactly the listed
+                // permissions, which is what a node under an `admin` branch needs:
+                // those routes sit behind role middleware as well as a permission.
+                $user = $underAdmin
+                    ? $this->adminWithout([$permission])
+                    : $this->userWithPermissions([$permission]);
+
+                $checked++;
+
+                $status = $this->actingAs($user)
+                    ->get(route($route, (array) ($node['params'] ?? [])))
+                    ->status();
+
+                if ($status === 403) {
+                    $refused[] = "{$permission} -> {$route} ({$node['label']})";
+                }
+            }
+        };
+
+        $visit($this->configMenu(), false);
+
+        $this->assertGreaterThan(0, $checked, 'No gated nodes were found, so this proved nothing.');
+
+        $this->assertSame(
+            [],
+            $refused,
+            "The menu shows these to an account holding the permission, but the screen 403s.\n"
+            ."Either the node names the wrong permission or the controller checks one the nav does not:\n"
+            .implode("\n", $refused),
+        );
+    }
+
     public function test_a_node_the_caller_cannot_use_is_hidden_not_greyed(): void
     {
         $labels = $this->labelsFor($this->userWithPermissions(['todos.view']));
@@ -286,11 +366,95 @@ class NavigationStructureTest extends TestCase
         $this->assertNotContains('Administration', $labels);
     }
 
+    public function test_a_screen_gated_on_the_super_admin_role_is_hidden_from_an_admin(): void
+    {
+        // `Database Backups` is restricted by ROLE. An `admin` holds every seeded
+        // permission, so a permission-gated node would be visible to them and then
+        // refused — which is what the config did before this tree grew a
+        // `super_admin` key.
+        $admin = $this->adminWithout(grantAll: true);
+
+        $this->assertNotContains('Database Backups', $this->labelsFor($admin));
+
+        $superAdmin = $this->superAdmin(['database.backup']);
+
+        $this->assertContains('Database Backups', $this->labelsFor($superAdmin));
+    }
+
+    /**
+     * A branch whose children were ALL filtered away is removed, not left behind.
+     *
+     * This is not cosmetic. `filter()` overwrites a node's `children` with the
+     * surviving set, so a branch that lost every child ends up indistinguishable
+     * from a LEAF by the time the pruning pass runs — and survives as a disclosure
+     * row containing nothing. A sidebar full of those looks exactly like a
+     * rendering bug, and it is how the System and Diagnostics sections became
+     * invisible: their permissions were in the catalogue but not yet granted.
+     */
+    public function test_a_branch_left_with_no_children_is_removed(): void
+    {
+        config(['navigation.menu' => [
+            [
+                'label' => 'Visible',
+                'route' => 'dashboard.index',
+            ],
+            [
+                'label' => 'Empty Branch',
+                'children' => [
+                    ['label' => 'Hidden Child', 'route' => 'tasks.index', 'permission' => 'a.permission.nobody.holds'],
+                ],
+            ],
+        ]]);
+
+        $labels = $this->labelsFor($this->plainUser());
+
+        $this->assertSame(['Visible'], $labels);
+        $this->assertNotContains('Empty Branch', $labels);
+    }
+
+    /**
+     * A super-admin sees every permission-gated node, whatever the database holds.
+     *
+     * `Gate::before` grants a super-admin every ability, so a menu that hides a
+     * node from them disagrees with the enforcement layer about the same account.
+     * The concrete failure was the whole System section disappearing for the only
+     * person who could use it, because the new permissions were in the catalogue
+     * but had not been seeded yet.
+     */
+    public function test_a_super_admin_is_not_hid_permission_gated_nodes(): void
+    {
+        $admin = $this->superAdmin();
+
+        $this->assertFalse(
+            $admin->hasPermission('system.health'),
+            'This test is only meaningful when the permission is genuinely ungranted.',
+        );
+
+        $labels = $this->labelsFor($admin);
+
+        foreach (['System Health', 'Settings', 'Queue & Jobs', 'Scheduled Tasks', 'Feature Flags', 'API Tokens'] as $item) {
+            $this->assertContains($item, $labels, "A super-admin cannot see [{$item}].");
+        }
+    }
+
+    public function test_an_ordinary_admin_still_needs_the_permission(): void
+    {
+        // The super-admin allowance must not leak: an `admin` who lacks the
+        // permission still does not see the screen, and the screen still 403s them.
+        $labels = $this->labelsFor($this->userWithPermissions(['user.manage'], slug: 'admin-role'));
+
+        $this->assertNotContains('Feature Flags', $labels);
+
+        $this->actingAs($this->userWithPermissions(['user.manage'], slug: 'admin-role-2'))
+            ->get(route('admin.system.flags.index'))
+            ->assertForbidden();
+    }
+
     public function test_a_branch_left_with_no_children_is_removed_entirely(): void
     {
-        // `todos.reports` needs `report.view`, which this user lacks. The Reports
-        // leaf disappears — and if Reports were a branch it would have to disappear
-        // with it, rather than sitting there expandable and empty.
+        // `todos.reports` needs `todos.view_all`, which this user lacks. The
+        // Reports leaf disappears — and if Reports were a branch it would have to
+        // disappear with it, rather than sitting there expandable and empty.
         $labels = $this->labelsFor($this->userWithPermissions(['todos.view']));
 
         $this->assertContains('Calendar', $labels);
