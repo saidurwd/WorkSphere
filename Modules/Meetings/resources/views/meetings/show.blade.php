@@ -104,7 +104,7 @@
                             <td>{{ $agenda->presentedBy->name ?? 'N/A' }}</td>
                             <td>{{ $agenda->estimated_minutes ?? 'N/A' }}</td>
                             <td>
-                                <span class="badge {{ $agenda->status === 'completed' ? 'text-bg-success' : ($agenda->status === 'in_progress' ? 'badge-primary' : 'text-bg-secondary') }}">
+                                <span class="badge {{ $agenda->status === 'completed' ? 'text-bg-success' : ($agenda->status === 'in_progress' ? 'text-bg-primary' : 'bg-secondary text-dark') }}">
                                     {{ ucwords(str_replace('_', ' ', $agenda->status)) }}
                                 </span>
                             </td>
@@ -164,10 +164,10 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="badge text-bg-secondary">{{ ucwords(str_replace('_', ' ', $decision->decision_type)) }}</span>
+                                <span class="badge bg-secondary text-dark">{{ ucwords(str_replace('_', ' ', $decision->decision_type)) }}</span>
                             </td>
                             <td>
-                                <span class="badge {{ $decision->decision_status === 'active' ? 'text-bg-success' : ($decision->decision_status === 'cancelled' ? 'text-bg-danger' : 'text-bg-secondary') }}">
+                                <span class="badge {{ $decision->decision_status === 'active' ? 'text-bg-success' : ($decision->decision_status === 'cancelled' ? 'text-bg-danger' : 'bg-secondary text-dark') }}">
                                     {{ ucwords($decision->decision_status) }}
                                 </span>
                             </td>
@@ -376,10 +376,10 @@
                             <td>{{ $item->assignedDepartment->department_name ?? 'N/A' }}</td>
                             <td>{{ $item->due_date ? $item->due_date->format('M d, Y') : 'N/A' }}</td>
                             <td>
-                                <span class="badge text-bg-secondary">{{ ucwords($item->priority) }}</span>
+                                <span class="badge bg-secondary text-dark">{{ ucwords($item->priority) }}</span>
                             </td>
                             <td>
-                                <span class="badge {{ $item->status === 'completed' ? 'text-bg-success' : ($item->status === 'in_progress' ? 'badge-primary' : 'text-bg-secondary') }}">
+                                <span class="badge {{ $item->status === 'completed' ? 'text-bg-success' : ($item->status === 'in_progress' ? 'text-bg-primary' : 'bg-secondary text-dark') }}">
                                     {{ ucwords(str_replace('_', ' ', $item->status)) }}
                                 </span>
                                 @if($item->isOverdue())
@@ -396,7 +396,7 @@
                                              `$item->task->status === 'completed'` was an enum against
                                              a string and never true: every linked task badged grey.
                                              `str_replace` on the enum was a hard TypeError. --}}
-                                        <span class="badge text-bg-{{ \App\Support\StatusBadge::variant($item->task->status) }}">
+                                        <span class="badge {{ \App\Support\StatusBadge::statusBadgeClass($item->task->status) }}">
                                             {{ \App\Support\StatusBadge::label($item->task->status) }}
                                         </span>
                                     </div>
@@ -705,10 +705,10 @@
                         <tr>
                             <td>{{ $participant->user->name ?? 'N/A' }}</td>
                             <td>
-                                <span class="badge text-bg-secondary">{{ ucwords($participant->participant_type) }}</span>
+                                <span class="badge bg-secondary text-dark">{{ ucwords($participant->participant_type) }}</span>
                             </td>
                             <td>
-                                <span class="badge {{ $participant->attendance_status === 'present' ? 'text-bg-success' : ($participant->attendance_status === 'accepted' ? 'badge-primary' : 'text-bg-secondary') }}">
+                                <span class="badge {{ $participant->attendance_status === 'present' ? 'text-bg-success' : ($participant->attendance_status === 'accepted' ? 'text-bg-primary' : 'bg-secondary text-dark') }}">
                                     {{ ucwords($participant->attendance_status) }}
                                 </span>
                             </td>

@@ -152,9 +152,9 @@
                     @php
                         $riskBadge = match ($obligation->risk_level) {
                             'critical' => 'text-bg-danger',
-                            'high' => 'badge-warning',
-                            'medium' => 'badge-primary',
-                            'low' => 'text-bg-secondary',
+                            'high' => 'text-bg-warning',
+                            'medium' => 'text-bg-primary',
+                            'low' => 'bg-secondary text-dark',
                         };
                     @endphp
                     <tr>
@@ -162,7 +162,7 @@
                         <td>{{ $obligation->title }}</td>
                         <td>{{ $obligation->expiry_date->format('M d, Y') }}</td>
                         <td><span class="badge {{ $riskBadge }}">{{ ucfirst($obligation->risk_level) }}</span></td>
-                        <td><span class="badge text-bg-secondary">{{ ucfirst($obligation->priority) }}</span></td>
+                        <td><span class="badge bg-secondary text-dark">{{ ucfirst($obligation->priority) }}</span></td>
                     </tr>
                     @endforeach
                 </tbody>

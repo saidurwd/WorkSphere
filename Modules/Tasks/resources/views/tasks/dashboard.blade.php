@@ -21,7 +21,7 @@
     <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Task Status</h3>
-            <span class="badge text-bg-secondary">Donut chart</span>
+            <span class="badge bg-secondary text-dark">Donut chart</span>
         </div>
         <div class="card-body">
             <div style="display: grid; grid-template-columns: 140px 1fr; gap: 1.25rem; align-items: center;">
@@ -68,7 +68,7 @@
     <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Weekly Tasks</h3>
-            <span class="badge text-bg-secondary">Bar chart</span>
+            <span class="badge bg-secondary text-dark">Bar chart</span>
         </div>
         <div class="card-body">
             <div style="display:flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1rem;">
@@ -98,7 +98,7 @@
     <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Priority Distribution</h3>
-            <span class="badge text-bg-secondary">Horizontal bars</span>
+            <span class="badge bg-secondary text-dark">Horizontal bars</span>
         </div>
         <div class="card-body">
             <div style="display:flex; flex-direction: column; gap: 0.875rem;">
@@ -120,7 +120,7 @@
     <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Tasks by Project</h3>
-            <span class="badge text-bg-secondary">Horizontal bars</span>
+            <span class="badge bg-secondary text-dark">Horizontal bars</span>
         </div>
         <div class="card-body">
             <div style="display:flex; flex-direction: column; gap: 0.875rem;">

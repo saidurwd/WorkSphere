@@ -287,8 +287,8 @@
                     <div class="item-sub">{{ $decision->decision_description }}</div>
                     @endif
                     <div class="item-sub">
-                        <span class="badge text-bg-secondary">{{ ucwords(str_replace('_', ' ', $decision->decision_type)) }}</span>
-                        <span class="badge text-bg-secondary">{{ ucwords($decision->decision_status) }}</span>
+                        <span class="badge bg-secondary text-dark">{{ ucwords(str_replace('_', ' ', $decision->decision_type)) }}</span>
+                        <span class="badge bg-secondary text-dark">{{ ucwords($decision->decision_status) }}</span>
                         @if($decision->approvedBy)
                         Approved By: {{ $decision->approvedBy->name }}
                         @endif

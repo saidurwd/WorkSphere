@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
 @php
-$priorityClass = $task->priority === 'high' ? 'text-bg-danger' : ($task->priority === 'medium' ? 'badge-primary' : 'text-bg-secondary');
+$priorityClass = $task->priority === 'high' ? 'text-bg-danger' : ($task->priority === 'medium' ? 'text-bg-primary' : 'bg-secondary text-dark');
 
 // `StatusBadge` rather than a hand-rolled ternary. `$task->status` is cast to
 // `WorkItemStatus`, so the old `$task->status === 'completed'` compared an enum
 // instance to a string and was ALWAYS false: every task rendered with the
 // fallback grey badge and the default accent, whatever its status. Two more
 // statuses to render would have stayed just as invisible.
-$statusClass = 'text-bg-'.\App\Support\StatusBadge::variant($task->status);
+$statusClass = \App\Support\StatusBadge::statusBadgeClass($task->status);
 $statusAccent = \App\Support\StatusBadge::statusColor($task->status);
 @endphp
 
@@ -183,7 +183,7 @@ $statusAccent = \App\Support\StatusBadge::statusColor($task->status);
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title">Transfer History</h2>
-                <span class="badge text-bg-secondary">{{ $task->taskTransfers->count() }} Transfer(s)</span>
+                <span class="badge bg-secondary text-dark">{{ $task->taskTransfers->count() }} Transfer(s)</span>
             </div>
             <div class="card-body" style="padding: 0;">
                 @if($task->taskTransfers->isNotEmpty())
@@ -291,7 +291,7 @@ $statusAccent = \App\Support\StatusBadge::statusColor($task->status);
                                 @endif
                             </span>
                             <span class="d-flex align-items-center gap-2">
-                                <span class="badge text-bg-secondary">{{ $entry->minutes }} min</span>
+                                <span class="badge bg-secondary text-dark">{{ $entry->minutes }} min</span>
                                 @can('logTime', $task)
                                     <form action="{{ route('tasks.time-entries.destroy', [$task, $entry]) }}" method="POST">
                                         @csrf

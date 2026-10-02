@@ -55,7 +55,7 @@
                                     {{ $day->format('D j') }}
                                 </span>
                                 @if ($dayTodos->isNotEmpty())
-                                    <span class="badge text-bg-secondary">{{ $dayTodos->count() }}</span>
+                                    <span class="badge bg-secondary text-dark">{{ $dayTodos->count() }}</span>
                                 @endif
                             </div>
 

@@ -58,12 +58,12 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="badge {{ $task->priority === 'high' ? 'text-bg-danger' : ($task->priority === 'medium' ? 'badge-primary' : 'text-bg-secondary') }}">
+                                <span class="badge {{ $task->priority === 'high' ? 'text-bg-danger' : ($task->priority === 'medium' ? 'text-bg-primary' : 'bg-secondary text-dark') }}">
                                     {{ ucfirst($task->priority) }}
                                 </span>
                             </td>
                             <td>
-                                <span class="badge text-bg-{{ \App\Support\StatusBadge::variant($task->status) }}">
+                                <span class="badge {{ \App\Support\StatusBadge::statusBadgeClass($task->status) }}">
                                     {{ \App\Support\StatusBadge::label($task->status) }}
                                 </span>
                             </td>

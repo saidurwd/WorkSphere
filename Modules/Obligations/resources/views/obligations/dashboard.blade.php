@@ -30,7 +30,7 @@
     <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Obligations by Type</h3>
-            <span class="badge text-bg-secondary">Horizontal bars</span>
+            <span class="badge bg-secondary text-dark">Horizontal bars</span>
         </div>
         <div class="card-body">
             <div style="display:flex; flex-direction: column; gap: 0.875rem;">
@@ -52,7 +52,7 @@
     <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Priority Distribution</h3>
-            <span class="badge text-bg-secondary">Donut chart</span>
+            <span class="badge bg-secondary text-dark">Donut chart</span>
         </div>
         <div class="card-body">
             <div style="display: grid; grid-template-columns: 140px 1fr; gap: 1.25rem; align-items: center;">

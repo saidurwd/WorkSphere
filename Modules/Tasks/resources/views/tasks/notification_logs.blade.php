@@ -113,11 +113,11 @@
                             @endif
                         </td>
                         <td>{{ $log->user->name ?? 'N/A' }}</td>
-                        <td><span class="badge text-bg-secondary">{{ $log->channel }}</span></td>
+                        <td><span class="badge bg-secondary text-dark">{{ $log->channel }}</span></td>
                         <td>{{ $log->notification_type }}</td>
                         <td>{{ $log->subject }}</td>
                         <td>
-                            <span class="badge {{ $log->status === 'SENT' ? 'text-bg-success' : ($log->status === 'FAILED' ? 'text-bg-danger' : 'badge-warning') }}">
+                            <span class="badge {{ $log->status === 'SENT' ? 'text-bg-success' : ($log->status === 'FAILED' ? 'text-bg-danger' : 'text-bg-warning') }}">
                                 {{ $log->status }}
                             </span>
                             @if($log->error_message)

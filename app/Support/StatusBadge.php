@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Enums\Priority;
 use App\Enums\Visibility;
 use App\Enums\WorkItemStatus;
+use BackedEnum;
 
 /**
  * The single status → badge-variant map (GAP-020).
@@ -137,6 +138,61 @@ final class StatusBadge
     }
 
     /**
+     * The CSS classes that render a variant as a readable badge.
+     *
+     * `text-bg-<variant>` is the right utility for most of these, but not for
+     * `secondary`. Bootstrap's `.text-bg-secondary` hard-codes `color: #fff` and
+     * fills with `--bs-secondary-rgb`. This theme redefines that token as a light
+     * surface grey (`--app-secondary`, `244, 244, 245`) because it is used for
+     * `--app-muted`, `--app-accent` and the sidebar highlight — none of which sit
+     * behind white text. The result is white text on a near-white fill at roughly
+     * 1.05:1 contrast, so every neutral badge rendered as a blank rectangle.
+     *
+     * `secondary` therefore maps to the token pair that was designed for it:
+     * the light surface grey as the fill, dark text on top. It reads as the
+     * neutral chip it is meant to be, and matches the muted badges already used
+     * in dark mode via `--bs-secondary-bg-subtle`.
+     *
+     * Every other variant keeps Bootstrap's own utility, so nothing else changes
+     * appearance. `text-bg-warning` is left as-is too: white on amber is poor
+     * contrast, but it is visible, and restating the whole scale here would be a
+     * different change.
+     *
+     * An unrecognised variant degrades to the neutral pair rather than becoming
+     * `text-bg-<whatever>`. A class that does not exist applies no fill at all, so
+     * the badge renders as bare text with no chip — the same symptom as the bug
+     * this replaced, reached by a different route. It happens the moment a caller
+     * passes a status where a variant belongs.
+     *
+     * @return string One or more Bootstrap utility classes.
+     */
+    public static function badgeClass(string|BackedEnum|null $variant): string
+    {
+        return match (self::value($variant)) {
+            'secondary', null => 'bg-secondary text-dark',
+            'primary', 'info', 'warning', 'success', 'danger', 'dark' => 'text-bg-'.self::value($variant),
+            default => 'bg-secondary text-dark',
+        };
+    }
+
+    /**
+     * The classes for a badge showing a status, however the caller reaches the
+     * status. Shorthand for `badgeClass(variant($status))`.
+     */
+    public static function statusBadgeClass(WorkItemStatus|string|null $status): string
+    {
+        return self::badgeClass(self::variant($status));
+    }
+
+    /**
+     * The classes for a badge showing a priority.
+     */
+    public static function priorityBadgeClass(Priority|string|null $priority): string
+    {
+        return self::badgeClass(self::priorityVariant($priority));
+    }
+
+    /**
      * A CSS colour for a status, for anything that paints rather than badges.
      */
     public static function statusColor(WorkItemStatus|string|null $status): string
@@ -176,7 +232,7 @@ final class StatusBadge
      * Accepts any backed enum so a caller does not have to know which family a
      * value belongs to before labelling it.
      */
-    public static function label(\BackedEnum|string|null $subject): string
+    public static function label(BackedEnum|string|null $subject): string
     {
         if ($subject === null) {
             return '—';
@@ -222,6 +278,6 @@ final class StatusBadge
 
     private static function value(WorkItemStatus|Priority|Visibility|string|null $subject): ?string
     {
-        return $subject instanceof \BackedEnum ? $subject->value : $subject;
+        return $subject instanceof BackedEnum ? $subject->value : $subject;
     }
 }

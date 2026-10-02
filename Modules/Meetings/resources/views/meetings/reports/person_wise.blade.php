@@ -34,7 +34,7 @@
                         <td>{{ $row->open }}</td>
                         <td>{{ $row->in_progress }}</td>
                         <td>{{ $row->completed }}</td>
-                        <td><span class="badge {{ $row->overdue > 0 ? 'text-bg-danger' : 'text-bg-secondary' }}">{{ $row->overdue }}</span></td>
+                        <td><span class="badge {{ $row->overdue > 0 ? 'text-bg-danger' : 'bg-secondary text-dark' }}">{{ $row->overdue }}</span></td>
                     </tr>
                     @endforeach
                 </tbody>

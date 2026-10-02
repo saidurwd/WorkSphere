@@ -24,17 +24,19 @@
     // threw — and `obligations.priority` is an unconstrained string, so nothing
     // stopped a fifth value being written. They also used `badge-warning`, which
     // is not a Bootstrap 5 class; the contextual utility is `text-bg-warning`.
-    $priorityBadge = 'text-bg-'.\App\Support\StatusBadge::priorityVariant($obligation->priority);
+    $priorityBadge = \App\Support\StatusBadge::priorityBadgeClass($obligation->priority);
 
     // risk_level has no shared enum yet (it is a separate vocabulary, and
     // `critical` belongs to it), so it keeps a local map — with a default, so an
-    // unexpected value degrades to neutral instead of throwing.
-    $riskBadge = 'text-bg-'.match ($obligation->risk_level) {
+    // unexpected value degrades to neutral instead of throwing. The neutral arm
+    // resolves through StatusBadge so it cannot regress to the white-on-white
+    // `text-bg-secondary` pair.
+    $riskBadge = \App\Support\StatusBadge::badgeClass(match ($obligation->risk_level) {
         'critical' => 'danger',
         'high' => 'warning',
         'medium' => 'info',
         default => 'secondary',
-    };
+    });
 @endphp
 
 <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
@@ -130,7 +132,7 @@
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                 <div style="display: flex; justify-content: space-between;">
                     <span style="color: var(--muted-foreground);">Status</span>
-                    <span class="badge text-bg-secondary">{{ ucwords(str_replace('_', ' ', $obligation->status)) }}</span>
+                    <span class="badge bg-secondary text-dark">{{ ucwords(str_replace('_', ' ', $obligation->status)) }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
                     <span style="color: var(--muted-foreground);">Priority</span>

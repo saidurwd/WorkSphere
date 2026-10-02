@@ -35,10 +35,10 @@
                         <td>{{ $row->total }}</td>
                         <td>{{ $row->completed }}</td>
                         <td>{{ $row->pending }}</td>
-                        <td><span class="badge {{ $row->overdue > 0 ? 'text-bg-danger' : 'text-bg-secondary' }}">{{ $row->overdue }}</span></td>
+                        <td><span class="badge {{ $row->overdue > 0 ? 'text-bg-danger' : 'bg-secondary text-dark' }}">{{ $row->overdue }}</span></td>
                         <td>
                             @php $completion = $row->total > 0 ? round(($row->completed / $row->total) * 100) : 0; @endphp
-                            <span class="badge {{ $completion >= 80 ? 'text-bg-success' : ($completion >= 50 ? 'badge-warning' : 'text-bg-danger') }}">{{ $completion }}%</span>
+                            <span class="badge {{ $completion >= 80 ? 'text-bg-success' : ($completion >= 50 ? 'text-bg-warning' : 'text-bg-danger') }}">{{ $completion }}%</span>
                         </td>
                     </tr>
                     @endforeach
