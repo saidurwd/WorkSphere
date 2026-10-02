@@ -8,7 +8,7 @@
     "src": "node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-mwdZYw4Q.css",
+    "file": "assets/app-HWWgeI-h.css",
     "name": "app",
     "names": [
       "app.css"
@@ -28,6 +28,12 @@
     "css": [
       "assets/app-DgP4dPZn.css"
     ]
+  },
+  "resources/js/fullcalendar.js": {
+    "file": "assets/fullcalendar-Dk3SMSQ3.js",
+    "name": "fullcalendar",
+    "src": "resources/js/fullcalendar.js",
+    "isEntry": true
   },
   "resources/js/search-box.js": {
     "file": "assets/search-box-aHDuYEdc.js",
