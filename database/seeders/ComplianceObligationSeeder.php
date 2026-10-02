@@ -26,15 +26,24 @@ class ComplianceObligationSeeder extends Seeder
     private function seedCompanies(): void
     {
         $companies = [
-            ['COMP-001', 'Head Office', 'active'],
-            ['COMP-002', 'Chittagong Hub', 'active'],
-            ['COMP-003', 'Uttara Branch', 'active'],
+            ['COMP-001', 'Worksphere Technologies Ltd', '14 Gulshan Avenue', 'Dhaka', 'Bangladesh'],
+            ['COMP-002', 'Worksphere Digital Ltd', '211 Gulshan South', 'Dhaka', 'Bangladesh'],
+            ['COMP-003', 'Worksphere Solutions Ltd', '8 Agrabad CDA', 'Chittagong', 'Bangladesh'],
+            ['COMP-004', 'Worksphere International Ltd', '31 Finsbury Square', 'London', 'United Kingdom'],
+            ['COMP-005', 'Worksphere Ventures Ltd', '18 Jalan Bukit Bintang', 'Kuala Lumpur', 'Malaysia'],
+            ['COMP-006', 'Worksphere Foundation', '45 Uttara Sector 4', 'Dhaka', 'Bangladesh'],
         ];
 
         foreach ($companies as $company) {
             Company::firstOrCreate(
                 ['company_code' => $company[0]],
-                ['company_name' => $company[1], 'status' => $company[2]]
+                [
+                    'company_name' => $company[1],
+                    'address' => $company[2],
+                    'city' => $company[3],
+                    'country' => $company[4],
+                    'status' => 'active',
+                ]
             );
         }
     }
