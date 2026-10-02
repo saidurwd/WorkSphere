@@ -71,14 +71,26 @@ class AdditiveMigrationTest extends TestCase
         // Phase 8 GAP-031 — escalation rules may now be scoped to a department or
         // a company. Both are nullable, so an existing rule stays global.
         'escalation_rules' => ['department_id', 'company_id'],
+
+        // Phase 14: the repair migration. `roles.description` was added in Phase 2
+        // by EDITING `2026_09_29_152053_create_roles_table`, which every real
+        // database had already recorded — so the column existed in a freshly
+        // migrated test database and nowhere else, and saving a role failed with
+        // `Unknown column 'description' in 'SET'`. A new migration adds it, which
+        // makes it genuinely additive and genuinely reversible.
+        'roles' => ['description'],
     ];
 
     /**
-     * How many migrations the rollback test steps back: Phase 3's fourteen plus
-     * Phase 8's six Task migrations. Both are additive, so the exact-removal
-     * assertion below has to name what *both* added.
+     * How many migrations the rollback test steps back: Phase 3's fourteen, Phase
+     * 8's six Task migrations, Phase 12's two system tables, and the
+     * `roles.description` repair.
+     *
+     * The count is a LOAD-BEARING number. Too small and the rollback leaves part
+     * of the additions behind, so the exact-removal assertion below passes while
+     * proving nothing about the migrations it thinks it is checking.
      */
-    private const ADDITIVE_MIGRATIONS = 26;
+    private const ADDITIVE_MIGRATIONS = 27;
 
     public function test_every_pre_existing_table_still_exists(): void
     {
@@ -180,6 +192,8 @@ class AdditiveMigrationTest extends TestCase
             'meetings.template_id',
             'escalation_rules.company_id',
             'escalation_rules.department_id',
+            // Phase 14 — see DECLARED_ADDITIONS.
+            'roles.description',
         ];
 
         // removedColumns() walks PRE_EXISTING in declaration order, so both sides

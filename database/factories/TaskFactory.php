@@ -79,19 +79,15 @@ class TaskFactory extends Factory
     }
 
     /**
-     * Every status `tasks.status` allows after the Phase 8 widening, so a view
-     * that cannot render one of them is caught here rather than in production.
+     * Every status `tasks.status` allows, so a view that cannot render one of them
+     * is caught here rather than in production. Reads the same list as the
+     * validation rules and the dropdowns, so a status added there is exercised here
+     * too — the previous literal list had already fallen behind the schema once.
      */
     public function inAnyStatus(): static
     {
         return $this->state(fn (): array => [
-            'status' => fake()->randomElement([
-                WorkItemStatus::Pending->value,
-                WorkItemStatus::InProgress->value,
-                WorkItemStatus::OnHold->value,
-                WorkItemStatus::Completed->value,
-                WorkItemStatus::Cancelled->value,
-            ]),
+            'status' => fake()->randomElement(WorkItemStatus::taskValues()),
         ]);
     }
 

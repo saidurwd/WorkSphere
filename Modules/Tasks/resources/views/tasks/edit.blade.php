@@ -8,6 +8,16 @@
         ['label' => 'Tasks', 'url' => route('tasks.index')],
         ['label' => 'Edit Task'],
     ];
+
+    $taskStatusOptions = \App\Enums\WorkItemStatus::taskOptions();
+
+    // `->value` because `Task::$status` is cast to `WorkItemStatus`. The old
+    // comparison was `old('status', $task->status) === 'pending'` — an enum
+    // instance against a string — so it was false for every option and the form
+    // opened with NOTHING selected, silently defaulting the browser to the first
+    // option whatever the task's real status was. Opening a postponed task and
+    // saving it would have moved it to pending.
+    $currentStatus = old('status', $task->status?->value);
 @endphp
 
 @section('content')
@@ -48,9 +58,9 @@
                 <div class="mb-3" style="flex: 0 0 calc(50% - 0.5rem);">
                     <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
                     <select name="status" id="status" class="form-select" required>
-                        <option value="pending" {{ old('status', $task->status) === 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="in_progress" {{ old('status', $task->status) === 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                        <option value="completed" {{ old('status', $task->status) === 'completed' ? 'selected' : '' }}>Completed</option>
+                        @foreach($taskStatusOptions as $value => $label)
+                            <option value="{{ $value }}" {{ $currentStatus === $value ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
                     </select>
                     @error('status') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
                 </div>

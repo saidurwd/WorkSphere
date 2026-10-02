@@ -213,6 +213,47 @@
         </dl>
         @break
 
+    @case('schema')
+        <dl class="row mb-0 small">
+            <dt class="col-7 text-body-secondary">Models compared</dt>
+            <dd class="col-5 mb-1">{{ number_format((int) ($check['models_checked'] ?? 0)) }}</dd>
+
+            <dt class="col-7 text-body-secondary">Mismatches</dt>
+            <dd class="col-5 mb-1">
+                <x-badge :variant="($check['mismatches'] ?? 0) === 0 ? 'success' : 'danger'">
+                    {{ (int) ($check['mismatches'] ?? 0) }}
+                </x-badge>
+            </dd>
+        </dl>
+
+        @if (! empty($check['detail']))
+            <div class="mt-2">
+                <div class="small fw-semibold mb-1">Declared but absent from the database</div>
+                <ul class="list-unstyled small mb-0 font-monospace">
+                    @foreach ($check['detail'] as $line)
+                        <li class="text-danger text-truncate" title="{{ $line }}">
+                            <i class="bi bi-x-octagon-fill me-1"></i>{{ $line }}
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+            <div class="small text-warning mt-2">
+                <i class="bi bi-wrench-adjustable me-1"></i>
+                A column added by editing a migration that had already run here will never appear.
+                Write a NEW migration.
+            </div>
+        @else
+            <div class="small text-body-secondary mt-2">
+                <i class="bi bi-check-lg me-1"></i>Every column the models declare exists in this database.
+            </div>
+        @endif
+
+        <a href="{{ url('/artisan/doctor:schema') }}" class="btn btn-sm btn-outline-secondary mt-2"
+           onclick="return false;" title="Run: php artisan doctor:schema">
+            Run <code>doctor:schema</code>
+        </a>
+        @break
+
     @case('storage')
         <dl class="row mb-0 small">
             @foreach ((array) ($check['paths'] ?? []) as $label => $path)

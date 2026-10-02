@@ -88,6 +88,15 @@ class UpcomingDeadlinesWidget implements DashboardWidget
     }
 
     /**
+     * `resolve()` returns a Collection, so the registry caches it as a plain
+     * array and re-wraps it on the way out.
+     */
+    public function isListValued(): bool
+    {
+        return true;
+    }
+
+    /**
      * @return array{source: string, title: string, due: string, days: int, sort: string, url: string}
      */
     protected function present(string $source, string $title, mixed $dueDate, string $url): array

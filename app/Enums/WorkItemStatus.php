@@ -12,6 +12,9 @@ namespace App\Enums;
  *
  * The `Inbox` and `Planned` cases belong to the To-Do vocabulary
  * (TODO-MODULE-SPECIFICATION.md §3.1) and are additive for the existing tables.
+ *
+ * {@see TASK_CASES} narrows the union to the statuses a TASK may actually take.
+ * That subset, not `cases()`, is what task validation, dropdowns and counts read.
  */
 enum WorkItemStatus: string
 {
@@ -28,6 +31,69 @@ enum WorkItemStatus: string
     case Postponed = 'postponed';
     case Skipped = 'skipped';
     case Archived = 'archived';
+
+    /**
+     * The statuses a TASK may be set to.
+     *
+     * The enum is the union of every work vocabulary — To-Dos add `inbox`,
+     * `planned` and `waiting`, action items add `open`, meetings add `scheduled` —
+     * so most of its cases are not valid for a task. This is the subset, and it is
+     * the single place that subset is written down.
+     *
+     * It exists because the list was previously repeated, literally, in about
+     * twenty places — the `in:` validation rules, four `<select>` dropdowns, the
+     * dashboard's status chart, the factory, and the meeting action-item mirror.
+     * The copies had already drifted from each other and from the database column:
+     * `on_hold` and `cancelled` were added to `tasks.status` by a migration and to
+     * this enum, but never to the validation rules or the dropdowns, so a user
+     * could not select either one. Validation and the dropdowns now both read this.
+     *
+     * `postponed` and `cancelled` are the last two. `postponed` is OPEN — the work
+     * still exists and is still counted in the active scope — while `cancelled` is
+     * closed, matching {@see openValues()}.
+     */
+    public const TASK_CASES = [
+        self::Pending,
+        self::InProgress,
+        self::OnHold,
+        self::Postponed,
+        self::Completed,
+        self::Cancelled,
+    ];
+
+    /**
+     * The backing values a task may be set to, for an `in:` rule or a `whereIn`.
+     *
+     * @return list<string>
+     */
+    public static function taskValues(): array
+    {
+        return array_map(static fn (self $case): string => $case->value, self::TASK_CASES);
+    }
+
+    /**
+     * `value => label` for a task status dropdown or filter.
+     *
+     * @return array<string, string>
+     */
+    public static function taskOptions(): array
+    {
+        $options = [];
+
+        foreach (self::TASK_CASES as $case) {
+            $options[$case->value] = $case->label();
+        }
+
+        return $options;
+    }
+
+    /**
+     * Whether this status may be set on a task.
+     */
+    public function isTaskStatus(): bool
+    {
+        return in_array($this, self::TASK_CASES, true);
+    }
 
     /**
      * Statuses that still represent open work.

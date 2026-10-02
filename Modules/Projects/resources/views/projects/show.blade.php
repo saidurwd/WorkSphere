@@ -63,8 +63,8 @@
                                 </span>
                             </td>
                             <td>
-                                <span class="badge {{ $task->status === 'completed' ? 'text-bg-success' : ($task->status === 'in_progress' ? 'badge-primary' : 'text-bg-secondary') }}">
-                                    {{ ucwords(str_replace('_', ' ', $task->status)) }}
+                                <span class="badge text-bg-{{ \App\Support\StatusBadge::variant($task->status) }}">
+                                    {{ \App\Support\StatusBadge::label($task->status) }}
                                 </span>
                             </td>
                             <td>{{ $task->due_date->format('M d, Y') }}</td>

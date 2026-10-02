@@ -43,11 +43,71 @@ class FeatureFlags
      */
     public function definitions(): array
     {
-        return Cache::remember(
+        // Arrays of attributes, never `FeatureFlag` models.
+        //
+        // `config('cache.serializable_classes')` is `false`, so the database store
+        // unserializes with `allowed_classes => false` and every cached object comes
+        // back as `__PHP_Incomplete_Class`. The failure here is quieter and worse
+        // than a thrown error: `typed()` reads `$flag->type` and `$flag->value`, both
+        // of which are null on an incomplete class, so every flag silently evaluated
+        // to its caller's DEFAULT — a feature flag that was on reported as off, with
+        // nothing logged and nothing to grep for.
+        //
+        // Invisible to the suite for the same reason as the reference lists:
+        // `phpunit.xml` sets `CACHE_STORE=array`, and the array store returns the
+        // same object it was given, never unserializing anything.
+        $definitions = Cache::remember(
             self::CACHE_KEY,
             300,
-            fn (): array => FeatureFlag::query()->get()->keyBy('key')->all(),
+            fn (): array => FeatureFlag::query()->get()
+                ->mapWithKeys(fn (FeatureFlag $flag): array => [
+                    // `getAttributes()`, NOT `attributesToArray()`.
+                    //
+                    // `attributesToArray()` applies the model's casts, so `value`
+                    // and `target_roles` come back already json_decoded into PHP
+                    // arrays. Feeding those back through `newFromBuilder()` casts
+                    // them a second time — `json_decode(array)` — and every flag
+                    // with targeting threw. The cached form has to be the RAW
+                    // column values, because the model is what applies casts, once.
+                    $flag->key => $flag->getAttributes(),
+                ])
+                ->all(),
         );
+
+        // Rehydrated on read, so the cached entry is plain scalars and a flag
+        // edited in the database is picked up the moment the cache is dropped.
+        $flags = [];
+
+        foreach ($definitions as $key => $attributes) {
+            if ($attributes instanceof FeatureFlag) {
+                $flags[$key] = $attributes;
+
+                continue;
+            }
+
+            $flag = (new FeatureFlag)->newFromBuilder((array) $attributes);
+            $flag->setConnection((new FeatureFlag)->getConnection()->getName());
+            $flag->setTable((new FeatureFlag)->getTable());
+
+            $flags[$key] = $flag;
+        }
+
+        return $flags;
+    }
+
+    /**
+     * The cached value as written, before rehydration.
+     *
+     * Exposed so a test can assert the STORED shape rather than inferring it from
+     * `definitions()`, which rehydrates and would therefore pass whether the cache
+     * held models or arrays. The distinction is the whole point: a model in here
+     * unserializes to `__PHP_Incomplete_Class`, and the bug that follows is silent.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function rawPayload(): array
+    {
+        return Cache::get(self::CACHE_KEY) ?? [];
     }
 
     /**

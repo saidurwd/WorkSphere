@@ -8,6 +8,10 @@
         ['label' => 'Tasks', 'url' => route('tasks.index')],
         ['label' => 'New Task'],
     ];
+
+    // The statuses a task may take, from the one list the validation rules and the
+    // schema read. The dropdown used to carry its own three hardcoded <option>s.
+    $taskStatusOptions = \App\Enums\WorkItemStatus::taskOptions();
 @endphp
 
 @section('content')
@@ -44,9 +48,9 @@
                 <div class="mb-3" style="flex: 0 0 calc(50% - 0.5rem);">
                     <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
                     <select name="status" id="status" class="form-select" required>
-                        <option value="pending" {{ old('status', 'pending') === 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="in_progress" {{ old('status') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                        <option value="completed" {{ old('status') === 'completed' ? 'selected' : '' }}>Completed</option>
+                        @foreach($taskStatusOptions as $value => $label)
+                            <option value="{{ $value }}" {{ old('status', 'pending') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
                     </select>
                     @error('status') <p class="text-danger small mt-1">{{ $message }}</p> @enderror
                 </div>

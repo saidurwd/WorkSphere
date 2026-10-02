@@ -72,4 +72,13 @@ class TeamWorkloadWidget implements DashboardWidget
                 'overdue' => (int) $row->overdue_total,
             ]);
     }
+
+    /**
+     * `resolve()` returns a Collection, so the registry caches it as a plain
+     * array and re-wraps it on the way out.
+     */
+    public function isListValued(): bool
+    {
+        return true;
+    }
 }

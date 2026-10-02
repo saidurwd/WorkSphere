@@ -2,9 +2,10 @@
 
 namespace Modules\Meetings\Services;
 
+use App\Enums\WorkItemStatus;
+use Illuminate\Support\Facades\DB;
 use Modules\Meetings\Models\MeetingActionItem;
 use Modules\Tasks\Models\Task;
-use Illuminate\Support\Facades\DB;
 
 class MeetingActionTaskService
 {
@@ -57,12 +58,27 @@ class MeetingActionTaskService
             return;
         }
 
+        // `Task::$status` is cast to `WorkItemStatus`, so `$task->status` is an enum
+        // instance. Matching it against the STRINGS 'completed'/'in_progress'/'pending'
+        // never matched, and every arm including the mirror of a completed task fell
+        // through to `default => 'open'` — an action item could never be marked
+        // completed by its task. Matching the cases fixes that and gives the two new
+        // statuses somewhere to go.
         $status = match ($task->status) {
-            'completed' => 'completed',
-            'in_progress' => 'in_progress',
-            'pending' => 'open',
+            WorkItemStatus::Completed => 'completed',
+            WorkItemStatus::InProgress => 'in_progress',
+            WorkItemStatus::Cancelled => 'cancelled',
+            // A deferred task is not open work and not finished: the action item
+            // keeps the status it had, which is the closest honest answer given
+            // `meeting_action_items` has no `postponed`.
+            WorkItemStatus::Postponed, WorkItemStatus::OnHold => null,
             default => 'open',
         };
+
+        // Nothing to sync when the task's state has no action-item equivalent.
+        if ($status === null) {
+            return;
+        }
 
         $updates = ['status' => $status];
 

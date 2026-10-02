@@ -2,9 +2,9 @@
 
 namespace Modules\Tasks\Console\Commands;
 
+use Illuminate\Console\Command;
 use Modules\Tasks\Jobs\SendTaskReminderJob;
 use Modules\Tasks\Models\Task;
-use Illuminate\Console\Command;
 
 class SendTaskRemindersCommand extends Command
 {
@@ -22,7 +22,11 @@ class SendTaskRemindersCommand extends Command
             ->whereNotNull('due_date')
             ->where('due_date', '<=', $cutoff)
             ->where('due_date', '>=', now()->startOfDay())
-            ->whereIn('status', ['pending', 'in_progress'])
+            // `active()`, for the same reason as the overdue command: a literal
+            // `pending|in_progress` silently excluded `on_hold` and would have
+            // excluded `postponed`, so nobody was reminded about work they had
+            // deferred rather than finished.
+            ->active()
             ->whereNotNull('responsible_user_id')
             ->with('responsibleUser')
             ->get();

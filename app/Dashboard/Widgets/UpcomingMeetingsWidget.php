@@ -60,4 +60,13 @@ class UpcomingMeetingsWidget implements DashboardWidget
             ->limit(6)
             ->get(['id', 'title', 'meeting_date', 'start_time', 'location']);
     }
+
+    /**
+     * `resolve()` returns a Collection, so the registry caches it as a plain
+     * array and re-wraps it on the way out.
+     */
+    public function isListValued(): bool
+    {
+        return true;
+    }
 }

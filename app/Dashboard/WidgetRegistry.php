@@ -86,14 +86,104 @@ class WidgetRegistry
             // Both segments are kept. The user id separates people; the signature
             // handles the other axis — a user whose OWN permissions changed must
             // not be served a value computed under the old set.
-            $resolved[$widget->key()] = Cache::remember(
+            //
+            // Stored through `cacheable()`: eleven of the thirteen widgets resolve
+            // to a Collection, and an object in the cache comes back from the
+            // database store as `__PHP_Incomplete_Class` under the
+            // `allowed_classes => false` in `config/cache.php` — so the second
+            // dashboard view of any user threw on the first method call. The array
+            // driver in `phpunit.xml` hands back the same object it was given, which
+            // is why the suite never saw it.
+            $resolved[$widget->key()] = $this->hydrate($widget, Cache::remember(
                 $this->keyFor($user, $widget),
                 $widget->cacheTtl(),
-                static fn (): mixed => $widget->resolve($user),
-            );
+                fn (): mixed => $this->cacheable($widget->resolve($user)),
+            ));
         }
 
         return collect($resolved);
+    }
+
+    /**
+     * Reduce a resolved value to something the cache can hold.
+     *
+     * Recurses, because a widget that returns an ARRAY can still contain a
+     * Collection inside it: `obligation_expiry` returns `['typeBars' => Collection,
+     * 'priorityDonut' => Collection, ...]` and `personal_stats` nests one under
+     * `weeklyBars`. Handling only the top level left those nested objects in the
+     * cache, so the second dashboard view still threw — on
+     * `$data->get('obligation_expiry.priorityDonut')->sum()` in
+     * `DashboardController`.
+     *
+     * Nothing else is expected: every widget aggregates in SQL and returns rows
+     * already mapped to arrays, so there is no model to flatten and the
+     * conversion stays lossless. A model reaching here would be a widget
+     * regression, so it is left intact rather than silently blanked — the
+     * round-trip test is what catches that.
+     */
+    protected function cacheable(mixed $value): mixed
+    {
+        if ($value instanceof Collection) {
+            return array_map(
+                fn (mixed $item): mixed => $this->cacheable($item),
+                $value->all(),
+            );
+        }
+
+        if (is_array($value)) {
+            return array_map(fn (mixed $item): mixed => $this->cacheable($item), $value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Put a cached value back into the shape the view expects.
+     *
+     * A widget that resolves to a Collection is cached as a plain array — an
+     * object in the cache comes back from the database store as
+     * `__PHP_Incomplete_Class` under the `allowed_classes => false` in
+     * `config/cache.php` — so it has to be re-wrapped on the way out. The two
+     * widgets that resolve to a keyed stat map are left as arrays, because
+     * wrapping those would turn a map into a list and break the `[$key]` lookups
+     * in the partials.
+     */
+    protected function hydrate(DashboardWidget $widget, mixed $cached): mixed
+    {
+        if (! is_array($cached)) {
+            return $cached;
+        }
+
+        if ($widget->isListValued()) {
+            // The rows are already arrays of scalars, so the outer level is all
+            // that needs rebuilding. Recursing into them would wrap any
+            // list-shaped ROW in a Collection and corrupt the list.
+            return new Collection($cached);
+        }
+
+        // A keyed stat map, whose values may themselves be the chart Collections
+        // that `cacheable()` flattened. `DashboardController` calls `->sum()` and
+        // `->all()` on those directly, so they have to come back as Collections.
+        return array_map(
+            fn (mixed $value): mixed => $this->restoreChart($value),
+            $cached,
+        );
+    }
+
+    /**
+     * Rebuild a chart Collection that `cacheable()` flattened into a list.
+     *
+     * A non-empty list becomes a Collection; a keyed stat map such as
+     * `personal_stats.tasks` and a scalar both pass through untouched, because
+     * their callers index or compare them directly. Empty is left alone too —
+     * `array_is_list([])` is true, but there is nothing to rebuild and a caller
+     * expecting an array would be handed a Collection.
+     */
+    protected function restoreChart(mixed $value): mixed
+    {
+        return is_array($value) && $value !== [] && array_is_list($value)
+            ? new Collection($value)
+            : $value;
     }
 
     /**

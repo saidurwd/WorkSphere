@@ -7,9 +7,12 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\User;
 use App\Support\ResolvesReferenceData;
+use App\Support\StatusBadge;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Modules\Projects\Models\Project;
 use Modules\Tasks\Events\TaskAssigned;
@@ -158,21 +161,38 @@ class TaskController extends Controller
             ];
         };
 
-        $statusCounts = [
-            ['status' => 'pending', 'label' => 'Pending', 'count' => (clone $tasksQuery)->where('status', 'pending')->count()],
-            ['status' => 'in_progress', 'label' => 'In Progress', 'count' => (clone $tasksQuery)->where('status', 'in_progress')->count()],
-            ['status' => 'completed', 'label' => 'Completed', 'count' => $completed],
-        ];
-        $statusTotal = $statusCounts[0]['count'] + $statusCounts[1]['count'] + $statusCounts[2]['count'];
+        // Every task status, with the count for each.
+        //
+        // This was three hardcoded rows summing `$statusCounts[0] + [1] + [2]`, and
+        // the `match` that coloured them had no `default` arm — so adding a fourth
+        // status without touching it would throw `UnhandledMatchError` and take the
+        // whole dashboard down. Both the row list and the colour map are now
+        // exhaustive over the enum, so a new status appears here for free.
+        //
+        // ONE grouped query rather than one `count()` per status: the per-status
+        // version spent a query on every status whether or not any task had it, and
+        // at six statuses that pushed the page past its query budget. A status with
+        // no rows is filled in as zero below, which is all the chart needed.
+        $countsByStatus = (clone $tasksQuery)
+            ->select('status', DB::raw('COUNT(*) as aggregate'))
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
+        $statusCounts = array_map(
+            static fn (WorkItemStatus $status): array => [
+                'status' => $status->value,
+                'label' => $status->label(),
+                'count' => (int) $countsByStatus->get($status->value, 0),
+            ],
+            WorkItemStatus::TASK_CASES,
+        );
+
+        $statusTotal = array_sum(array_column($statusCounts, 'count'));
         $statusDonut = collect($statusCounts)->map(fn ($s) => [
             'label' => $s['label'],
             'count' => $s['count'],
             'pct' => $statusTotal > 0 ? (int) round($s['count'] / $statusTotal * 100) : 0,
-            'color' => match ($s['status']) {
-                'pending' => 'var(--bs-warning)',
-                'in_progress' => 'var(--bs-info)',
-                'completed' => 'var(--bs-success)',
-            },
+            'color' => StatusBadge::statusColor((string) $s['status']),
         ])->all();
 
         $weekStart = $today->copy()->startOfWeek();
@@ -294,14 +314,18 @@ class TaskController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'priority' => ['required', 'in:low,medium,high'],
-            'status' => ['required', 'in:pending,in_progress,completed'],
+            // `WorkItemStatus::TASK_CASES`, not a literal list. The literal was
+            // `pending|in_progress|completed` while the column and the enum already
+            // allowed `on_hold` and `cancelled` too, so a status the database would
+            // happily store could not be submitted. One list, one place to change.
+            'status' => ['required', Rule::in(WorkItemStatus::taskValues())],
             'due_date' => ['required', 'date'],
             'responsible_user_id' => ['required', 'exists:users,id'],
             'project_id' => ['nullable', 'exists:task_projects,id'],
             'attachment' => ['nullable', 'file', 'max:10240'],
         ]);
 
-        if ($validated['status'] === 'completed') {
+        if ($validated['status'] === WorkItemStatus::Completed->value) {
             $validated['completed_at'] = now();
         }
 
@@ -335,16 +359,19 @@ class TaskController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'priority' => ['required', 'in:low,medium,high'],
-            'status' => ['required', 'in:pending,in_progress,completed'],
+            'status' => ['required', Rule::in(WorkItemStatus::taskValues())],
             'due_date' => ['required', 'date'],
             'responsible_user_id' => ['required', 'exists:users,id'],
             'project_id' => ['nullable', 'exists:task_projects,id'],
             'attachment' => ['nullable', 'file', 'max:10240'],
         ]);
 
-        if ($validated['status'] === 'completed' && ! $task->completed_at) {
+        // Only `completed` stamps a finish. `cancelled` and `postponed` both clear
+        // it, so neither counts as completed in a report, a widget or the dashboard
+        // — a cancelled task is not finished work, it is abandoned work.
+        if ($validated['status'] === WorkItemStatus::Completed->value && ! $task->completed_at) {
             $validated['completed_at'] = now();
-        } elseif ($validated['status'] !== 'completed') {
+        } elseif ($validated['status'] !== WorkItemStatus::Completed->value) {
             $validated['completed_at'] = null;
         }
 
@@ -352,12 +379,16 @@ class TaskController extends Controller
             $validated['attachment'] = $this->storeAttachment($request);
         }
 
-        $oldStatus = $task->status;
+        // `->value` on both sides. `status` is cast to `WorkItemStatus`, so
+        // `$task->status` is an enum instance and comparing it to the string
+        // `'completed'` was always false — which meant `TaskCompleted` never fired
+        // and every edit announced itself as a reassignment or a plain update.
+        $wasCompleted = $task->status === WorkItemStatus::Completed;
         $oldResponsibleUserId = $task->responsible_user_id;
 
         $task->update($validated);
 
-        if ($oldStatus !== 'completed' && $task->status === 'completed') {
+        if (! $wasCompleted && $task->status === WorkItemStatus::Completed) {
             event(new TaskCompleted($task));
         } elseif ($oldResponsibleUserId != $task->responsible_user_id) {
             event(new TaskAssigned($task));

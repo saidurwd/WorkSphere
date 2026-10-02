@@ -74,6 +74,15 @@ class TaskDistributionWidget implements DashboardWidget
     }
 
     /**
+     * `resolve()` returns a Collection, so the registry caches it as a plain
+     * array and re-wraps it on the way out.
+     */
+    public function isListValued(): bool
+    {
+        return true;
+    }
+
+    /**
      * A Bootstrap contextual variant mapped to the CSS custom properties the
      * chart components already use, so a status keeps one colour everywhere.
      */

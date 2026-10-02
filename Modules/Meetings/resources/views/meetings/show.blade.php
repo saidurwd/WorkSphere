@@ -392,8 +392,12 @@
                                         <a href="{{ route('tasks.show', $item->task) }}" style="font-weight: 500; text-decoration: none;">
                                             {{ $item->task->task_no ?? ('Task #'.$item->task->id) }}
                                         </a>
-                                        <span class="badge {{ $item->task->status === 'completed' ? 'text-bg-success' : ($item->task->status === 'in_progress' ? 'badge-primary' : 'text-bg-secondary') }}">
-                                            {{ ucwords(str_replace('_', ' ', $item->task->status)) }}
+                                        {{-- `Task::$status` is cast to `WorkItemStatus`, so the old
+                                             `$item->task->status === 'completed'` was an enum against
+                                             a string and never true: every linked task badged grey.
+                                             `str_replace` on the enum was a hard TypeError. --}}
+                                        <span class="badge text-bg-{{ \App\Support\StatusBadge::variant($item->task->status) }}">
+                                            {{ \App\Support\StatusBadge::label($item->task->status) }}
                                         </span>
                                     </div>
                                 @else

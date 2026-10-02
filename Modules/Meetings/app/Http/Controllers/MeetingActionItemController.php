@@ -2,10 +2,12 @@
 
 namespace Modules\Meetings\Http\Controllers;
 
+use App\Enums\WorkItemStatus;
 use App\Http\Controllers\Controller;
 use App\Support\ResolvesReferenceData;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Modules\Meetings\Events\ActionItemAssigned;
 use Modules\Meetings\Events\ActionItemCompleted;
@@ -148,7 +150,11 @@ class MeetingActionItemController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'priority' => ['required', 'in:low,medium,high'],
-            'status' => ['required', 'in:pending,in_progress,completed'],
+            // The task vocabulary, from the enum. This is a TASK being created from
+            // an action item, so it takes task statuses — not the action item's own
+            // `open|in_progress|completed|cancelled`, which the rules two methods
+            // above use correctly.
+            'status' => ['required', Rule::in(WorkItemStatus::taskValues())],
             'due_date' => ['nullable', 'date'],
             'responsible_user_id' => ['nullable', 'exists:users,id'],
         ]);

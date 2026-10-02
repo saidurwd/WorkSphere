@@ -2,9 +2,9 @@
 
 namespace Modules\Tasks\Console\Commands;
 
+use Illuminate\Console\Command;
 use Modules\Tasks\Jobs\SendTaskOverdueJob;
 use Modules\Tasks\Models\Task;
-use Illuminate\Console\Command;
 
 class SendTaskOverdueCommand extends Command
 {
@@ -17,7 +17,12 @@ class SendTaskOverdueCommand extends Command
         $tasks = Task::query()
             ->whereNotNull('due_date')
             ->where('due_date', '<', now()->startOfDay())
-            ->whereIn('status', ['pending', 'in_progress'])
+            // `active()` rather than a literal `pending|in_progress`: the list was
+            // missing `on_hold`, so a task put on hold past its date was never
+            // chased, and it would have gone on missing `postponed` too. Both are
+            // open work. A task already completed or cancelled is not chased, which
+            // is what the old list got right.
+            ->active()
             ->whereNotNull('responsible_user_id')
             ->with('responsibleUser')
             ->get();

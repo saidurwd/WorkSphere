@@ -101,6 +101,15 @@ class OverdueItemsWidget implements DashboardWidget
     }
 
     /**
+     * `resolve()` returns a Collection, so the registry caches it as a plain
+     * array and re-wraps it on the way out.
+     */
+    public function isListValued(): bool
+    {
+        return true;
+    }
+
+    /**
      * @return array{source: string, title: string, due: string, overdue_days: int, url: string}
      */
     protected function present(string $source, string $title, mixed $dueDate, string $url): array

@@ -74,4 +74,13 @@ class DepartmentPerformanceWidget implements DashboardWidget
                     : (int) round(((int) $row->completed / (int) $row->total) * 100),
             ]);
     }
+
+    /**
+     * `resolve()` returns a Collection, so the registry caches it as a plain
+     * array and re-wraps it on the way out.
+     */
+    public function isListValued(): bool
+    {
+        return true;
+    }
 }

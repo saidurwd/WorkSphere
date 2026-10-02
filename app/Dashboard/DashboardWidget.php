@@ -48,6 +48,23 @@ interface DashboardWidget
     public function resolve(User $user): mixed;
 
     /**
+     * Whether `resolve()` returns a LIST of rows rather than a keyed map.
+     *
+     * Exists because the registry cannot cache a Collection: an object in the cache
+     * comes back from the database store as `__PHP_Incomplete_Class` under the
+     * `allowed_classes => false` in `config/cache.php`, and the first method call on
+     * it throws. So a list is stored as a plain array and re-wrapped in a Collection
+     * on the way out, and a keyed map is stored and returned as an array.
+     *
+     * A DECLARED answer rather than one inferred. Inferring it from the payload
+     * cannot work — a stat map and a list of rows are both arrays, and an empty map
+     * is indistinguishable from an empty list — and inferring it from `resolve()`
+     * would mean running every widget's query a second time on every dashboard
+     * view, which is precisely the work the cache exists to avoid.
+     */
+    public function isListValued(): bool;
+
+    /**
      * The layout group this widget belongs to.
      */
     public function group(): string;

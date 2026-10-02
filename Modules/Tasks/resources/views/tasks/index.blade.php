@@ -26,9 +26,9 @@
                         <label for="filter-status" class="form-label">Status</label>
                         <select id="filter-status" name="status" class="form-select">
                             <option value="">All Statuses</option>
-                            <option value="pending" @selected(($filters['status'] ?? '') === 'pending')>Pending</option>
-                            <option value="in_progress" @selected(($filters['status'] ?? '') === 'in_progress')>In Progress</option>
-                            <option value="completed" @selected(($filters['status'] ?? '') === 'completed')>Completed</option>
+                            @foreach(\App\Enums\WorkItemStatus::taskOptions() as $value => $label)
+                                <option value="{{ $value }}" @selected(($filters['status'] ?? '') === $value)>{{ $label }}</option>
+                            @endforeach
                         </select>
                     </div>
 

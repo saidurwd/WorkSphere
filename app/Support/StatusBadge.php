@@ -97,11 +97,53 @@ final class StatusBadge
     private const FALLBACK_COLOR = 'var(--bs-secondary)';
 
     /**
+     * Status → a CSS colour, for charts that paint slices rather than badges.
+     *
+     * The sibling of {@see PRIORITY_COLORS} and for the same reason: the badge
+     * variant and the chart colour describe the same status, and building one from
+     * the other produced a `match` with no `default` arm that threw
+     * `UnhandledMatchError` the first time a status was added. An explicit map with
+     * a fallback cannot.
+     *
+     * `pending` and `in_progress` deliberately differ from the naive
+     * `var(--bs-<variant>)` derivation: the dashboard has always drawn pending as
+     * amber and in-progress as blue, and changing the colours of an existing chart
+     * is not part of adding a status.
+     *
+     * @var array<string, string>
+     */
+    private const STATUS_COLORS = [
+        'inbox' => 'var(--bs-secondary)',
+        'planned' => 'var(--bs-info)',
+        'pending' => 'var(--bs-warning)',
+        'scheduled' => 'var(--bs-info)',
+        'open' => 'var(--bs-info)',
+        'in_progress' => 'var(--bs-info)',
+        'on_hold' => 'var(--bs-warning)',
+        'waiting' => 'var(--bs-warning)',
+        'postponed' => 'var(--bs-secondary)',
+        'skipped' => 'var(--bs-secondary)',
+        'completed' => 'var(--bs-success)',
+        'cancelled' => 'var(--bs-danger)',
+        'archived' => 'var(--bs-dark, var(--bs-secondary))',
+    ];
+
+    /**
      * Bootstrap contextual variant for a work-item status.
      */
     public static function variant(WorkItemStatus|string|null $status): string
     {
         return self::lookup(self::STATUS_VARIANTS, self::value($status));
+    }
+
+    /**
+     * A CSS colour for a status, for anything that paints rather than badges.
+     */
+    public static function statusColor(WorkItemStatus|string|null $status): string
+    {
+        $value = self::value($status);
+
+        return $value === null ? self::FALLBACK_COLOR : (self::STATUS_COLORS[$value] ?? self::FALLBACK_COLOR);
     }
 
     public static function priorityVariant(Priority|string|null $priority): string

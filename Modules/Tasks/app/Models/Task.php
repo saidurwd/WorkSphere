@@ -190,6 +190,13 @@ class Task extends Model
     /**
      * Everything still open. `completed` and `cancelled` are terminal.
      *
+     * `postponed` IS open and is included: the work was deferred, not abandoned,
+     * so it still belongs in workload, in the active list and in "overdue" — a
+     * postponed task that is now past its date is still not done, and hiding it
+     * would be the opposite of what postponement means. The enum already classified
+     * it as open; this scope disagreed, and the disagreement was invisible because
+     * no task could actually reach the status.
+     *
      * @param  Builder<self>  $query
      */
     public function scopeActive(Builder $query): void
@@ -198,6 +205,7 @@ class Task extends Model
             WorkItemStatus::Pending->value,
             WorkItemStatus::InProgress->value,
             WorkItemStatus::OnHold->value,
+            WorkItemStatus::Postponed->value,
         ]);
     }
 

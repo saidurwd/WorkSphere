@@ -21,9 +21,10 @@
                     <label class="form-label">Status:</label>
                     <select name="status" class="form-select" style="min-width: 150px;" onchange="document.getElementById('filter-form').submit()">
                         <option value="">All Statuses</option>
-                        <option value="pending" {{ ($filters['status'] ?? '') === 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="in_progress" {{ ($filters['status'] ?? '') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                        <option value="completed" {{ ($filters['status'] ?? '') === 'completed' ? 'selected' : '' }}>Completed</option>
+                        {{-- These are TASK rows, so the task vocabulary. --}}
+                        @foreach(\App\Enums\WorkItemStatus::taskOptions() as $value => $label)
+                            <option value="{{ $value }}" {{ ($filters['status'] ?? '') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -92,8 +93,8 @@
                             </span>
                         </td>
                         <td>
-                            <span class="badge {{ $task->status === 'completed' ? 'text-bg-success' : ($task->status === 'in_progress' ? 'badge-primary' : 'text-bg-secondary') }}">
-                                {{ ucwords(str_replace('_', ' ', $task->status)) }}
+                            <span class="badge text-bg-{{ \App\Support\StatusBadge::variant($task->status) }}">
+                                {{ \App\Support\StatusBadge::label($task->status) }}
                             </span>
                         </td>
                         <td>{{ $task->due_date->format('M d, Y') }}</td>

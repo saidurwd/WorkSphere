@@ -271,4 +271,9 @@ final class SpyWidget implements DashboardWidget
 
         return [];
     }
+
+    public function isListValued(): bool
+    {
+        return false;
+    }
 }

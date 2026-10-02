@@ -85,6 +85,16 @@ class ObligationExpiryWidget implements DashboardWidget
     }
 
     /**
+     * `resolve()` returns a keyed stat map, so the registry caches it as a
+     * plain array and returns it as one — re-wrapping it would turn the map
+     * into a list and break the `[$key]` lookups in the partial.
+     */
+    public function isListValued(): bool
+    {
+        return false;
+    }
+
+    /**
      * Active obligations per type, capped, scaled to the largest.
      *
      * @return Collection<int, array{label: string, value: int, pct: int, color: string}>

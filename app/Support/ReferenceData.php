@@ -39,6 +39,11 @@ use Modules\Obligations\Models\Vendor;
  * scope, which becomes part of the key: a filtered variant and the full list can
  * never collide, so a future filtered caller cannot accidentally read the
  * unfiltered cached value.
+ *
+ * WHAT IS STORED: an array of attribute arrays, never models. The database store
+ * unserializes with `allowed_classes => false` (see `config/cache.php`), so a
+ * cached model comes back as `__PHP_Incomplete_Class` and the first property read
+ * on it throws. See {@see remember()} for the full account.
  */
 class ReferenceData
 {
@@ -64,7 +69,12 @@ class ReferenceData
      */
     public function users(string $scope = 'all'): Collection
     {
-        return $this->remember('users', $scope, fn (): Collection => $this->query(User::query(), 'name', $scope, ['id', 'name']));
+        return $this->remember(
+            'users',
+            $scope,
+            fn (): Collection => $this->query(User::query(), 'name', $scope, ['id', 'name']),
+            User::class,
+        );
     }
 
     /**
@@ -72,7 +82,12 @@ class ReferenceData
      */
     public function departments(string $scope = 'all'): Collection
     {
-        return $this->remember('departments', $scope, fn (): Collection => $this->query(Department::query(), 'department_name', $scope));
+        return $this->remember(
+            'departments',
+            $scope,
+            fn (): Collection => $this->query(Department::query(), 'department_name', $scope),
+            Department::class,
+        );
     }
 
     /**
@@ -80,7 +95,12 @@ class ReferenceData
      */
     public function locations(string $scope = 'all'): Collection
     {
-        return $this->remember('locations', $scope, fn (): Collection => $this->query(Location::query(), 'location_name', $scope));
+        return $this->remember(
+            'locations',
+            $scope,
+            fn (): Collection => $this->query(Location::query(), 'location_name', $scope),
+            Location::class,
+        );
     }
 
     /**
@@ -88,7 +108,12 @@ class ReferenceData
      */
     public function vendors(string $scope = 'all'): Collection
     {
-        return $this->remember('vendors', $scope, fn (): Collection => $this->query(Vendor::query(), 'vendor_name', $scope));
+        return $this->remember(
+            'vendors',
+            $scope,
+            fn (): Collection => $this->query(Vendor::query(), 'vendor_name', $scope),
+            Vendor::class,
+        );
     }
 
     /**
@@ -96,7 +121,12 @@ class ReferenceData
      */
     public function companies(string $scope = 'all'): Collection
     {
-        return $this->remember('companies', $scope, fn (): Collection => $this->query(Company::query(), 'company_name', $scope));
+        return $this->remember(
+            'companies',
+            $scope,
+            fn (): Collection => $this->query(Company::query(), 'company_name', $scope),
+            Company::class,
+        );
     }
 
     /**
@@ -131,9 +161,10 @@ class ReferenceData
 
     /**
      * @param  callable(): Collection<int, Model>  $query
+     * @param  class-string<Model>  $model
      * @return Collection<int, Model>
      */
-    private function remember(string $resource, string $scope, callable $query): Collection
+    private function remember(string $resource, string $scope, callable $query, string $model): Collection
     {
         // An unknown scope is a programming error, not a cache detail. Left
         // unchallenged it would store the UNFILTERED list under a key that reads as
@@ -147,16 +178,73 @@ class ReferenceData
             );
         }
 
-        // `all()` rather than the raw cache value: an unserialised Eloquent
-        // Collection comes back from some stores as a plain array, and a view
-        // calling `->first()` on it would then fail at render time.
         $cached = $this->store()->remember(
             $this->keyFor($resource, $scope),
             self::TTL_SECONDS,
-            $query,
+            // A list of ARRAYS, never a Collection of models.
+            //
+            // `config('cache.serializable_classes')` is `false`, so the database
+            // store calls `unserialize($value, ['allowed_classes' => false])`, and
+            // PHP answers that with a `__PHP_Incomplete_Class` for every object it
+            // finds. Caching the models therefore produced a cache that was
+            // permanently poisoned: every subsequent read returned seven
+            // `__PHP_Incomplete_Class` objects instead of seven users, and the
+            // first view to read `$user->id` threw
+            // "Attempt to read property id on __PHP_Incomplete_Class" — on
+            // `/tasks/create`, `/meetings/create`, every dropdown.
+            //
+            // It was invisible to the suite because `phpunit.xml` sets
+            // `CACHE_STORE=array`, and the array store never unserializes: it
+            // hands back the very object that was put in. The bug needed a
+            // persistent, serializing store to exist at all, and MySQL is what
+            // production runs.
+            //
+            // Storing scalars is also the right shape independent of the policy.
+            // These are `id`/`name` pairs used to render an `<option>`; a cache
+            // entry that has to reconstruct a hydrated model to yield two strings
+            // is carrying a live object graph — and a stale one, since a cached
+            // model keeps attributes the database has since changed. Arrays cannot
+            // drift, and rehydration below rebuilds the models fresh every read.
+            fn (): array => $query()->map(fn (Model $row): array => $row->attributesToArray())->all(),
         );
 
-        return $cached instanceof Collection ? $cached : new Collection($cached);
+        return $this->hydrate($cached, $model);
+    }
+
+    /**
+     * Rebuild the models a cached array of attributes describes.
+     *
+     * `newFromBuilder()` rather than `newInstance()`: the rows came from a query,
+     * so they exist and are hydrated. Setting the connection and table explicitly
+     * is what makes the models behave like the ones they replaced — `newFromBuilder`
+     * leaves a fresh model without them.
+     *
+     * @param  iterable<int, array<string, mixed>>|mixed  $cached
+     * @param  class-string<Model>  $model
+     * @return Collection<int, Model>
+     */
+    private function hydrate(mixed $cached, string $model): Collection
+    {
+        // Defensive: a cache written by an older build, or by a store that hands
+        // back whatever was put in, may not be the array shape this expects. Treat
+        // anything else as a miss and rebuild rather than failing the render.
+        if (! is_iterable($cached)) {
+            $cached = $this->query(new $model, 'id', self::SCOPE_ALL)->all();
+        }
+
+        $connection = (new $model)->getConnection();
+        $table = (new $model)->getTable();
+
+        $rows = [];
+
+        foreach ($cached as $attributes) {
+            $instance = (new $model)->newFromBuilder((array) $attributes);
+            $instance->setConnection($connection->getName());
+            $instance->setTable($table);
+            $rows[] = $instance;
+        }
+
+        return new Collection($rows);
     }
 
     /**

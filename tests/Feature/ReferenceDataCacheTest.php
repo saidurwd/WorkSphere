@@ -6,7 +6,9 @@ use App\Models\Department;
 use App\Models\Location;
 use App\Models\User;
 use App\Support\ReferenceData;
+use Illuminate\Cache\Repository as IlluminateCacheRepository;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -181,16 +183,136 @@ class ReferenceDataCacheTest extends TestCase
         $this->assertNotSame($before, $this->referenceData->keyFor('users'));
     }
 
-    public function test_a_cached_list_is_returned_as_a_collection(): void
+    public function test_a_cached_list_is_returned_as_a_collection_of_models(): void
     {
         User::factory()->count(2)->create();
 
-        // Some stores hand back an unserialised plain array; a view calling
-        // `->first()` on that would fail at render time rather than at read time.
-        $this->assertInstanceOf(
-            Collection::class,
-            $this->referenceData->users(),
+        $users = $this->referenceData->users();
+
+        $this->assertInstanceOf(Collection::class, $users);
+
+        // Models, not arrays and not `__PHP_Incomplete_Class`. A view reads
+        // `$user->id` and `$user->name`, so anything else throws at render time
+        // rather than at read time.
+        foreach ($users as $user) {
+            $this->assertInstanceOf(User::class, $user);
+            $this->assertIsInt($user->id);
+            $this->assertIsString($user->name);
+        }
+    }
+
+    /**
+     * The list survives a store that actually serializes.
+     *
+     * Every other test in this file runs on the `array` driver, which hands back
+     * the very object that was put in and therefore cannot surface a bad payload
+     * shape. Production runs `database`, which unserializes — and
+     * `config('cache.serializable_classes')` is `false`, so it unserializes with
+     * `allowed_classes => false` and turns every cached object into
+     * `__PHP_Incomplete_Class`.
+     *
+     * That is precisely how `/tasks/create` came to throw "Attempt to read property
+     * id on __PHP_Incomplete_Class" while the whole suite passed. This test pins
+     * the round trip through a real serializer, so the guarantee is asserted
+     * against the code path production uses rather than a stand-in for it.
+     */
+    public function test_a_cached_list_survives_a_round_trip_through_a_real_serializer(): void
+    {
+        User::factory()->count(3)->create();
+
+        $expected = $this->referenceData->users()
+            ->map(fn (User $user): array => [$user->id, $user->name])
+            ->all();
+
+        // What the `allowed_classes => false` the database store is configured
+        // with does to the payload.
+        $roundTripped = unserialize(
+            serialize($this->cachedPayload('users')),
+            ['allowed_classes' => false],
         );
+
+        $users = $this->hydrateThrough($roundTripped, User::class);
+
+        $this->assertSame(
+            $expected,
+            $users->map(fn (User $user): array => [$user->id, $user->name])->all(),
+            'A list read back through the production serializer does not match the one stored.',
+        );
+
+        foreach ($users as $user) {
+            $this->assertInstanceOf(User::class, $user);
+        }
+    }
+
+    /**
+     * Nothing object-shaped is written to the cache in the first place.
+     *
+     * Stronger than the round trip above, and the property actually being relied
+     * on: the payload is scalars only, so the unserialize policy cannot affect it
+     * at all. A stored model is a latent failure for any store with a restricted
+     * allow-list, whatever that list happens to be today.
+     */
+    public function test_the_cached_payload_contains_no_objects(): void
+    {
+        User::factory()->count(2)->create();
+        Department::factory()->count(2)->create();
+
+        $this->referenceData->users();
+        $this->referenceData->departments();
+
+        foreach (['users', 'departments'] as $resource) {
+            $payload = $this->cachedPayload($resource);
+
+            $this->assertIsArray($payload, "The [{$resource}] payload is not an array.");
+            $this->assertNotEmpty($payload);
+
+            foreach ($payload as $row) {
+                $this->assertIsArray($row, "The [{$resource}] payload holds a non-array row.");
+                $this->assertNotEmpty($row);
+
+                foreach ($row as $value) {
+                    $this->assertIsNotObject(
+                        $value,
+                        "The [{$resource}] payload holds a model, which unserializes to __PHP_Incomplete_Class.",
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * The cached value for a resource, read the way the store reads it.
+     */
+    private function cachedPayload(string $resource): mixed
+    {
+        $this->referenceData->users();
+        $this->referenceData->departments();
+
+        $key = $this->referenceData->keyFor($resource);
+
+        $reflection = new \ReflectionProperty(IlluminateCacheRepository::class, 'store');
+        $reflection->setAccessible(true);
+        $store = $reflection->getValue(Cache::store());
+
+        $method = new \ReflectionMethod($store, 'get');
+        $method->setAccessible(true);
+
+        return $method->invoke($store, $key);
+    }
+
+    /**
+     * Run a payload back through the service's own rehydration, which is the code
+     * a real read executes.
+     *
+     * @param  class-string<Model>  $model
+     * @return Collection<int, Model>
+     */
+    private function hydrateThrough(mixed $payload, string $model): Collection
+    {
+        $method = new \ReflectionMethod(ReferenceData::class, 'hydrate');
+        $method->setAccessible(true);
+
+        return $method->invoke(app(ReferenceData::class), $payload, $model);
     }
 
     public function test_a_page_with_several_reference_lists_queries_each_once(): void

@@ -59,7 +59,7 @@
     <div class="card-body">
         @if($actionItem->task)
             <a href="{{ route('tasks.show', $actionItem->task) }}" style="font-weight: 600;">{{ $actionItem->task->task_no ?? 'Task #'.$actionItem->task->id }} - {{ $actionItem->task->title }}</a>
-            <div style="color: var(--muted-foreground); margin-top: 0.25rem; font-size: 0.9rem;">Status: {{ ucwords(str_replace('_', ' ', $actionItem->task->status)) }}</div>
+            <div style="color: var(--muted-foreground); margin-top: 0.25rem; font-size: 0.9rem;">Status: {{ \App\Support\StatusBadge::label($actionItem->task->status) }}</div>
         @else
             <p style="color: var(--muted-foreground);">No task linked to this action item.</p>
         @endif

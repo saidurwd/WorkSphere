@@ -67,4 +67,13 @@ class TodaysActivityWidget implements DashboardWidget
                 'when' => $entry->created_at?->diffForHumans(),
             ]);
     }
+
+    /**
+     * `resolve()` returns a Collection, so the registry caches it as a plain
+     * array and re-wraps it on the way out.
+     */
+    public function isListValued(): bool
+    {
+        return true;
+    }
 }

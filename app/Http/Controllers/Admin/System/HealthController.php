@@ -126,6 +126,9 @@ class HealthController extends Controller
             'extensions' => 'Missing: '.implode(', ', (array) ($check['missing'] ?? [])),
             'configuration' => implode(' ', (array) ($check['problems'] ?? ['No problems detected.'])),
             'database' => (string) ($check['message'] ?? 'Reachable in '.($check['latency_ms'] ?? '?').' ms.'),
+            'schema' => ((int) ($check['mismatches'] ?? 0)) > 0
+                ? ((int) $check['mismatches']).' model(s) declare a column this database does not have. Run `php artisan doctor:schema`.'
+                : 'Every column the models declare exists in this database.',
             'migrations' => ($check['pending_count'] ?? 0) > 0
                 ? ($check['pending_count']).' migration(s) not applied: '.implode(', ', array_slice((array) ($check['pending'] ?? []), 0, 3))
                 : 'Schema matches the codebase.',

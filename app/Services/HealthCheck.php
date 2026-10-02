@@ -82,6 +82,7 @@ class HealthCheck
     public function __construct(
         private readonly Application $app,
         private readonly Filesystem $files,
+        private readonly SchemaInspector $inspector,
     ) {}
 
     // ---- Documents ----------------------------------------------------------
@@ -95,7 +96,11 @@ class HealthCheck
     {
         return $this->document([
             'database' => $this->database(),
+            // Schema sits next to migrations: both answer "does the database match
+            // what the code expects?", and an operator reading the two together is
+            // far better served than hunting for one in the middle of a list.
             'migrations' => $this->migrations(),
+            'schema' => $this->schema(),
             'cache' => $this->cache(),
             'queue' => $this->queue(),
             'storage' => $this->storage(),
@@ -132,6 +137,7 @@ class HealthCheck
             'configuration' => $this->configuration(),
             'database' => $this->database(),
             'migrations' => $this->migrations(),
+            'schema' => $this->schema(),
             'cache' => $this->cache(),
             'storage' => $this->storage(),
             'queue' => $this->queue(),
@@ -279,6 +285,42 @@ class HealthCheck
                 'database' => (string) config('database.default'),
             ],
             'problems' => $problems,
+        ];
+    }
+
+    /**
+     * Do the models and THIS database agree?
+     *
+     * The one check the test suite cannot do. It migrates a fresh database from the
+     * same files the application ships, so a column added by editing a migration
+     * that had already run is present in every test and absent everywhere else.
+     *
+     * @return array<string, mixed>
+     */
+    protected function schema(): array
+    {
+        try {
+            $report = $this->inspector->report();
+        } catch (Throwable) {
+            return $this->record(false, ['mismatches' => null]);
+        }
+
+        $mismatches = $report['mismatches'];
+
+        return [
+            'status' => $mismatches === [] ? 'pass' : 'fail',
+            'models_checked' => $report['models'],
+            'mismatches' => count($mismatches),
+            // Named, capped: an operator needs to know WHICH, and the first few are
+            // usually the whole story.
+            'detail' => array_slice(
+                array_map(
+                    fn (array $m): string => $m['model'].' expects '.$m['table'].'.'.$m['attribute'],
+                    $mismatches,
+                ),
+                0,
+                5,
+            ),
         ];
     }
 

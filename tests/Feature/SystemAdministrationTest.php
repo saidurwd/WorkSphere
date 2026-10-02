@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\FeatureFlags;
 use App\Services\HealthCheck;
 use App\Services\Settings;
+use Illuminate\Cache\DatabaseStore as DatabaseCacheStore;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -232,6 +233,66 @@ class SystemAdministrationTest extends TestCase
         $flags->put(['key' => 'new-thing', 'name' => 'New thing', 'type' => 'boolean', 'value' => true, 'is_enabled' => true]);
 
         $this->assertTrue($flags->enabled('new-thing'));
+    }
+
+    /**
+     * A flag read back from the cache is still a flag.
+     *
+     * `config('cache.serializable_classes')` is `false`, so the database store
+     * unserializes with `allowed_classes => false` and a cached model arrives as
+     * `__PHP_Incomplete_Class`. For a feature flag that failure is silent rather
+     * than loud: `value()` reads `$flag->is_enabled` and `$flag->type`, both null on
+     * an incomplete class, so every cached flag evaluated to the caller's DEFAULT —
+     * an enabled flag reported as off, with nothing thrown and nothing logged.
+     *
+     * Nothing in this file could see it, because `phpunit.xml` sets
+     * `CACHE_STORE=array` and the array store returns the same object it was given.
+     * The round trip below is serialized and unserialized explicitly, which is the
+     * only way to exercise the path production actually takes.
+     */
+    public function test_a_flag_survives_the_round_trip_through_a_real_serializer(): void
+    {
+        $flags = app(FeatureFlags::class);
+
+        $flags->put(['key' => 'round-trip', 'name' => 'Round trip', 'type' => 'boolean', 'value' => true, 'is_enabled' => true]);
+
+        $this->assertTrue($flags->enabled('round-trip'), 'The flag is not on even before caching.');
+
+        // The cached entry must be plain scalars. A model here unserializes to
+        // `__PHP_Incomplete_Class` under the store's `allowed_classes => false`.
+        $payload = $flags->definitions();
+
+        $this->assertNotEmpty($payload);
+
+        foreach ($payload as $key => $flag) {
+            $this->assertInstanceOf(FeatureFlag::class, $flag, "definitions() returned a non-model for [{$key}].");
+        }
+
+        // Take the RAW cache row, put it through exactly what the database store
+        // does to it, and hand it back to the service — the same read production
+        // performs on its second and every subsequent request.
+        $store = new DatabaseCacheStore(
+            DB::connection(), 'cache', config('cache.prefix'),
+        );
+
+        $store->put('system:feature-flags:v', $flags->rawPayload(), 300);
+
+        $rehydrated = $store->get('system:feature-flags:v');
+
+        $this->assertIsArray($rehydrated, 'The store did not return the cached array.');
+
+        // Nothing object-shaped survived: this is the property that makes the
+        // unserialize policy irrelevant rather than merely satisfied today.
+        foreach ($rehydrated as $row) {
+            $this->assertIsArray($row, 'A cached row is an object, not an array of attributes.');
+        }
+
+        $fromCache = $flags->definitions();
+        $this->assertContainsOnlyInstancesOf(FeatureFlag::class, $fromCache);
+        $this->assertTrue(
+            $fromCache['round-trip']->is_enabled,
+            'A flag cached and read back is no longer enabled — it came back as an incomplete class.',
+        );
     }
 
     public function test_the_bucket_is_stable_for_a_user(): void
@@ -505,7 +566,7 @@ class SystemAdministrationTest extends TestCase
         // exact list so REMOVING a check is a test failure — a health screen that
         // quietly stops reporting the database is worse than one that never had it.
         $this->assertSame([
-            'database', 'migrations', 'cache', 'queue', 'storage', 'scheduler', 'configuration',
+            'database', 'migrations', 'schema', 'cache', 'queue', 'storage', 'scheduler', 'configuration',
         ], $checks);
 
         $live = array_keys($this->getJson('/livez')->assertOk()->json('checks'));
@@ -513,7 +574,7 @@ class SystemAdministrationTest extends TestCase
         $this->assertSame(['php', 'extensions', 'storage'], $live);
     }
 
-    public function test_the_screen_shows_all_nine_checks(): void
+    public function test_the_screen_shows_every_check(): void
     {
         // One request: `adminWith()` creates a role with a unique slug, so calling
         // it twice collides on the index.
@@ -524,9 +585,20 @@ class SystemAdministrationTest extends TestCase
 
         // Human labels, not the raw keys. The screen is read by a person, and
         // `php` / `cache` / `queue` are what the JSON calls them.
-        foreach (['PHP', 'Extensions', 'Configuration', 'Database', 'Migrations', 'Cache', 'Storage', 'Queue', 'Scheduler'] as $label) {
+        foreach (['PHP', 'Extensions', 'Configuration', 'Database', 'Migrations', 'Schema', 'Cache', 'Storage', 'Queue', 'Scheduler'] as $label) {
             $this->assertStringContainsString($label, $html, "The health screen does not show [{$label}].");
         }
+    }
+
+    public function test_the_schema_check_compares_models_with_this_database(): void
+    {
+        $check = app(HealthCheck::class)->full()['checks']['schema'];
+
+        // The one thing the test suite cannot do for itself: compare the models
+        // against a database that was NOT migrated by these tests.
+        $this->assertGreaterThan(0, $check['models_checked']);
+        $this->assertSame(0, $check['mismatches'], 'The models and the test schema disagree.');
+        $this->assertSame([], $check['detail']);
     }
 
     public function test_migrations_are_reported_by_name_when_pending(): void

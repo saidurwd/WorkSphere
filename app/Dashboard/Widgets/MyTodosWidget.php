@@ -71,4 +71,13 @@ class MyTodosWidget implements DashboardWidget
             'url' => route('todos.show', $todo->id),
         ]);
     }
+
+    /**
+     * `resolve()` returns a Collection, so the registry caches it as a plain
+     * array and re-wraps it on the way out.
+     */
+    public function isListValued(): bool
+    {
+        return true;
+    }
 }

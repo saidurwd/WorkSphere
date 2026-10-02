@@ -2,8 +2,14 @@
 
 @php
 $priorityClass = $task->priority === 'high' ? 'text-bg-danger' : ($task->priority === 'medium' ? 'badge-primary' : 'text-bg-secondary');
-$statusClass = $task->status === 'completed' ? 'text-bg-success' : ($task->status === 'in_progress' ? 'badge-primary' : 'text-bg-secondary');
-$statusAccent = $task->status === 'completed' ? 'var(--success)' : ($task->status === 'in_progress' ? 'var(--info)' : ($task->status === 'pending' ? 'var(--warning)' : 'var(--primary)'));
+
+// `StatusBadge` rather than a hand-rolled ternary. `$task->status` is cast to
+// `WorkItemStatus`, so the old `$task->status === 'completed'` compared an enum
+// instance to a string and was ALWAYS false: every task rendered with the
+// fallback grey badge and the default accent, whatever its status. Two more
+// statuses to render would have stayed just as invisible.
+$statusClass = 'text-bg-'.\App\Support\StatusBadge::variant($task->status);
+$statusAccent = \App\Support\StatusBadge::statusColor($task->status);
 @endphp
 
 @section('title', 'Task Details')
