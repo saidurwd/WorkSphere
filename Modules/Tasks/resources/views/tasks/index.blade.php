@@ -2,12 +2,10 @@
 
 @section('title', 'Tasks')
 
-@section('header-actions')
-    <x-btn :href="route('tasks.create')" icon="plus-lg">New Task</x-btn>
-@endsection
-
 @section('content')
-    <x-page-header title="Tasks" subtitle="Manage your tasks and track progress." icon="check2-square" />
+    <x-page-header title="Tasks" subtitle="Manage your tasks and track progress." icon="check2-square">
+        <x-btn :href="route('tasks.create')" icon="plus-lg">New Task</x-btn>
+    </x-page-header>
 
     <div class="card mb-4">
         <div class="card-body">

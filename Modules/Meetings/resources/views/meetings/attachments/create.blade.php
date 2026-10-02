@@ -21,15 +21,15 @@
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
                 <div>
-                    <label class="form-label">File <span style="color: var(--danger);">*</span></label>
-                    <input type="file" name="file" class="form-control @error('file') is-invalid @enderror" required>
+                    <label class="form-label" for="file">File <span style="color: var(--danger);">*</span></label>
+                    <input type="file" name="file" class="form-control @error('file') is-invalid @enderror" required id="file">
                     @error('file')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     <div style="font-size: 0.85rem; color: var(--muted-foreground); margin-top: 0.5rem;">Maximum file size: 10MB</div>
                 </div>
 
                 <div>
-                    <label class="form-label">Description</label>
-                    <input type="text" name="description" class="form-control @error('description') is-invalid @enderror" value="{{ old('description') }}">
+                    <label class="form-label" for="description">Description</label>
+                    <input type="text" name="description" class="form-control @error('description') is-invalid @enderror" value="{{ old('description') }}" id="description">
                     @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
             </div>

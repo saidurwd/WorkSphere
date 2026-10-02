@@ -22,29 +22,29 @@
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
                 <div>
-                    <label class="form-label">Name <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $meetingType->name) }}" required>
+                    <label class="form-label" for="name">Name <span style="color: var(--danger);">*</span></label>
+                    <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $meetingType->name) }}" required id="name">
                     @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div>
-                    <label class="form-label">Code <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="code" class="form-control @error('code') is-invalid @enderror" value="{{ old('code', $meetingType->code) }}" required>
+                    <label class="form-label" for="code">Code <span style="color: var(--danger);">*</span></label>
+                    <input type="text" name="code" class="form-control @error('code') is-invalid @enderror" value="{{ old('code', $meetingType->code) }}" required id="code">
                     @error('code')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div>
-                    <label class="form-label">Color</label>
+                    <label class="form-label" for="color">Color</label>
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <input type="color" name="color" class="form-control form-control-color @error('color') is-invalid @enderror" value="{{ old('color', $meetingType->color ?? '#3b82f6') }}" style="width: 48px; height: 48px; padding: 0; border: 1px solid var(--border); border-radius: var(--radius, 0.5rem); cursor: pointer; background: none;">
+                        <input type="color" name="color" class="form-control form-control-color @error('color') is-invalid @enderror" value="{{ old('color', $meetingType->color ?? '#3b82f6') }}" style="width: 48px; height: 48px; padding: 0; border: 1px solid var(--border); border-radius: var(--radius, 0.5rem); cursor: pointer; background: none;" id="color">
                         <input type="text" name="color_text" class="form-control @error('color') is-invalid @enderror" value="{{ old('color', $meetingType->color ?? '#3b82f6') }}" placeholder="#3b82f6" style="width: 140px; font-family: monospace;">
                     </div>
                     @error('color')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div>
-                    <label class="form-label">Sort Order</label>
-                    <input type="number" name="sort_order" class="form-control @error('sort_order') is-invalid @enderror" value="{{ old('sort_order', $meetingType->sort_order) }}" min="0">
+                    <label class="form-label" for="sort-order">Sort Order</label>
+                    <input type="number" name="sort_order" class="form-control @error('sort_order') is-invalid @enderror" value="{{ old('sort_order', $meetingType->sort_order) }}" min="0" id="sort-order">
                     @error('sort_order')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
@@ -55,8 +55,8 @@
             </div>
 
             <div style="margin-top: 1.5rem;">
-                <label class="form-label">Description</label>
-                <textarea name="description" class="form-control" rows="3">{{ old('description', $meetingType->description) }}</textarea>
+                <label class="form-label" for="description">Description</label>
+                <textarea name="description" class="form-control" rows="3" id="description">{{ old('description', $meetingType->description) }}</textarea>
             </div>
 
             <div style="display: flex; gap: 0.75rem; margin-top: 2rem;">

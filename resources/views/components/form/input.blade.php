@@ -11,11 +11,33 @@
     @endif
 
     @php
+        /*
+         * `is-invalid` draws a red border and an icon and announces nothing, so
+         * without these attributes a screen-reader user submits a twenty-field
+         * form, hears no error, and cannot tell which field was rejected.
+         *
+         * Both ids are derived from the field name rather than hand-written, so
+         * the label, the field and the message cannot drift apart, and neither
+         * can collide with the label's own `for` target.
+         */
+        $hasError = $errors->has($name);
+        $errorId = $name.'-error';
+        $helpId = $name.'-help';
+
+        $describedBy = collect([$help ? $helpId : null, $hasError ? $errorId : null])
+            ->filter()
+            ->implode(' ');
+
         $shared = [
             'name' => $name,
             'id' => $name,
-            'class' => 'form-control'.($errors->has($name) ? ' is-invalid' : ''),
+            'class' => 'form-control'.($hasError ? ' is-invalid' : ''),
+            'aria-invalid' => $hasError ? 'true' : 'false',
         ];
+
+        if ($describedBy !== '') {
+            $shared['aria-describedby'] = $describedBy;
+        }
     @endphp
 
     @if ($type === 'textarea')
@@ -29,7 +51,8 @@
         </select>
     @elseif ($type === 'checkbox')
         <div class="form-check">
-            <input type="checkbox" value="1" {{ old($name, $value) ? 'checked' : '' }} {{ $attributes->only(['disabled'])->merge(['class' => 'form-check-input']) }}>
+            {{-- The label above carries `for="{{ $name }}"`, so the input needs that id to be associated with it at all. --}}
+            <input type="checkbox" id="{{ $name }}" value="1" {{ old($name, $value) ? 'checked' : '' }} {{ $attributes->only(['disabled'])->merge(['class' => 'form-check-input'.($hasError ? ' is-invalid' : ''), 'aria-invalid' => $hasError ? 'true' : 'false']) }}>
             @if ($label)
                 <label class="form-check-label" for="{{ $name }}">{{ $label }}</label>
             @endif
@@ -39,10 +62,10 @@
     @endif
 
     @if ($help)
-        <div class="form-text">{{ $help }}</div>
+        <div id="{{ $helpId }}" class="form-text">{{ $help }}</div>
     @endif
 
     @error($name)
-        <div class="invalid-feedback d-block">{{ $message }}</div>
+        <div id="{{ $errorId }}" class="invalid-feedback d-block">{{ $message }}</div>
     @enderror
 </div>

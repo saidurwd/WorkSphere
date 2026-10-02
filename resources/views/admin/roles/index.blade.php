@@ -2,12 +2,10 @@
 
 @section('title', 'Roles')
 
-@section('header-actions')
-    <x-btn :href="route('admin.roles.create')" icon="plus-lg">New Role</x-btn>
-@endsection
-
 @section('content')
-    <x-page-header title="Roles" subtitle="Manage user roles and their permissions." icon="person-badge" />
+    <x-page-header title="Roles" subtitle="Manage user roles and their permissions." icon="person-badge">
+        <x-btn :href="route('admin.roles.create')" icon="plus-lg">New Role</x-btn>
+    </x-page-header>
 
     <div class="card">
         <div class="card-header">

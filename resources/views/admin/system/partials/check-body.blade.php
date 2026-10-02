@@ -249,7 +249,7 @@
         @endif
 
         <a href="{{ url('/artisan/doctor:schema') }}" class="btn btn-sm btn-outline-secondary mt-2"
-           onclick="return false;" title="Run: php artisan doctor:schema">
+           onclick="return false;" aria-label="Run: php artisan doctor:schema" title="Run: php artisan doctor:schema">
             Run <code>doctor:schema</code>
         </a>
         @break

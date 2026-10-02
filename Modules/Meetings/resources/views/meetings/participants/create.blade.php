@@ -21,8 +21,8 @@
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
                 <div>
-                    <label class="form-label">User <span style="color: var(--danger);">*</span></label>
-                    <select name="user_id" class="form-select @error('user_id') is-invalid @enderror" required>
+                    <label class="form-label" for="user-id">User <span style="color: var(--danger);">*</span></label>
+                    <select name="user_id" class="form-select @error('user_id') is-invalid @enderror" required id="user-id">
                         <option value="">Select User</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
@@ -32,8 +32,8 @@
                 </div>
 
                 <div>
-                    <label class="form-label">Participant Type <span style="color: var(--danger);">*</span></label>
-                    <select name="participant_type" class="form-select @error('participant_type') is-invalid @enderror">
+                    <label class="form-label" for="participant-type">Participant Type <span style="color: var(--danger);">*</span></label>
+                    <select name="participant_type" class="form-select @error('participant_type') is-invalid @enderror" id="participant-type">
                         <option value="member" {{ old('participant_type') === 'member' ? 'selected' : '' }}>Member</option>
                         <option value="organizer" {{ old('participant_type') === 'organizer' ? 'selected' : '' }}>Organizer</option>
                         <option value="chairperson" {{ old('participant_type') === 'chairperson' ? 'selected' : '' }}>Chairperson</option>
@@ -45,8 +45,8 @@
                 </div>
 
                 <div>
-                    <label class="form-label">Attendance Status <span style="color: var(--danger);">*</span></label>
-                    <select name="attendance_status" class="form-select @error('attendance_status') is-invalid @enderror">
+                    <label class="form-label" for="attendance-status">Attendance Status <span style="color: var(--danger);">*</span></label>
+                    <select name="attendance_status" class="form-select @error('attendance_status') is-invalid @enderror" id="attendance-status">
                         <option value="invited" {{ old('attendance_status') === 'invited' ? 'selected' : '' }}>Invited</option>
                         <option value="accepted" {{ old('attendance_status') === 'accepted' ? 'selected' : '' }}>Accepted</option>
                         <option value="declined" {{ old('attendance_status') === 'declined' ? 'selected' : '' }}>Declined</option>
@@ -59,8 +59,8 @@
             </div>
 
             <div style="margin-top: 1.5rem;">
-                <label class="form-label">Remarks</label>
-                <textarea name="remarks" class="form-control" rows="2">{{ old('remarks') }}</textarea>
+                <label class="form-label" for="remarks">Remarks</label>
+                <textarea name="remarks" class="form-control" rows="2" id="remarks">{{ old('remarks') }}</textarea>
             </div>
 
             <div style="display: flex; gap: 0.75rem; margin-top: 2rem;">

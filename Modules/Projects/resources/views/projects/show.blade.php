@@ -13,7 +13,7 @@
 @section('content')
 <x-page-header :title="$project->name" subtitle="Project details and associated tasks.">
     <x-btn :href="route('projects.edit', $project)" variant="secondary">Edit Project</x-btn>
-</x-page-header>
+    </x-page-header>
 
 <div class="card" style="margin-bottom: 1rem;">
     <div class="card-body">
@@ -34,12 +34,12 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>Title</th>
-                            <th>Responsible</th>
-                            <th>Priority</th>
-                            <th>Status</th>
-                            <th>Due Date</th>
-                            <th style="text-align: right;">Actions</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Responsible</th>
+                            <th scope="col">Priority</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Due Date</th>
+                            <th  scope="col"style="text-align: right;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -70,7 +70,7 @@
                             <td>{{ $task->due_date->format('M d, Y') }}</td>
                             <td>
                                 <div class="d-flex align-items-center gap-1" style="justify-content: flex-end;">
-                                    <a href="{{ route('tasks.edit', $task) }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center justify-content-center" title="Edit">
+                                    <a href="{{ route('tasks.edit', $task) }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center justify-content-center" aria-label="Edit" title="Edit">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>

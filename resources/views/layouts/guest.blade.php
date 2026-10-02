@@ -17,7 +17,9 @@
 
 <body class="bg-body-tertiary">
 
-<div class="d-flex align-items-center justify-content-center min-vh-100 py-5">
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<main id="main-content" class="d-flex align-items-center justify-content-center min-vh-100 py-5">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-12 col-sm-10 col-md-7 col-lg-5 col-xl-4">
@@ -40,7 +42,7 @@
             </div>
         </div>
     </div>
-</div>
+</main>
 
 <div class="position-fixed bottom-0 end-0 p-3">
     <x-theme-toggle class="btn btn-outline-secondary border-0 shadow-sm d-inline-flex align-items-center justify-content-center" />

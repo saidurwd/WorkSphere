@@ -2,18 +2,15 @@
 
 @section('title', $template->name)
 
-@section('header-actions')
-    @can('meeting.manage_templates')
-        <x-btn :href="route('meetings.templates.edit', $template)" variant="outline-secondary" icon="pencil">Edit</x-btn>
-    @endcan
-    <x-btn :href="route('meetings.templates.index')" variant="outline-secondary" icon="arrow-left">Back</x-btn>
-@endsection
-
 @section('content')
     <x-page-header :title="$template->name" icon="clipboard">
         <x-badge :variant="$template->is_active ? 'success' : 'secondary'">
             {{ $template->is_active ? 'Active' : 'Inactive' }}
         </x-badge>
+        @can('meeting.manage_templates')
+            <x-btn :href="route('meetings.templates.edit', $template)" variant="outline-secondary" icon="pencil">Edit</x-btn>
+        @endcan
+        <x-btn :href="route('meetings.templates.index')" variant="outline-secondary" icon="arrow-left">Back</x-btn>
     </x-page-header>
 
     <div class="row g-4">

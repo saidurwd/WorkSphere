@@ -4,19 +4,17 @@
     Role: {{ $role->name }}
 @endsection
 
-@section('header-actions')
-    <x-btn :href="route('admin.roles.edit', $role)" icon="pencil" variant="outline-secondary">Edit</x-btn>
-    @if (! in_array($role->slug, config('authorization.admin_roles', [])))
-        <form action="{{ route('admin.roles.destroy', $role) }}" method="POST" class="d-inline ms-1" onsubmit="return confirm('Delete this role? This cannot be undone.');">
-            @csrf
-            @method('DELETE')
-            <x-btn type="submit" icon="trash3" variant="outline-danger">Delete</x-btn>
-        </form>
-    @endif
-@endsection
-
 @section('content')
-    <x-page-header title="{{ $role->name }}" subtitle="{{ $role->slug }}" icon="person-badge" />
+    <x-page-header title="{{ $role->name }}" subtitle="{{ $role->slug }}" icon="person-badge">
+        <x-btn :href="route('admin.roles.edit', $role)" icon="pencil" variant="outline-secondary">Edit</x-btn>
+        @if (! in_array($role->slug, config('authorization.admin_roles', [])))
+            <form action="{{ route('admin.roles.destroy', $role) }}" method="POST" class="d-inline ms-1" data-confirm="Delete this role? This cannot be undone.">
+                @csrf
+                @method('DELETE')
+                <x-btn type="submit" icon="trash3" variant="outline-danger">Delete</x-btn>
+            </form>
+        @endif
+    </x-page-header>
 
     <div class="row g-4">
         <div class="col-lg-6">

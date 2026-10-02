@@ -12,7 +12,7 @@
 @section('content')
 <x-page-header title="Obligations Dashboard" subtitle="Overview of compliance obligations and renewals.">
     <x-btn :href="route('obligations.index')" variant="secondary">View All Obligations</x-btn>
-</x-page-header>
+    </x-page-header>
 
 <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
     <x-stat class="col" label="Active Obligations" value="{{ $active }}" variant="primary" />
@@ -30,7 +30,7 @@
     <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Obligations by Type</h3>
-            <span class="badge bg-secondary text-dark">Horizontal bars</span>
+            <x-badge variant="secondary">Horizontal bars</x-badge>
         </div>
         <div class="card-body">
             <div style="display:flex; flex-direction: column; gap: 0.875rem;">
@@ -52,7 +52,7 @@
     <div class="col card">
         <div class="card-header">
             <h3 class="card-title" style="font-size: 1.0625rem;">Priority Distribution</h3>
-            <span class="badge bg-secondary text-dark">Donut chart</span>
+            <x-badge variant="secondary">Donut chart</x-badge>
         </div>
         <div class="card-body">
             <div style="display: grid; grid-template-columns: 140px 1fr; gap: 1.25rem; align-items: center;">
@@ -104,24 +104,26 @@
         </div>
         <div class="card-body">
             @if(count($upcoming))
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Remaining</th>
-                            <th>Priority</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($upcoming as $item)
-                        <tr>
-                            <td><a href="{{ $item['url'] }}" style="text-decoration: none; color: inherit; font-weight: 500;">{{ $item['title'] }}</a></td>
-                            <td>{{ $item['subtitle'] }}</td>
-                            <td><span class="badge {{ $item['badge']['variant'] }}">{{ $item['badge']['text'] }}</span></td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Title</th>
+                                <th scope="col">Remaining</th>
+                                <th scope="col">Priority</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($upcoming as $item)
+                            <tr>
+                                <td><a href="{{ $item['url'] }}" style="text-decoration: none; color: inherit; font-weight: 500;">{{ $item['title'] }}</a></td>
+                                <td>{{ $item['subtitle'] }}</td>
+                                <td><span class="badge {{ $item['badge']['variant'] }}">{{ $item['badge']['text'] }}</span></td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             @else
                 <p style="color: var(--muted-foreground);">No upcoming obligations.</p>
             @endif
@@ -134,24 +136,26 @@
         </div>
         <div class="card-body">
             @if(count($criticalList))
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Remaining</th>
-                            <th>Priority</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($criticalList as $item)
-                        <tr>
-                            <td><a href="{{ $item['url'] }}" style="text-decoration: none; color: inherit; font-weight: 500;">{{ $item['title'] }}</a></td>
-                            <td>{{ $item['subtitle'] }}</td>
-                            <td><span class="badge {{ $item['badge']['variant'] }}">{{ $item['badge']['text'] }}</span></td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Title</th>
+                                <th scope="col">Remaining</th>
+                                <th scope="col">Priority</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($criticalList as $item)
+                            <tr>
+                                <td><a href="{{ $item['url'] }}" style="text-decoration: none; color: inherit; font-weight: 500;">{{ $item['title'] }}</a></td>
+                                <td>{{ $item['subtitle'] }}</td>
+                                <td><span class="badge {{ $item['badge']['variant'] }}">{{ $item['badge']['text'] }}</span></td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             @else
                 <p style="color: var(--muted-foreground);">No critical obligations.</p>
             @endif
@@ -165,24 +169,26 @@
     </div>
     <div class="card-body">
             @if(count($expiredList))
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Remaining</th>
-                        <th>Priority</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($expiredList as $item)
-                    <tr>
-                        <td><a href="{{ $item['url'] }}" style="text-decoration: none; color: inherit; font-weight: 500;">{{ $item['title'] }}</a></td>
-                        <td>{{ $item['subtitle'] }}</td>
-                        <td><span class="badge {{ $item['badge']['variant'] }}">{{ $item['badge']['text'] }}</span></td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Title</th>
+                            <th scope="col">Remaining</th>
+                            <th scope="col">Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($expiredList as $item)
+                        <tr>
+                            <td><a href="{{ $item['url'] }}" style="text-decoration: none; color: inherit; font-weight: 500;">{{ $item['title'] }}</a></td>
+                            <td>{{ $item['subtitle'] }}</td>
+                            <td><span class="badge {{ $item['badge']['variant'] }}">{{ $item['badge']['text'] }}</span></td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         @else
             <p style="color: var(--muted-foreground);">No expired obligations.</p>
         @endif

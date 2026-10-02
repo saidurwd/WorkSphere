@@ -38,12 +38,12 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Obligation</th>
-                        <th>Renewal Date</th>
-                        <th>Previous Expiry</th>
-                        <th>New Expiry</th>
-                        <th>Cost</th>
-                        <th>Renewed By</th>
+                        <th scope="col">Obligation</th>
+                        <th scope="col">Renewal Date</th>
+                        <th scope="col">Previous Expiry</th>
+                        <th scope="col">New Expiry</th>
+                        <th scope="col">Cost</th>
+                        <th scope="col">Renewed By</th>
                     </tr>
                 </thead>
                 <tbody>

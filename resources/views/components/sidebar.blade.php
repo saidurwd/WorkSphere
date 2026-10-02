@@ -10,7 +10,7 @@
     $section = null;
 @endphp
 
-<aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+<aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark" aria-label="Main navigation">
     <div class="sidebar-brand">
         <a href="{{ route('dashboard.index') }}" class="brand-link text-decoration-none">
             <i class="bi bi-diagram-3 brand-image opacity-75 ms-3 me-2"></i>

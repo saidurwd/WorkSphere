@@ -14,7 +14,7 @@
 <x-page-header :title="$obligation->obligation_no" :subtitle="$obligation->title">
     <x-btn :href="route('obligations.edit', $obligation)" variant="secondary" icon="pencil">Edit</x-btn>
     <x-btn :href="route('obligations.renew.create', $obligation)" icon="arrow-repeat">Renew</x-btn>
-</x-page-header>
+    </x-page-header>
 
 @php
     $remaining = now()->startOfDay()->diffInDays($obligation->expiry_date, false);
@@ -132,7 +132,7 @@
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                 <div style="display: flex; justify-content: space-between;">
                     <span style="color: var(--muted-foreground);">Status</span>
-                    <span class="badge bg-secondary text-dark">{{ ucwords(str_replace('_', ' ', $obligation->status)) }}</span>
+                    <x-badge variant="secondary">{{ ucwords(str_replace('_', ' ', $obligation->status)) }}</x-badge>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
                     <span style="color: var(--muted-foreground);">Priority</span>
@@ -197,8 +197,8 @@
             @csrf
             <div style="display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap;">
                 <div class="mb-3" style="margin-bottom: 0;">
-                    <label class="form-label">Document Type</label>
-                    <select name="document_type" class="form-select">
+                    <label class="form-label" for="document-type">Document Type</label>
+                    <select name="document_type" class="form-select" id="document-type">
                         <option value="CONTRACT">Contract</option>
                         <option value="LICENSE">License</option>
                         <option value="CERTIFICATE">Certificate</option>
@@ -212,59 +212,61 @@
                     </select>
                 </div>
                 <div class="mb-3" style="margin-bottom: 0;">
-                    <label class="form-label">File</label>
-                    <input type="file" name="file" class="form-control" required>
+                    <label class="form-label" for="file">File</label>
+                    <input type="file" name="file" class="form-control" required id="file">
                 </div>
                 <div class="mb-3" style="margin-bottom: 0;">
-                    <label class="form-label">Document Date</label>
-                    <input type="date" name="document_date" class="form-control">
+                    <label class="form-label" for="document-date">Document Date</label>
+                    <input type="date" name="document_date" class="form-control" id="document-date">
                 </div>
                 <div class="mb-3" style="margin-bottom: 0;">
-                    <label class="form-label">Expiry Date</label>
-                    <input type="date" name="expiry_date" class="form-control">
+                    <label class="form-label" for="expiry-date">Expiry Date</label>
+                    <input type="date" name="expiry_date" class="form-control" id="expiry-date">
                 </div>
                 <button type="submit" class="btn btn-primary">Upload</button>
             </div>
         </form>
 
         @if($obligation->documents->count())
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Type</th>
-                        <th>File Name</th>
-                        <th>Uploaded By</th>
-                        <th>Uploaded At</th>
-                        <th style="text-align: right;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($obligation->documents as $document)
-                    <tr>
-                        <td>{{ $document->document_type }}</td>
-                        <td>{{ $document->file_name }}</td>
-                        <td>{{ $document->uploader->name ?? 'N/A' }}</td>
-                        <td>{{ $document->created_at->format('M d, Y') }}</td>
-                        <td style="text-align: right;">
-                            <a href="{{ Storage::url($document->file_path) }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center justify-content-center" title="Download" target="_blank">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                            </a>
-                            <form action="{{ route('obligations.documents.destroy', [$obligation, $document]) }}" method="POST" style="display: inline;" id="delete-doc-{{ $document->id }}">
-                                @csrf
-                                @method('DELETE')
-                                <button type="button" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center" title="Delete" onclick="if (confirm('Delete this document?')) { document.getElementById('delete-doc-{{ $document->id }}').submit(); }">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Type</th>
+                            <th scope="col">File Name</th>
+                            <th scope="col">Uploaded By</th>
+                            <th scope="col">Uploaded At</th>
+                            <th  scope="col"style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($obligation->documents as $document)
+                        <tr>
+                            <td>{{ $document->document_type }}</td>
+                            <td>{{ $document->file_name }}</td>
+                            <td>{{ $document->uploader->name ?? 'N/A' }}</td>
+                            <td>{{ $document->created_at->format('M d, Y') }}</td>
+                            <td style="text-align: right;">
+                                <a href="{{ Storage::url($document->file_path) }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center justify-content-center" title="Download" target="_blank">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                     </svg>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                                </a>
+                                <form action="{{ route('obligations.documents.destroy', [$obligation, $document]) }}" method="POST" style="display: inline;" id="delete-doc-{{ $document->id }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="button" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center" title="Delete" aria-label="Delete document {{ $document->file_name ?? '' }}" data-confirm="Delete this document? This cannot be undone." data-confirm-button="Delete" data-confirm-submit="delete-doc-{{ $document->id }}">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         @else
             <p style="color: var(--muted-foreground);">No documents uploaded.</p>
         @endif
@@ -278,28 +280,30 @@
         </div>
         <div class="card-body">
             @if($obligation->renewals->count())
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Renewal Date</th>
-                            <th>Previous Expiry</th>
-                            <th>New Expiry</th>
-                            <th>Cost</th>
-                            <th>Renewed By</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($obligation->renewals as $renewal)
-                        <tr>
-                            <td>{{ $renewal->renewal_date->format('M d, Y') }}</td>
-                            <td>{{ $renewal->previous_expiry_date->format('M d, Y') }}</td>
-                            <td>{{ $renewal->new_expiry_date->format('M d, Y') }}</td>
-                            <td>{{ $renewal->cost ? number_format($renewal->cost, 2).' '.$renewal->currency : 'N/A' }}</td>
-                            <td>{{ $renewal->renewedBy->name ?? 'N/A' }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Renewal Date</th>
+                                <th scope="col">Previous Expiry</th>
+                                <th scope="col">New Expiry</th>
+                                <th scope="col">Cost</th>
+                                <th scope="col">Renewed By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($obligation->renewals as $renewal)
+                            <tr>
+                                <td>{{ $renewal->renewal_date->format('M d, Y') }}</td>
+                                <td>{{ $renewal->previous_expiry_date->format('M d, Y') }}</td>
+                                <td>{{ $renewal->new_expiry_date->format('M d, Y') }}</td>
+                                <td>{{ $renewal->cost ? number_format($renewal->cost, 2).' '.$renewal->currency : 'N/A' }}</td>
+                                <td>{{ $renewal->renewedBy->name ?? 'N/A' }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             @else
                 <p style="color: var(--muted-foreground);">No renewal history.</p>
             @endif
@@ -312,24 +316,26 @@
         </div>
         <div class="card-body">
             @if($obligation->responsibilities->count())
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Type</th>
-                            <th>Escalation Level</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($obligation->responsibilities as $responsibility)
-                        <tr>
-                            <td>{{ $responsibility->user->name ?? 'N/A' }}</td>
-                            <td>{{ $responsibility->responsibility_type }}</td>
-                            <td>{{ $responsibility->escalation_level ?? '-' }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">User</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Escalation Level</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($obligation->responsibilities as $responsibility)
+                            <tr>
+                                <td>{{ $responsibility->user->name ?? 'N/A' }}</td>
+                                <td>{{ $responsibility->responsibility_type }}</td>
+                                <td>{{ $responsibility->escalation_level ?? '-' }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             @else
                 <p style="color: var(--muted-foreground);">No additional responsibilities.</p>
             @endif

@@ -20,14 +20,14 @@
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
                 <div>
-                    <label class="form-label">Meeting Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="title" class="form-control @error('title') is-invalid @enderror" value="{{ old('title') }}" required>
+                    <label class="form-label" for="title">Meeting Title <span style="color: var(--danger);">*</span></label>
+                    <input type="text" name="title" class="form-control @error('title') is-invalid @enderror" value="{{ old('title') }}" required id="title">
                     @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div>
-                    <label class="form-label">Meeting Type <span style="color: var(--danger);">*</span></label>
-                    <select name="meeting_type_id" class="form-select @error('meeting_type_id') is-invalid @enderror" required>
+                    <label class="form-label" for="meeting-type-id">Meeting Type <span style="color: var(--danger);">*</span></label>
+                    <select name="meeting_type_id" class="form-select @error('meeting_type_id') is-invalid @enderror" required id="meeting-type-id">
                         <option value="">Select Type</option>
                         @foreach($types as $type)
                             <option value="{{ $type->id }}" {{ old('meeting_type_id') == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
@@ -37,8 +37,8 @@
                 </div>
 
                 <div>
-                    <label class="form-label">Organizer <span style="color: var(--danger);">*</span></label>
-                    <select name="organizer_id" class="form-select @error('organizer_id') is-invalid @enderror" required>
+                    <label class="form-label" for="organizer-id">Organizer <span style="color: var(--danger);">*</span></label>
+                    <select name="organizer_id" class="form-select @error('organizer_id') is-invalid @enderror" required id="organizer-id">
                         <option value="">Select Organizer</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}" {{ old('organizer_id') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
@@ -48,8 +48,8 @@
                 </div>
 
                 <div>
-                    <label class="form-label">Chairperson</label>
-                    <select name="chairperson_id" class="form-select @error('chairperson_id') is-invalid @enderror">
+                    <label class="form-label" for="chairperson-id">Chairperson</label>
+                    <select name="chairperson_id" class="form-select @error('chairperson_id') is-invalid @enderror" id="chairperson-id">
                         <option value="">Select Chairperson</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}" {{ old('chairperson_id') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
@@ -59,8 +59,8 @@
                 </div>
 
                 <div>
-                    <label class="form-label">Department</label>
-                    <select name="department_id" class="form-select @error('department_id') is-invalid @enderror">
+                    <label class="form-label" for="department-id">Department</label>
+                    <select name="department_id" class="form-select @error('department_id') is-invalid @enderror" id="department-id">
                         <option value="">Select Department</option>
                         @foreach($departments as $department)
                             <option value="{{ $department->id }}" {{ old('department_id') == $department->id ? 'selected' : '' }}>{{ $department->department_name }}</option>
@@ -70,32 +70,32 @@
                 </div>
 
                 <div>
-                    <label class="form-label">Location</label>
-                    <input type="text" name="location" class="form-control @error('location') is-invalid @enderror" value="{{ old('location') }}">
+                    <label class="form-label" for="location">Location</label>
+                    <input type="text" name="location" class="form-control @error('location') is-invalid @enderror" value="{{ old('location') }}" id="location">
                     @error('location')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div>
-                    <label class="form-label">Meeting Date <span style="color: var(--danger);">*</span></label>
-                    <input type="date" name="meeting_date" class="form-control @error('meeting_date') is-invalid @enderror" value="{{ old('meeting_date') }}" required>
+                    <label class="form-label" for="meeting-date">Meeting Date <span style="color: var(--danger);">*</span></label>
+                    <input type="date" name="meeting_date" class="form-control @error('meeting_date') is-invalid @enderror" value="{{ old('meeting_date') }}" required id="meeting-date">
                     @error('meeting_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div>
-                    <label class="form-label">Start Time <span style="color: var(--danger);">*</span></label>
-                    <input type="time" name="start_time" class="form-control @error('start_time') is-invalid @enderror" value="{{ old('start_time') }}" required>
+                    <label class="form-label" for="start-time">Start Time <span style="color: var(--danger);">*</span></label>
+                    <input type="time" name="start_time" class="form-control @error('start_time') is-invalid @enderror" value="{{ old('start_time') }}" required id="start-time">
                     @error('start_time')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div>
-                    <label class="form-label">End Time <span style="color: var(--danger);">*</span></label>
-                    <input type="time" name="end_time" class="form-control @error('end_time') is-invalid @enderror" value="{{ old('end_time') }}" required>
+                    <label class="form-label" for="end-time">End Time <span style="color: var(--danger);">*</span></label>
+                    <input type="time" name="end_time" class="form-control @error('end_time') is-invalid @enderror" value="{{ old('end_time') }}" required id="end-time">
                     @error('end_time')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div>
-                    <label class="form-label">Priority</label>
-                    <select name="priority" class="form-select @error('priority') is-invalid @enderror">
+                    <label class="form-label" for="priority">Priority</label>
+                    <select name="priority" class="form-select @error('priority') is-invalid @enderror" id="priority">
                         <option value="normal" {{ old('priority') === 'normal' ? 'selected' : '' }}>Normal</option>
                         <option value="important" {{ old('priority') === 'important' ? 'selected' : '' }}>Important</option>
                         <option value="urgent" {{ old('priority') === 'urgent' ? 'selected' : '' }}>Urgent</option>
@@ -105,13 +105,13 @@
             </div>
 
             <div style="margin-top: 1.5rem;">
-                <label class="form-label">Description</label>
-                <textarea name="description" class="form-control" rows="3">{{ old('description') }}</textarea>
+                <label class="form-label" for="description">Description</label>
+                <textarea name="description" class="form-control" rows="3" id="description">{{ old('description') }}</textarea>
             </div>
 
             <div style="margin-top: 1.5rem;">
-                <label class="form-label">Agenda</label>
-                <textarea name="agenda" class="form-control" rows="4">{{ old('agenda') }}</textarea>
+                <label class="form-label" for="agenda">Agenda</label>
+                <textarea name="agenda" class="form-control" rows="4" id="agenda">{{ old('agenda') }}</textarea>
             </div>
 
             <div style="display: flex; gap: 0.75rem; margin-top: 2rem;">

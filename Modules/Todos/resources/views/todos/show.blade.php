@@ -2,13 +2,6 @@
 
 @section('title', $todo->title)
 
-@section('header-actions')
-    @can('update', $todo)
-        <x-btn :href="route('todos.edit', $todo)" variant="outline-secondary" icon="pencil">Edit</x-btn>
-    @endcan
-    <x-btn :href="route('todos.index')" variant="outline-secondary" icon="arrow-left">Back</x-btn>
-@endsection
-
 @section('content')
     <x-page-header :title="$todo->title" icon="check2-square">
         <x-badge :variant="\App\Support\StatusBadge::variant($todo->status)">
@@ -20,6 +13,10 @@
         @if ($todo->due_date?->isPast() && \App\Enums\WorkItemStatus::from($todo->status->value)->isOpen())
             <x-badge variant="danger" icon="exclamation-triangle">Overdue</x-badge>
         @endif
+        @can('update', $todo)
+            <x-btn :href="route('todos.edit', $todo)" variant="outline-secondary" icon="pencil">Edit</x-btn>
+        @endcan
+        <x-btn :href="route('todos.index')" variant="outline-secondary" icon="arrow-left">Back</x-btn>
     </x-page-header>
 
     {{-- Lifecycle actions. Real forms, so they work without JavaScript and are

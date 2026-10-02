@@ -114,8 +114,8 @@
                                     <td><x-badge :variant="$index === 2 ? 'danger' : 'success'">{{ $index === 2 ? 'Overdue' : 'Active' }}</x-badge></td>
                                     <td class="text-end">
                                         <div class="d-flex align-items-center gap-1 justify-content-end">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center justify-content-center" title="Edit"><i class="bi bi-pencil"></i></button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center" title="Delete" data-confirm="Delete {{ $reference }}?"><i class="bi bi-trash3"></i></button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center justify-content-center" aria-label="Edit" title="Edit"><i class="bi bi-pencil"></i></button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center" aria-label="Delete" title="Delete" data-confirm="Delete {{ $reference }}?"><i class="bi bi-trash3"></i></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -136,9 +136,9 @@
                 <x-datatable id="ui-kit-table" :options="['pageLength' => 5, 'order' => [[0, 'asc']]]">
                     <thead>
                         <tr>
-                            <th>Reference</th>
-                            <th>Title</th>
-                            <th>Status</th>
+                            <th scope="col">Reference</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Status</th>
                         </tr>
                     </thead>
                     <tbody>

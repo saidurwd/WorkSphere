@@ -17,12 +17,14 @@
 
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
 
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
 <div class="app-wrapper">
     <x-sidebar />
 
     <x-navbar />
 
-    <main class="app-main">
+    <main class="app-main" id="main-content">
         <x-content-header :breadcrumbs="$breadcrumbs ?? null" />
 
         <div class="app-content">

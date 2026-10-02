@@ -20,12 +20,12 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Department</th>
-                        <th>Total</th>
-                        <th>Completed</th>
-                        <th>Pending</th>
-                        <th>Overdue</th>
-                        <th>Completion %</th>
+                        <th scope="col">Department</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Completed</th>
+                        <th scope="col">Pending</th>
+                        <th scope="col">Overdue</th>
+                        <th scope="col">Completion %</th>
                     </tr>
                 </thead>
                 <tbody>

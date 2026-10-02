@@ -19,22 +19,24 @@
     </div>
     <div class="card-body">
         @if($expiryReport->count())
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Type</th>
-                        <th>Total Expiring</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($expiryReport as $row)
-                    <tr>
-                        <td>{{ $row->type_name }}</td>
-                        <td><strong>{{ $row->total }}</strong></td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Type</th>
+                            <th scope="col">Total Expiring</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($expiryReport as $row)
+                        <tr>
+                            <td>{{ $row->type_name }}</td>
+                            <td><strong>{{ $row->total }}</strong></td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         @else
             <p style="color: var(--muted-foreground);">No obligations expiring in the next 90 days.</p>
         @endif
@@ -48,26 +50,28 @@
         </div>
         <div class="card-body">
             @if($departmentStats->count())
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Department</th>
-                            <th>Total</th>
-                            <th>Expired</th>
-                            <th>Critical</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($departmentStats as $row)
-                        <tr>
-                            <td>{{ $row->department_name }}</td>
-                            <td>{{ $row->total }}</td>
-                            <td>{{ $row->expired }}</td>
-                            <td>{{ $row->critical }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Department</th>
+                                <th scope="col">Total</th>
+                                <th scope="col">Expired</th>
+                                <th scope="col">Critical</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($departmentStats as $row)
+                            <tr>
+                                <td>{{ $row->department_name }}</td>
+                                <td>{{ $row->total }}</td>
+                                <td>{{ $row->expired }}</td>
+                                <td>{{ $row->critical }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             @else
                 <p style="color: var(--muted-foreground);">No data available.</p>
             @endif
@@ -80,24 +84,26 @@
         </div>
         <div class="card-body">
             @if($vendorStats->count())
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Vendor</th>
-                            <th>Total Obligations</th>
-                            <th>Total Cost</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($vendorStats as $row)
-                        <tr>
-                            <td>{{ $row->vendor_name }}</td>
-                            <td>{{ $row->total }}</td>
-                            <td>{{ $row->total_cost ? number_format($row->total_cost, 2).' BDT' : '-' }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Vendor</th>
+                                <th scope="col">Total Obligations</th>
+                                <th scope="col">Total Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($vendorStats as $row)
+                            <tr>
+                                <td>{{ $row->vendor_name }}</td>
+                                <td>{{ $row->total }}</td>
+                                <td>{{ $row->total_cost ? number_format($row->total_cost, 2).' BDT' : '-' }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             @else
                 <p style="color: var(--muted-foreground);">No data available.</p>
             @endif
@@ -137,36 +143,38 @@
     </div>
     <div class="card-body">
         @if($riskReport->count())
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Obligation No.</th>
-                        <th>Title</th>
-                        <th>Expiry Date</th>
-                        <th>Risk</th>
-                        <th>Priority</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($riskReport as $obligation)
-                    @php
-                        $riskBadge = match ($obligation->risk_level) {
-                            'critical' => 'text-bg-danger',
-                            'high' => 'text-bg-warning',
-                            'medium' => 'text-bg-primary',
-                            'low' => 'bg-secondary text-dark',
-                        };
-                    @endphp
-                    <tr>
-                        <td><a href="{{ route('obligations.show', $obligation) }}" style="text-decoration: none; color: inherit;">{{ $obligation->obligation_no }}</a></td>
-                        <td>{{ $obligation->title }}</td>
-                        <td>{{ $obligation->expiry_date->format('M d, Y') }}</td>
-                        <td><span class="badge {{ $riskBadge }}">{{ ucfirst($obligation->risk_level) }}</span></td>
-                        <td><span class="badge bg-secondary text-dark">{{ ucfirst($obligation->priority) }}</span></td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Obligation No.</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Expiry Date</th>
+                            <th scope="col">Risk</th>
+                            <th scope="col">Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($riskReport as $obligation)
+                        @php
+                            $riskBadge = match ($obligation->risk_level) {
+                                'critical' => 'text-bg-danger',
+                                'high' => 'text-bg-warning',
+                                'medium' => 'text-bg-primary',
+                                'low' => 'bg-secondary text-dark',
+                            };
+                        @endphp
+                        <tr>
+                            <td><a href="{{ route('obligations.show', $obligation) }}" style="text-decoration: none; color: inherit;">{{ $obligation->obligation_no }}</a></td>
+                            <td>{{ $obligation->title }}</td>
+                            <td>{{ $obligation->expiry_date->format('M d, Y') }}</td>
+                            <td><span class="badge {{ $riskBadge }}">{{ ucfirst($obligation->risk_level) }}</span></td>
+                            <td><x-badge variant="secondary">{{ ucfirst($obligation->priority) }}</x-badge></td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         @else
             <p style="color: var(--muted-foreground);">No high-risk obligations.</p>
         @endif

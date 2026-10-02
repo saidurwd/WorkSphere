@@ -22,20 +22,20 @@
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
                 <div>
-                    <label class="form-label">Decision # <span style="color: var(--danger);">*</span></label>
-                    <input type="number" name="decision_no" class="form-control @error('decision_no') is-invalid @enderror" value="{{ old('decision_no', $decision->decision_no) }}" min="1" required>
+                    <label class="form-label" for="decision-no">Decision # <span style="color: var(--danger);">*</span></label>
+                    <input type="number" name="decision_no" class="form-control @error('decision_no') is-invalid @enderror" value="{{ old('decision_no', $decision->decision_no) }}" min="1" required id="decision-no">
                     @error('decision_no')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div>
-                    <label class="form-label">Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="decision_title" class="form-control @error('decision_title') is-invalid @enderror" value="{{ old('decision_title', $decision->decision_title) }}" required>
+                    <label class="form-label" for="decision-title">Title <span style="color: var(--danger);">*</span></label>
+                    <input type="text" name="decision_title" class="form-control @error('decision_title') is-invalid @enderror" value="{{ old('decision_title', $decision->decision_title) }}" required id="decision-title">
                     @error('decision_title')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div>
-                    <label class="form-label">Decision Type <span style="color: var(--danger);">*</span></label>
-                    <select name="decision_type" class="form-select @error('decision_type') is-invalid @enderror">
+                    <label class="form-label" for="decision-type">Decision Type <span style="color: var(--danger);">*</span></label>
+                    <select name="decision_type" class="form-select @error('decision_type') is-invalid @enderror" id="decision-type">
                         <option value="approved" {{ old('decision_type', $decision->decision_type) === 'approved' ? 'selected' : '' }}>Approved</option>
                         <option value="rejected" {{ old('decision_type', $decision->decision_type) === 'rejected' ? 'selected' : '' }}>Rejected</option>
                         <option value="deferred" {{ old('decision_type', $decision->decision_type) === 'deferred' ? 'selected' : '' }}>Deferred</option>
@@ -46,8 +46,8 @@
                 </div>
 
                 <div>
-                    <label class="form-label">Decision Status <span style="color: var(--danger);">*</span></label>
-                    <select name="decision_status" class="form-select @error('decision_status') is-invalid @enderror">
+                    <label class="form-label" for="decision-status">Decision Status <span style="color: var(--danger);">*</span></label>
+                    <select name="decision_status" class="form-select @error('decision_status') is-invalid @enderror" id="decision-status">
                         <option value="active" {{ old('decision_status', $decision->decision_status) === 'active' ? 'selected' : '' }}>Active</option>
                         <option value="superseded" {{ old('decision_status', $decision->decision_status) === 'superseded' ? 'selected' : '' }}>Superseded</option>
                         <option value="cancelled" {{ old('decision_status', $decision->decision_status) === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
@@ -56,26 +56,26 @@
                 </div>
 
                 <div>
-                    <label class="form-label">Decision Date</label>
-                    <input type="date" name="decision_date" class="form-control @error('decision_date') is-invalid @enderror" value="{{ old('decision_date', $decision->decision_date ? $decision->decision_date->format('Y-m-d') : '') }}">
+                    <label class="form-label" for="decision-date">Decision Date</label>
+                    <input type="date" name="decision_date" class="form-control @error('decision_date') is-invalid @enderror" value="{{ old('decision_date', $decision->decision_date ? $decision->decision_date->format('Y-m-d') : '') }}" id="decision-date">
                     @error('decision_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div>
-                    <label class="form-label">Effective Date</label>
-                    <input type="date" name="effective_date" class="form-control @error('effective_date') is-invalid @enderror" value="{{ old('effective_date', $decision->effective_date ? $decision->effective_date->format('Y-m-d') : '') }}">
+                    <label class="form-label" for="effective-date">Effective Date</label>
+                    <input type="date" name="effective_date" class="form-control @error('effective_date') is-invalid @enderror" value="{{ old('effective_date', $decision->effective_date ? $decision->effective_date->format('Y-m-d') : '') }}" id="effective-date">
                     @error('effective_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
             </div>
 
             <div style="margin-top: 1.5rem;">
-                <label class="form-label">Description</label>
-                <textarea name="decision_description" class="form-control" rows="3">{{ old('decision_description', $decision->decision_description) }}</textarea>
+                <label class="form-label" for="decision-description">Description</label>
+                <textarea name="decision_description" class="form-control" rows="3" id="decision-description">{{ old('decision_description', $decision->decision_description) }}</textarea>
             </div>
 
             <div style="margin-top: 1.5rem;">
-                <label class="form-label">Remarks</label>
-                <textarea name="remarks" class="form-control" rows="2">{{ old('remarks', $decision->remarks) }}</textarea>
+                <label class="form-label" for="remarks">Remarks</label>
+                <textarea name="remarks" class="form-control" rows="2" id="remarks">{{ old('remarks', $decision->remarks) }}</textarea>
             </div>
 
             <div style="display: flex; gap: 0.75rem; margin-top: 2rem;">

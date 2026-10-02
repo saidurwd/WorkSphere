@@ -2,15 +2,13 @@
 
 @section('title', 'To-Dos')
 
-@section('header-actions')
-    <x-btn :href="route('todos.calendar')" variant="outline-secondary" icon="calendar">Calendar</x-btn>
-    <x-btn :href="route('todos.create')" icon="plus-lg">New To-Do</x-btn>
-@endsection
-
 @section('content')
     <x-page-header title="{{ ($inboxOnly ?? false) ? 'Inbox' : 'To-Dos' }}"
                    subtitle="{{ ($inboxOnly ?? false) ? 'Captured and waiting to be triaged.' : 'Everything you are party to.' }}"
-                   icon="check2-square" />
+                   icon="check2-square">
+        <x-btn :href="route('todos.calendar')" variant="outline-secondary" icon="calendar">Calendar</x-btn>
+        <x-btn :href="route('todos.create')" icon="plus-lg">New To-Do</x-btn>
+    </x-page-header>
 
     {{-- Quick capture: §8.3 calls this the single most important interaction in
          the module. A title-only input that creates a To-Do on Enter and stays on
@@ -52,7 +50,7 @@
         $isFiltered = collect($filters)->filter(fn ($value) => $value !== null && $value !== false)->isNotEmpty();
     @endphp
 
-    <div class="row g-3 mb-4" aria-live="polite">
+    <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
             <x-stat title="Open" :value="$summary->open" icon="inbox" variant="primary" />
         </div>
@@ -161,7 +159,7 @@
         <form action="{{ route('todos.bulk') }}" method="POST" id="bulk-form" class="d-flex flex-wrap align-items-center gap-2">
             @csrf
             <input type="hidden" name="action" id="bulk-action" value="complete">
-            <span class="fw-semibold"><span data-selected-count>0</span> selected</span>
+            <span class="fw-semibold"><span data-selected-count role="status">0</span> selected</span>
 
             <select name="assignee_id" class="form-select form-select-sm w-auto d-none" id="bulk-assignee"
                     aria-label="Reassign to">

@@ -26,7 +26,7 @@
 
 <x-page-header title="Task Transfers" subtitle="Reassign tasks between users and keep a transfer history.">
     <x-btn :href="route('tasks.index')" variant="secondary" icon="arrow-left">Back to Tasks</x-btn>
-</x-page-header>
+    </x-page-header>
 
 <div class="card" style="margin-bottom: 1.5rem;">
     <div class="card-body">

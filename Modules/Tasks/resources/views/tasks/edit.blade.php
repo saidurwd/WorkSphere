@@ -24,7 +24,7 @@
 <x-page-header title="Edit Task" subtitle="Update task details.">
     <x-btn :href="route('task-transfers.index', ['task_id' => $task->id])" variant="secondary" icon="arrow-left-right">Transfer</x-btn>
     <button type="button" class="btn btn-primary" onclick="openRemarkModal()">Add Remarks</button>
-</x-page-header>
+    </x-page-header>
 
 <div class="card">
     <div class="card-body">

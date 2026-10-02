@@ -41,7 +41,7 @@
                     <div class="col-12 d-flex gap-2">
                         <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i>Apply</button>
                         @if($notifications->count() > 0)
-                            <button type="button" class="btn btn-danger" onclick="if (confirm('Are you sure you want to delete all {{ $notifications->total() }} notification(s)?')) { document.getElementById('delete-all-form').submit(); }">
+                            <button type="button" class="btn btn-danger" data-confirm="Delete all {{ $notifications->total() }} notifications? This cannot be undone." data-confirm-button="Delete all" data-confirm-submit="delete-all-form">
                                 <i class="bi bi-trash3 me-1"></i>Delete All
                             </button>
                         @endif

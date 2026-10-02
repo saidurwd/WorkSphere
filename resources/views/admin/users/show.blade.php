@@ -4,17 +4,15 @@
     User: {{ $user->name }}
 @endsection
 
-@section('header-actions')
-    <x-btn :href="route('admin.users.edit', $user)" icon="pencil" variant="outline-secondary">Edit</x-btn>
-    <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this user? This cannot be undone.');">
-        @csrf
-        @method('DELETE')
-        <x-btn type="submit" icon="trash3" variant="outline-danger" class="ms-1">Delete</x-btn>
-    </form>
-@endsection
-
 @section('content')
-    <x-page-header title="{{ $user->name }}" subtitle="{{ $user->email }}" icon="person" />
+    <x-page-header title="{{ $user->name }}" subtitle="{{ $user->email }}" icon="person">
+        <x-btn :href="route('admin.users.edit', $user)" icon="pencil" variant="outline-secondary">Edit</x-btn>
+        <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-inline" data-confirm="Delete this user? This cannot be undone.">
+            @csrf
+            @method('DELETE')
+            <x-btn type="submit" icon="trash3" variant="outline-danger" class="ms-1">Delete</x-btn>
+        </form>
+    </x-page-header>
 
     <div class="row g-4">
         <div class="col-lg-4">

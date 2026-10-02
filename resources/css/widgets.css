@@ -4,6 +4,76 @@
  * AdminLTE already provides must be used directly from markup instead.
  */
 
+/*
+ * The focus ring.
+ *
+ * Bootstrap cancels `outline` with `outline: 0` on its own focusable
+ * components, and it does so at 0,2,0 — the same specificity a bare
+ * `:focus-visible` rule reaches. A ring declared on the pseudo-class alone
+ * therefore loses the cascade on every .btn, .nav-link and .form-control in
+ * the app without ever saying so. The component selectors are listed
+ * explicitly to match that weight and win on order, because this file is
+ * imported after AdminLTE.
+ *
+ * `:focus-visible` rather than `:focus` throughout: a mouse click on a text
+ * field should not leave a ring behind.
+ */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible,
+.btn:focus-visible,
+.nav-link:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.dropdown-item:focus-visible,
+.page-link:focus-visible {
+    outline: 2px solid var(--app-ring);
+    outline-offset: 2px;
+}
+
+/* Skip link, off-screen until it takes focus. WCAG 2.4.1: both layouts put a
+   full navigation tree ahead of the content, so reaching <main> by keyboard
+   otherwise means tabbing through the entire menu on every page. */
+.skip-link {
+    position: absolute;
+    top: -4rem;
+    left: 0.5rem;
+    z-index: 2000;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius);
+    background-color: var(--app-card);
+    color: var(--app-foreground);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.skip-link:focus {
+    top: 0.5rem;
+}
+
+/* WCAG 2.5.8 pointer-target floor. `min-width`/`min-height` rather than
+   width/height so it only ever enlarges a target, never distorts one. */
+:where(a.btn, button.btn, .nav-link, .page-link, .dropdown-item) {
+    min-height: var(--app-target-min);
+}
+
+:where(a.btn, button.btn, .page-link) {
+    min-width: var(--app-target-min);
+}
+
+/* WCAG 2.3.3. The dashboard animates donut strokes, the sidebar and the
+   dropdowns transition, and every confirmation is a SweetAlert2 animation.
+   None of it carries meaning, so all of it is disabled rather than merely
+   shortened. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
 /* Initials avatar used in the header, sidebar and table user cells. */
 .user-image {
     display: inline-flex;

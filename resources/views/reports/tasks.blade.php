@@ -2,12 +2,10 @@
 
 @section('title', 'Task Reports')
 
-@section('header-actions')
-    <x-btn :href="route('reports.tasks.export', ['from' => $from, 'to' => $to])" icon="filetype-csv">Export CSV</x-btn>
-@endsection
-
 @section('content')
-    <x-page-header title="Task Reports" subtitle="Completion by person and project." icon="bar-chart" />
+    <x-page-header title="Task Reports" subtitle="Completion by person and project." icon="bar-chart">
+        <x-btn :href="route('reports.tasks.export', ['from' => $from, 'to' => $to])" icon="filetype-csv">Export CSV</x-btn>
+    </x-page-header>
 
     <div class="card mb-4">
         <div class="card-body">

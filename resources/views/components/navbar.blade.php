@@ -32,7 +32,7 @@
     }
 @endphp
 
-<nav class="app-header navbar navbar-expand-md bg-body">
+<nav class="app-header navbar navbar-expand-md bg-body" aria-label="Account and utility">
     {{-- Three columns: left, centre search, right. `me-auto`/`ms-auto` are gone —
          the centre claims the free space with `flex-grow-1` and centres its own
          content, which is what puts the box in the middle rather than merely
@@ -163,7 +163,7 @@
 
             @auth
                 <li class="nav-item dropdown user-menu">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown" href="#" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown" href="#" aria-expanded="false" aria-haspopup="true">
                         @if($user?->avatar)
                             <img src="{{ asset('storage/'.$user->avatar) }}" class="user-image rounded-circle" alt="{{ $user->name }}" style="width: 2rem; height: 2rem; object-fit: cover;">
                         @else

@@ -23,8 +23,8 @@
                     <input type="search" name="search" class="form-control" placeholder="Search decisions..." value="{{ request('search') }}">
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <label class="form-label">Type:</label>
-                    <select name="decision_type" class="form-select" style="min-width: 180px;">
+                    <label class="form-label" for="decision-type">Type:</label>
+                    <select name="decision_type" class="form-select" style="min-width: 180px;" id="decision-type">
                         <option value="">All Types</option>
                         <option value="approved" {{ request('decision_type') === 'approved' ? 'selected' : '' }}>Approved</option>
                         <option value="rejected" {{ request('decision_type') === 'rejected' ? 'selected' : '' }}>Rejected</option>
@@ -44,12 +44,12 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Decision No</th>
-                        <th>Meeting</th>
-                        <th>Title</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                        <th>Date</th>
+                        <th scope="col">Decision No</th>
+                        <th scope="col">Meeting</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Date</th>
                     </tr>
                 </thead>
                 <tbody>

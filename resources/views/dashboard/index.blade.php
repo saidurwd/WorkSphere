@@ -78,7 +78,7 @@
             <div class="card h-100">
                 <div class="card-header d-flex align-items-center justify-content-between">
                     <h3 class="card-title mb-0">Weekly Tasks</h3>
-                    <span class="badge bg-secondary text-dark">Created this week</span>
+                    <x-badge variant="secondary">Created this week</x-badge>
                 </div>
 
                 <div class="card-body">

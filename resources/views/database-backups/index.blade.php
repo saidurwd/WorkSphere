@@ -35,7 +35,7 @@
                                 <td>{{ $backup['last_modified_human'] }}</td>
                                 <td>
                                     <div class="d-flex justify-content-end gap-1">
-                                        <a href="{{ route('dashboard.database-backups.download', $backup['filename']) }}" class="btn btn-sm btn-outline-primary" title="Download">
+                                        <a href="{{ route('dashboard.database-backups.download', $backup['filename']) }}" class="btn btn-sm btn-outline-primary" aria-label="Download" title="Download">
                                             <i class="bi bi-download"></i>
                                         </a>
                                         <form action="{{ route('dashboard.database-backups.destroy', $backup['filename']) }}" method="POST" class="d-inline">

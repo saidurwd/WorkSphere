@@ -125,7 +125,7 @@
                     <div class="card mb-3">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h3 class="card-title mb-0">{{ $entity->label }}</h3>
-                            <span class="badge bg-secondary text-dark">{{ $group['count'] }}</span>
+                            <x-badge variant="secondary">{{ $group['count'] }}</x-badge>
                         </div>
 
                         <ul class="list-group list-group-flush">

@@ -2,12 +2,10 @@
 
 @section('title', 'Team Workload')
 
-@section('header-actions')
-    <x-btn :href="route('reports.workload.export')" icon="filetype-csv">Export CSV</x-btn>
-@endsection
-
 @section('content')
-    <x-page-header title="Team Workload" subtitle="Open work carried by each person." icon="people" />
+    <x-page-header title="Team Workload" subtitle="Open work carried by each person." icon="people">
+        <x-btn :href="route('reports.workload.export')" icon="filetype-csv">Export CSV</x-btn>
+    </x-page-header>
 
     <div class="card">
         <div class="card-header"><h3 class="card-title mb-0">Assignees</h3></div>

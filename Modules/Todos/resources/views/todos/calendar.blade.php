@@ -2,12 +2,10 @@
 
 @section('title', 'To-Do Calendar')
 
-@section('header-actions')
-    <x-btn :href="route('todos.index')" variant="outline-secondary" icon="arrow-left">Back to list</x-btn>
-@endsection
-
 @section('content')
-    <x-page-header title="Calendar" subtitle="Everything with a due date." icon="calendar" />
+    <x-page-header title="Calendar" subtitle="Everything with a due date." icon="calendar">
+        <x-btn :href="route('todos.index')" variant="outline-secondary" icon="arrow-left">Back to list</x-btn>
+    </x-page-header>
 
     <div class="card mb-4">
         <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-2">
@@ -39,7 +37,12 @@
 
     <div class="card">
         <div class="card-body">
-            <div class="row g-2" role="grid" aria-label="To-Dos by date">
+            {{-- No `role="grid"`. That role promises arrow-key navigation between
+                 cells, row semantics and `aria-rowcount`, none of which this
+                 layout provides, so it made the content harder to reach than
+                 leaving it unroled would. A labelled region conveys the same
+                 grouping without promising interaction that is not there. --}}
+            <div class="row g-2" role="region" aria-label="To-Dos by date">
                 @foreach ($days as $day)
                     @php
                         $key = $day->toDateString();
@@ -48,14 +51,13 @@
                     <div class="col-6 col-md-4 col-lg-3 col-xl-2">
                         <div class="border rounded p-2 h-100
                                     {{ $key === $today ? 'border-primary' : '' }}"
-                             role="gridcell"
                              aria-label="{{ $day->format('l, j F Y') }} — {{ $dayTodos->count() }} To-Dos">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span @class(['fw-semibold small' => $key !== $today, 'fw-bold small text-primary' => $key === $today])>
                                     {{ $day->format('D j') }}
                                 </span>
                                 @if ($dayTodos->isNotEmpty())
-                                    <span class="badge bg-secondary text-dark">{{ $dayTodos->count() }}</span>
+                                    <x-badge variant="secondary">{{ $dayTodos->count() }}</x-badge>
                                 @endif
                             </div>
 

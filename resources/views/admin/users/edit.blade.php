@@ -31,7 +31,7 @@
                     </div>
 
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Profile Picture</label>
+                        <label class="form-label" for="avatar">Profile Picture</label>
                         <input type="file" name="avatar" id="avatar" class="form-control" accept="image/*">
                         <div class="form-text">Upload a profile picture (max 2MB). JPG, PNG, or GIF.</div>
                         @if($user->avatar)
@@ -47,7 +47,7 @@
                     </div>
 
                     <div class="col-12">
-                        <label class="form-label">Roles</label>
+                        <label class="form-label" for="roles[]">Roles</label>
                         <x-form.select name="roles[]" :options="$roles->pluck('name', 'id')->all()" :value="$user->roles->pluck('id')->all()" placeholder="Select roles" multiple />
                         <div class="form-text">Hold Ctrl/Cmd to select multiple roles.</div>
                     </div>

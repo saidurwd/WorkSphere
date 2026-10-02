@@ -2,12 +2,10 @@
 
 @section('title', 'Users')
 
-@section('header-actions')
-    <x-btn :href="route('admin.users.create')" icon="plus-lg">New User</x-btn>
-@endsection
-
 @section('content')
-    <x-page-header title="Users" subtitle="Manage system users and their roles." icon="people" />
+    <x-page-header title="Users" subtitle="Manage system users and their roles." icon="people">
+        <x-btn :href="route('admin.users.create')" icon="plus-lg">New User</x-btn>
+    </x-page-header>
 
     <div class="card mb-4">
         <div class="card-body">

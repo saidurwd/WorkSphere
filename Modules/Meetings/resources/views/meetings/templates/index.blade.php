@@ -2,12 +2,10 @@
 
 @section('title', 'Meeting Templates')
 
-@section('header-actions')
-    <x-btn :href="route('meetings.templates.create')" icon="plus-lg">New Template</x-btn>
-@endsection
-
 @section('content')
-    <x-page-header title="Meeting Templates" subtitle="Reusable meeting shapes with a standing agenda." icon="clipboard" />
+    <x-page-header title="Meeting Templates" subtitle="Reusable meeting shapes with a standing agenda." icon="clipboard">
+        <x-btn :href="route('meetings.templates.create')" icon="plus-lg">New Template</x-btn>
+    </x-page-header>
 
     <div class="card mb-4">
         <div class="card-body">

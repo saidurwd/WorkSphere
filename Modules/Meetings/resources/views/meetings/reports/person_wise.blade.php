@@ -20,11 +20,11 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Person</th>
-                        <th>Open</th>
-                        <th>In Progress</th>
-                        <th>Completed</th>
-                        <th>Overdue</th>
+                        <th scope="col">Person</th>
+                        <th scope="col">Open</th>
+                        <th scope="col">In Progress</th>
+                        <th scope="col">Completed</th>
+                        <th scope="col">Overdue</th>
                     </tr>
                 </thead>
                 <tbody>

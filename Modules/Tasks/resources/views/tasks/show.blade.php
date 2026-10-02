@@ -27,7 +27,7 @@ $statusAccent = \App\Support\StatusBadge::statusColor($task->status);
     <x-btn :href="route('tasks.index')" variant="secondary" icon="arrow-left" title="Back to Tasks" />
     <x-btn :href="route('task-transfers.index', ['task_id' => $task->id])" variant="secondary" icon="arrow-left-right" title="Transfer" />
     <x-btn :href="route('tasks.edit', $task)">Edit</x-btn>
-</x-page-header>
+    </x-page-header>
 
 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; align-items: start;">
 
@@ -70,7 +70,7 @@ $statusAccent = \App\Support\StatusBadge::statusColor($task->status);
                     <span class="badge {{ $priorityClass }}">{{ \App\Support\StatusBadge::label($task->priority) }} Priority</span>
                     <span class="badge {{ $statusClass }}">{{ \App\Support\StatusBadge::label($task->status) }}</span>
                     @if($task->isOverdue())
-                    <span class="badge text-bg-danger">Overdue</span>
+                    <x-badge variant="danger">Overdue</x-badge>
                     @endif
                 </div>
             </div>
@@ -183,7 +183,7 @@ $statusAccent = \App\Support\StatusBadge::statusColor($task->status);
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title">Transfer History</h2>
-                <span class="badge bg-secondary text-dark">{{ $task->taskTransfers->count() }} Transfer(s)</span>
+                <x-badge variant="secondary">{{ $task->taskTransfers->count() }} Transfer(s)</x-badge>
             </div>
             <div class="card-body" style="padding: 0;">
                 @if($task->taskTransfers->isNotEmpty())
@@ -291,7 +291,7 @@ $statusAccent = \App\Support\StatusBadge::statusColor($task->status);
                                 @endif
                             </span>
                             <span class="d-flex align-items-center gap-2">
-                                <span class="badge bg-secondary text-dark">{{ $entry->minutes }} min</span>
+                                <x-badge variant="secondary">{{ $entry->minutes }} min</x-badge>
                                 @can('logTime', $task)
                                     <form action="{{ route('tasks.time-entries.destroy', [$task, $entry]) }}" method="POST">
                                         @csrf

@@ -19,16 +19,16 @@
         <form action="{{ route('meetings.reports.meetings') }}" method="GET">
             <div class="d-flex flex-wrap align-items-center gap-3">
                 <div class="d-flex align-items-center gap-2">
-                    <label class="form-label">Date From:</label>
-                    <input type="date" name="date_from" class="form-control" value="{{ $filters['date_from'] ?? '' }}" style="min-width: 150px;">
+                    <label class="form-label" for="date-from">Date From:</label>
+                    <input type="date" name="date_from" class="form-control" value="{{ $filters['date_from'] ?? '' }}" style="min-width: 150px;" id="date-from">
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <label class="form-label">Date To:</label>
-                    <input type="date" name="date_to" class="form-control" value="{{ $filters['date_to'] ?? '' }}" style="min-width: 150px;">
+                    <label class="form-label" for="date-to">Date To:</label>
+                    <input type="date" name="date_to" class="form-control" value="{{ $filters['date_to'] ?? '' }}" style="min-width: 150px;" id="date-to">
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <label class="form-label">Type:</label>
-                    <select name="meeting_type_id" class="form-select" style="min-width: 180px;">
+                    <label class="form-label" for="meeting-type-id">Type:</label>
+                    <select name="meeting_type_id" class="form-select" style="min-width: 180px;" id="meeting-type-id">
                         <option value="">All Types</option>
                         @foreach($types as $type)
                             <option value="{{ $type->id }}" {{ ($filters['meeting_type_id'] ?? '') == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
@@ -36,8 +36,8 @@
                     </select>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <label class="form-label">Department:</label>
-                    <select name="department_id" class="form-select" style="min-width: 180px;">
+                    <label class="form-label" for="department-id">Department:</label>
+                    <select name="department_id" class="form-select" style="min-width: 180px;" id="department-id">
                         <option value="">All Departments</option>
                         @foreach($departments as $department)
                             <option value="{{ $department->id }}" {{ ($filters['department_id'] ?? '') == $department->id ? 'selected' : '' }}>{{ $department->department_name }}</option>
@@ -56,14 +56,14 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Meeting No</th>
-                        <th>Title</th>
-                        <th>Date</th>
-                        <th>Type</th>
-                        <th>Department</th>
-                        <th>Organizer</th>
-                        <th>Status</th>
-                        <th>Minutes Status</th>
+                        <th scope="col">Meeting No</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Department</th>
+                        <th scope="col">Organizer</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Minutes Status</th>
                     </tr>
                 </thead>
                 <tbody>

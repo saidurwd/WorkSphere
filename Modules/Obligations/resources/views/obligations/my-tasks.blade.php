@@ -18,8 +18,8 @@
         <form action="{{ route('obligations.my-tasks') }}" method="GET" id="filter-form">
             <div class="d-flex flex-wrap align-items-center gap-3">
                 <div class="d-flex align-items-center gap-2">
-                    <label class="form-label">Status:</label>
-                    <select name="status" class="form-select" style="min-width: 150px;" onchange="document.getElementById('filter-form').submit()">
+                    <label class="form-label" for="status">Status:</label>
+                    <select name="status" class="form-select" style="min-width: 150px;" onchange="document.getElementById('filter-form').submit()" id="status">
                         <option value="">All Statuses</option>
                         {{-- These are TASK rows, so the task vocabulary. --}}
                         @foreach(\App\Enums\WorkItemStatus::taskOptions() as $value => $label)
@@ -29,8 +29,8 @@
                 </div>
 
                 <div class="d-flex align-items-center gap-2">
-                    <label class="form-label">Priority:</label>
-                    <select name="priority" class="form-select" style="min-width: 140px;" onchange="document.getElementById('filter-form').submit()">
+                    <label class="form-label" for="priority">Priority:</label>
+                    <select name="priority" class="form-select" style="min-width: 140px;" onchange="document.getElementById('filter-form').submit()" id="priority">
                         <option value="">All Priorities</option>
                         <option value="low" {{ ($filters['priority'] ?? '') === 'low' ? 'selected' : '' }}>Low</option>
                         <option value="medium" {{ ($filters['priority'] ?? '') === 'medium' ? 'selected' : '' }}>Medium</option>
@@ -39,8 +39,8 @@
                 </div>
 
                 <div class="d-flex align-items-center gap-2">
-                    <label class="form-label">Due Date:</label>
-                    <select name="due_date" class="form-select" style="min-width: 150px;" onchange="document.getElementById('filter-form').submit()">
+                    <label class="form-label" for="due-date">Due Date:</label>
+                    <select name="due_date" class="form-select" style="min-width: 150px;" onchange="document.getElementById('filter-form').submit()" id="due-date">
                         <option value="">All Dates</option>
                         <option value="today" {{ ($filters['due_date'] ?? '') === 'today' ? 'selected' : '' }}>Today</option>
                         <option value="overdue" {{ ($filters['due_date'] ?? '') === 'overdue' ? 'selected' : '' }}>Overdue</option>
@@ -64,13 +64,13 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Task No.</th>
-                        <th>Title</th>
-                        <th>Obligation</th>
-                        <th>Priority</th>
-                        <th>Status</th>
-                        <th>Due Date</th>
-                        <th style="text-align: right;">Actions</th>
+                        <th scope="col">Task No.</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Obligation</th>
+                        <th scope="col">Priority</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Due Date</th>
+                        <th  scope="col"style="text-align: right;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -100,7 +100,7 @@
                         <td>{{ $task->due_date->format('M d, Y') }}</td>
                         <td>
                             <div class="d-flex align-items-center gap-1" style="justify-content: flex-end;">
-                                <a href="{{ route('tasks.show', $task) }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center justify-content-center" title="Details">
+                                <a href="{{ route('tasks.show', $task) }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center justify-content-center" aria-label="Details" title="Details">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />

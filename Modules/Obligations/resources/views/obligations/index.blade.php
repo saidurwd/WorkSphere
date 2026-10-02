@@ -148,7 +148,7 @@
                                         {{ $remaining }} days
                                     @endif
                                 </td>
-                                <td><span class="badge bg-secondary text-dark">{{ ucwords(str_replace('_', ' ', $obligation->status)) }}</span></td>
+                                <td><x-badge variant="secondary">{{ ucwords(str_replace('_', ' ', $obligation->status)) }}</x-badge></td>
                                 <td>
                                     <x-badge :variant="\App\Support\StatusBadge::priorityVariant($obligation->priority)">
                                         {{ \App\Support\StatusBadge::label($obligation->priority) }}

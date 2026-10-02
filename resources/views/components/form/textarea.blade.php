@@ -10,20 +10,33 @@
         </label>
     @endif
 
+    @php
+        /* See x-form.input: the error has to be announced and pointed at, not just drawn. */
+        $hasError = $errors->has($name);
+        $errorId = $name.'-error';
+        $helpId = $name.'-help';
+
+        $describedBy = collect([$help ? $helpId : null, $hasError ? $errorId : null])
+            ->filter()
+            ->implode(' ');
+    @endphp
+
     <textarea
         id="{{ $name }}"
         name="{{ $name }}"
         rows="{{ $rows }}"
-        class="form-control{{ $errors->has($name) ? ' is-invalid' : '' }}"
+        class="form-control{{ $hasError ? ' is-invalid' : '' }}"
+        aria-invalid="{{ $hasError ? 'true' : 'false' }}"
+        @if ($describedBy !== '') aria-describedby="{{ $describedBy }}" @endif
         @disabled($attributes->get('disabled'))
         @readonly($attributes->get('readonly'))
     >{{ old($name, $value) }}</textarea>
 
     @if ($help)
-        <div class="form-text">{{ $help }}</div>
+        <div id="{{ $helpId }}" class="form-text">{{ $help }}</div>
     @endif
 
     @error($name)
-        <div class="invalid-feedback d-block">{{ $message }}</div>
+        <div id="{{ $errorId }}" class="invalid-feedback d-block">{{ $message }}</div>
     @enderror
 </div>

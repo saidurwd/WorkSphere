@@ -20,13 +20,13 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Action</th>
-                        <th>Meeting</th>
-                        <th>Assigned To</th>
-                        <th>Department</th>
-                        <th>Due Date</th>
-                        <th>Days Overdue</th>
-                        <th>Task</th>
+                        <th scope="col">Action</th>
+                        <th scope="col">Meeting</th>
+                        <th scope="col">Assigned To</th>
+                        <th scope="col">Department</th>
+                        <th scope="col">Due Date</th>
+                        <th scope="col">Days Overdue</th>
+                        <th scope="col">Task</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -37,7 +37,7 @@
                         <td>{{ $item->assignedTo->name ?? 'N/A' }}</td>
                         <td>{{ $item->assignedDepartment->department_name ?? 'N/A' }}</td>
                         <td>{{ $item->due_date->format('M d, Y') }}</td>
-                        <td><span class="badge text-bg-danger">{{ now()->startOfDay()->diffInDays($item->due_date) }} days</span></td>
+                        <td><x-badge variant="danger">{{ now()->startOfDay()->diffInDays($item->due_date) }} days</x-badge></td>
                         <td>
                             @if($item->task)
                             <a href="{{ route('tasks.show', $item->task) }}">{{ $item->task->task_no ?? 'Task #'.$item->task->id }}</a>

@@ -19,10 +19,23 @@
         </label>
     @endif
 
+    @php
+        /* See x-form.input: the error has to be announced and pointed at, not just drawn. */
+        $hasError = $errors->has($name);
+        $errorId = $name.'-error';
+        $helpId = $name.'-help';
+
+        $describedBy = collect([$help ? $helpId : null, $hasError ? $errorId : null])
+            ->filter()
+            ->implode(' ');
+    @endphp
+
     <select
         id="{{ $name }}"
         name="{{ $name }}"
-        class="form-select{{ $errors->has($name) ? ' is-invalid' : '' }}"
+        class="form-select{{ $hasError ? ' is-invalid' : '' }}"
+        aria-invalid="{{ $hasError ? 'true' : 'false' }}"
+        @if ($describedBy !== '') aria-describedby="{{ $describedBy }}" @endif
         data-tom-select
         @if ($create) data-tom-select="true" @endif
         @if ($placeholder) data-tom-select-placeholder="{{ $placeholder }}" @endif
@@ -46,10 +59,10 @@
     </select>
 
     @if ($help)
-        <div class="form-text">{{ $help }}</div>
+        <div id="{{ $helpId }}" class="form-text">{{ $help }}</div>
     @endif
 
     @error($name)
-        <div class="invalid-feedback d-block">{{ $message }}</div>
+        <div id="{{ $errorId }}" class="invalid-feedback d-block">{{ $message }}</div>
     @enderror
 </div>

@@ -25,14 +25,14 @@
         </form>
     @endif
     @if(!in_array($meeting->status, ['completed', 'cancelled']))
-        <form action="{{ route('meetings.cancel', $meeting) }}" method="POST" class="d-inline" onsubmit="return confirm('Cancel this meeting?')">
+        <form action="{{ route('meetings.cancel', $meeting) }}" method="POST" class="d-inline" data-confirm="Cancel this meeting?">
             @csrf
             <button type="submit" class="btn btn-danger">Cancel</button>
         </form>
     @endif
     <x-btn :href="route('meetings.edit', $meeting)" variant="secondary">Edit</x-btn>
     <x-btn :href="route('meetings.print', $meeting)" variant="secondary" icon="printer" target="_blank">Print</x-btn>
-</x-page-header>
+    </x-page-header>
 
 <div class="card" style="margin-bottom: 1.5rem;">
     <div class="card-body">
@@ -83,12 +83,12 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Title</th>
-                            <th>Presenter</th>
-                            <th>Est. Minutes</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th scope="col">#</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Presenter</th>
+                            <th scope="col">Est. Minutes</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -111,7 +111,7 @@
                             <td>
                                 <div style="display: flex; gap: 0.5rem;">
                                     <button type="button" class="btn btn-sm btn-secondary" onclick="openEditAgendaModal({{ $agenda->id }}, '{{ addslashes($agenda->title) }}', '{{ addslashes($agenda->description ?? '') }}', '{{ $agenda->presented_by ?? '' }}', '{{ $agenda->estimated_minutes ?? '' }}', '{{ $agenda->status }}', '{{ $agenda->sort_order }}', '{{ $agenda->agenda_no }}')">Edit</button>
-                                    <form action="{{ route('meetings.agendas.destroy', [$meeting, $agenda]) }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this agenda item?')">
+                                    <form action="{{ route('meetings.agendas.destroy', [$meeting, $agenda]) }}" method="POST" style="display: inline;" data-confirm="Delete this agenda item?">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">Delete</button>
@@ -142,12 +142,12 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Title</th>
-                            <th>Type</th>
-                            <th>Status</th>
-                            <th>Approved By</th>
-                            <th>Actions</th>
+                            <th scope="col">#</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Approved By</th>
+                            <th scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -164,7 +164,7 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="badge bg-secondary text-dark">{{ ucwords(str_replace('_', ' ', $decision->decision_type)) }}</span>
+                                <x-badge variant="secondary">{{ ucwords(str_replace('_', ' ', $decision->decision_type)) }}</x-badge>
                             </td>
                             <td>
                                 <span class="badge {{ $decision->decision_status === 'active' ? 'text-bg-success' : ($decision->decision_status === 'cancelled' ? 'text-bg-danger' : 'bg-secondary text-dark') }}">
@@ -175,7 +175,7 @@
                             <td>
                                 <div style="display: flex; gap: 0.5rem;">
                                     <button type="button" class="btn btn-sm btn-secondary" onclick="openEditDecisionModal({{ $decision->id }}, '{{ addslashes($decision->decision_title) }}', '{{ addslashes($decision->decision_description ?? '') }}', '{{ $decision->decision_type }}', '{{ $decision->decision_status }}', '{{ $decision->decision_date ?? '' }}', '{{ $decision->approved_by ?? '' }}', '{{ $decision->effective_date ?? '' }}', '{{ addslashes($decision->remarks ?? '') }}', '{{ $decision->decision_no }}')">Edit</button>
-                                    <form action="{{ route('meetings.decisions.destroy', [$meeting, $decision]) }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this decision?')">
+                                    <form action="{{ route('meetings.decisions.destroy', [$meeting, $decision]) }}" method="POST" style="display: inline;" data-confirm="Delete this decision?">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">Delete</button>
@@ -351,15 +351,15 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Title</th>
-                            <th>Assigned To</th>
-                            <th>Department</th>
-                            <th>Due Date</th>
-                            <th>Priority</th>
-                            <th>Status</th>
-                            <th>Task</th>
-                            <th>Actions</th>
+                            <th scope="col">#</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Assigned To</th>
+                            <th scope="col">Department</th>
+                            <th scope="col">Due Date</th>
+                            <th scope="col">Priority</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Task</th>
+                            <th scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -376,7 +376,7 @@
                             <td>{{ $item->assignedDepartment->department_name ?? 'N/A' }}</td>
                             <td>{{ $item->due_date ? $item->due_date->format('M d, Y') : 'N/A' }}</td>
                             <td>
-                                <span class="badge bg-secondary text-dark">{{ ucwords($item->priority) }}</span>
+                                <x-badge variant="secondary">{{ ucwords($item->priority) }}</x-badge>
                             </td>
                             <td>
                                 <span class="badge {{ $item->status === 'completed' ? 'text-bg-success' : ($item->status === 'in_progress' ? 'text-bg-primary' : 'bg-secondary text-dark') }}">
@@ -411,13 +411,13 @@
                                         <button type="button" class="btn btn-sm btn-primary" onclick="openCreateTaskModal({{ $item->id }}, '{{ addslashes($item->title) }}', '{{ addslashes($item->description ?? '') }}', '{{ $item->due_date ?? '' }}', '{{ $item->assigned_to ?? '' }}')">Create Task</button>
                                         <button type="button" class="btn btn-sm btn-secondary" onclick="openLinkTaskModal({{ $item->id }})">Link Task</button>
                                     @else
-                                        <form action="{{ route('meetings.action-items.tasks.unlink', [$meeting, $item]) }}" method="POST" style="display: inline;" onsubmit="return confirm('Unlink this task from the action item?')">
+                                        <form action="{{ route('meetings.action-items.tasks.unlink', [$meeting, $item]) }}" method="POST" style="display: inline;" data-confirm="Unlink this task from the action item?">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-warning">Unlink</button>
                                         </form>
                                     @endif
-                                    <form action="{{ route('meetings.action-items.destroy', [$meeting, $item]) }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this action item?')">
+                                    <form action="{{ route('meetings.action-items.destroy', [$meeting, $item]) }}" method="POST" style="display: inline;" data-confirm="Delete this action item?">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">Delete</button>
@@ -693,11 +693,11 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Type</th>
-                            <th>Attendance</th>
-                            <th>Remarks</th>
-                            <th>Actions</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Attendance</th>
+                            <th scope="col">Remarks</th>
+                            <th scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -705,7 +705,7 @@
                         <tr>
                             <td>{{ $participant->user->name ?? 'N/A' }}</td>
                             <td>
-                                <span class="badge bg-secondary text-dark">{{ ucwords($participant->participant_type) }}</span>
+                                <x-badge variant="secondary">{{ ucwords($participant->participant_type) }}</x-badge>
                             </td>
                             <td>
                                 <span class="badge {{ $participant->attendance_status === 'present' ? 'text-bg-success' : ($participant->attendance_status === 'accepted' ? 'text-bg-primary' : 'bg-secondary text-dark') }}">
@@ -716,7 +716,7 @@
                             <td>
                                 <div style="display: flex; gap: 0.5rem;">
                                     <button type="button" class="btn btn-sm btn-secondary" onclick="openEditParticipantModal({{ $participant->id }}, '{{ $participant->user_id ?? '' }}', '{{ $participant->participant_type }}', '{{ $participant->attendance_status }}', '{{ addslashes($participant->remarks ?? '') }}')">Edit</button>
-                                    <form action="{{ route('meetings.participants.destroy', [$meeting, $participant]) }}" method="POST" style="display: inline;" onsubmit="return confirm('Remove this participant?')">
+                                    <form action="{{ route('meetings.participants.destroy', [$meeting, $participant]) }}" method="POST" style="display: inline;" data-confirm="Remove this participant?">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">Delete</button>
@@ -860,11 +860,11 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>File Name</th>
-                            <th>Type</th>
-                            <th>Size</th>
-                            <th>Description</th>
-                            <th>Actions</th>
+                            <th scope="col">File Name</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Size</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -877,7 +877,7 @@
                             <td>{{ $attachment->file_size ? round($attachment->file_size / 1024, 1) . ' KB' : 'N/A' }}</td>
                             <td>{{ $attachment->description ?: 'N/A' }}</td>
                             <td>
-                                <form action="{{ route('meetings.attachments.destroy', [$meeting, $attachment]) }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this attachment?')">
+                                <form action="{{ route('meetings.attachments.destroy', [$meeting, $attachment]) }}" method="POST" style="display: inline;" data-confirm="Delete this attachment?">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger">Delete</button>
