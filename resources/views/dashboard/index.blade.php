@@ -128,10 +128,10 @@
                     @if ($upcomingMeetings->isNotEmpty())
                         <div class="list-group list-group-flush">
                             @foreach ($upcomingMeetings as $meeting)
-                                <a href="{{ route('meetings.show', $meeting) }}" class="list-group-item list-group-item-action">
-                                    <div class="fw-semibold">{{ $meeting->title }}</div>
+                                <a href="{{ $meeting['url'] }}" class="list-group-item list-group-item-action">
+                                    <div class="fw-semibold">{{ $meeting['title'] }}</div>
                                     <div class="small text-body-secondary">
-                                        {{ $meeting->meeting_date->format('M d, Y') }} &middot; {{ $meeting->start_time->format('H:i') }}
+                                        {{ $meeting['date'] }} &middot; {{ $meeting['time'] }}
                                     </div>
                                 </a>
                             @endforeach

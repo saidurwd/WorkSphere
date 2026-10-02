@@ -61,7 +61,11 @@ class TaskDistributionWidget implements DashboardWidget
         $total = (int) $rows->sum('total');
 
         return $rows->map(fn ($row): array => [
-            'status' => $row->status,
+            // The backing value, not the enum. `Task::$casts` turns `status` into a
+            // `WorkItemStatus`, and an enum instance is an object — so it would be
+            // serialised into the cache store and read back as
+            // `__PHP_Incomplete_Class` under `serializable_classes => false`.
+            'status' => $row->status?->value,
             'label' => StatusBadge::label($row->status),
             'variant' => StatusBadge::variant($row->status),
             // `label`, `value` and `color` are the keys x-donut-chart and x-legend

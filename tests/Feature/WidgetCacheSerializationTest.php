@@ -4,13 +4,17 @@ namespace Tests\Feature;
 
 use App\Dashboard\DashboardWidget;
 use App\Dashboard\WidgetRegistry;
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Cache\Repository as IlluminateCacheRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Modules\Meetings\Models\Meeting;
 use Modules\Obligations\Models\Obligation;
 use Modules\Obligations\Models\ObligationType;
+use Modules\Tasks\Models\Task;
+use Modules\Todos\Models\Todo;
 use Tests\InteractsWithRoles;
 use Tests\TestCase;
 
@@ -182,6 +186,8 @@ class WidgetCacheSerializationTest extends TestCase
     {
         $user = $this->dashboardUser();
 
+        $this->seedEverySource($user);
+
         $this->registry->resolveFor($user);
 
         foreach (WidgetRegistry::defaults() as $widget) {
@@ -192,6 +198,42 @@ class WidgetCacheSerializationTest extends TestCase
         }
 
         $this->assertCount(13, $this->registry->resolveFor($user));
+    }
+
+    public function test_a_widget_that_leaks_a_model_is_caught_rather_than_passing_on_an_empty_result(): void
+    {
+        // The specific regression this file existed to prevent, and the one that got
+        // through it. `upcoming_meetings` resolved to a Collection of Meeting MODELS
+        // and `task_distribution` put a `WorkItemStatus` enum in its `status` key.
+        // `cacheable()` only flattens Collections and arrays, so both objects went
+        // into the database store and came back as `__PHP_Incomplete_Class` — the
+        // second dashboard view of any user then died inside `route('meetings.show')`.
+        //
+        // The loop above could not see either: with no meetings and no tasks seeded,
+        // both widgets resolved to an EMPTY collection, and an empty collection
+        // contains no objects. A payload assertion is only worth what its fixture is
+        // worth, so the two rows are asserted non-empty AND object-free.
+        $user = $this->dashboardUser();
+
+        Meeting::factory()->organisedBy($user)->create(['title' => 'Board review']);
+        Task::factory()->ownedBy($user)->create();
+
+        $meetings = $this->cachedPayload($user, 'upcoming_meetings');
+
+        $this->assertNotEmpty($meetings, 'No meeting was cached, so the assertion below proves nothing.');
+        $this->assertHoldsNoObjects($meetings, 'upcoming_meetings');
+
+        $this->assertSame('Board review', $meetings[0]['title']);
+        $this->assertSame(route('meetings.show', $meetings[0]['id']), $meetings[0]['url']);
+
+        $distribution = $this->cachedPayload($user, 'task_distribution');
+
+        $this->assertNotEmpty($distribution, 'No task was cached, so the assertion below proves nothing.');
+        $this->assertHoldsNoObjects($distribution, 'task_distribution');
+
+        // The enum is the leak that is easiest to reintroduce: `$row->status` reads
+        // naturally in a widget and only becomes an object because of the cast.
+        $this->assertIsString($distribution[0]['status']);
     }
 
     public function test_a_second_read_serves_the_same_values_without_rerunning_the_query(): void
@@ -209,6 +251,35 @@ class WidgetCacheSerializationTest extends TestCase
                 "Widget {$key} changed type between the cold and warm read.",
             );
         }
+    }
+
+    /**
+     * One row per source a widget reads, all owned by the viewer.
+     *
+     * Without this every widget resolves to an empty collection and every payload
+     * assertion passes for the wrong reason — the object-free check finds nothing
+     * to object to, and the test protects nothing.
+     */
+    private function seedEverySource(User $user): void
+    {
+        $type = ObligationType::factory()->create(['type_name' => 'Licence']);
+
+        Todo::factory()->titleOnly('A to-do')->createdBy($user)->assignedTo($user)->create();
+        Task::factory()->ownedBy($user)->create();
+        Meeting::factory()->organisedBy($user)->create();
+
+        Obligation::factory()->create([
+            'obligation_type_id' => $type->id,
+            'owner_user_id' => $user->id,
+            'priority' => 'high',
+            'status' => 'active',
+            'risk_level' => 'critical',
+        ]);
+
+        ActivityLog::factory()->forSubject(
+            Todo::factory()->titleOnly('Logged')->createdBy($user)->create(),
+            'created',
+        )->create(['user_id' => $user->id]);
     }
 
     /**
