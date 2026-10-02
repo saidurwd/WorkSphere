@@ -41,7 +41,18 @@
                     </div>
 
                     @if ($user->employee)
-                        <x-btn :href="route('employees.show', $user->employee)" variant="outline-primary" size="sm" icon="person-badge">View Employee Profile</x-btn>
+                        {{-- There is no `employees.show` route. Employee records are
+                             served by one controller behind a `{resource}` parameter,
+                             so the link goes to that screen pre-filtered to this
+                             person's code. It previously called a route that does
+                             not exist, which made the whole user detail page
+                             fatal — `route()` throws while rendering, so any user
+                             with an employee record was unreachable. --}}
+                        <x-btn
+                            :href="route('admin.reference.index', ['resource' => 'employees', 'search' => $user->employee->employee_code])"
+                            variant="outline-primary"
+                            size="sm"
+                            icon="person-badge">View Employee Profile</x-btn>
                     @endif
                 </div>
             </div>

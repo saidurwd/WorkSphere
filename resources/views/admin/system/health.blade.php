@@ -5,18 +5,17 @@
 @section('content')
     <x-page-header
         title="System Health"
-        subtitle="Live status of the application, its dependencies and its background work."
+        subtitle="Database, migrations, cache, storage, queue, scheduler, configuration and PHP."
         icon="heart-pulse">
         {{-- Auto-refresh, because a health page that must be reloaded by hand is a
-             health page nobody checks during an incident. The interval is a
-             meta tag rather than a poll so it survives a slow response, and the
-             value is clamped to something a human can still read. --}}
+             health page nobody checks during an incident. The interval is a data
+             attribute rather than inline so the value is not hard-coded twice. --}}
         <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" id="autoRefresh"
                    {{ $refresh > 0 ? 'checked' : '' }}
                    data-auto-refresh-seconds="{{ $refresh }}">
             <label class="form-check-label small" for="autoRefresh">
-                Auto-refresh every {{ $refresh > 0 ? $refresh.'s' : 'off' }}
+                Auto-refresh {{ $refresh > 0 ? 'every '.$refresh.'s' : 'off' }}
             </label>
         </div>
 
@@ -29,10 +28,13 @@
     </x-page-header>
 
     <div class="alert alert-{{ $ok ? 'success' : 'danger' }} d-flex align-items-center gap-3" role="status">
-        <i class="bi {{ $ok ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill' }} fs-4"></i>
+        <i class="bi {{ $ok ? 'bi-check-circle-fill' : 'bi-exclamation-octagon-fill' }} fs-4"></i>
         <div>
             <div class="fw-semibold">
                 {{ $ok ? 'All checks passing' : count($failing).' check(s) failing' }}
+                @if ($warning && $ok)
+                    · {{ count($warning) }} warning(s)
+                @endif
             </div>
             <div class="small">
                 {{ $report['application']['environment'] }} ·
@@ -41,12 +43,35 @@
         </div>
     </div>
 
+    @if ($failing)
+        <div class="alert alert-danger" role="alert">
+            <div class="fw-semibold mb-1">
+                <i class="bi bi-exclamation-octagon-fill me-1"></i>Failing
+            </div>
+            <ul class="mb-0 ps-3">
+                @foreach ($failing as $name => $check)
+                    <li>
+                        <strong>{{ $labels[$name] ?? $name }}</strong> —
+                        {{ \App\Http\Controllers\Admin\System\HealthController::explain($name, $check) }}
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     @if ($warning)
         <div class="alert alert-warning" role="status">
-            <i class="bi bi-exclamation-triangle me-2"></i>
-            <strong>{{ count($warning) }} check(s) need attention.</strong>
-            A queue with work in it is a queue doing its job; a backlog older than an
-            hour means no worker is draining it.
+            <div class="fw-semibold mb-1">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>Needs attention
+            </div>
+            <ul class="mb-0 ps-3">
+                @foreach ($warning as $name => $check)
+                    <li>
+                        <strong>{{ $labels[$name] ?? $name }}</strong> —
+                        {{ \App\Http\Controllers\Admin\System\HealthController::explain($name, $check) }}
+                    </li>
+                @endforeach
+            </ul>
         </div>
     @endif
 
@@ -61,14 +86,18 @@
                 $icon = match ($check['status']) {
                     'pass' => 'check-circle-fill',
                     'warn' => 'exclamation-triangle-fill',
-                    default => 'x-circle-fill',
+                    default => 'x-octagon-fill',
                 };
             @endphp
 
             <div class="col-12 col-md-6 col-xl-4">
                 <div class="card h-100 border-{{ $variant }}">
                     <div class="card-header d-flex align-items-center justify-content-between">
-                        <h2 class="card-title mb-0 text-capitalize">{{ str_replace('_', ' ', $name) }}</h2>
+                        <h2 class="card-title mb-0 d-flex align-items-center gap-2">
+                            <i class="bi bi-{{ $icons[$name] ?? 'check-circle' }} text-body-secondary"></i>
+                            {{ $labels[$name] ?? $name }}
+                        </h2>
+
                         {{-- The verdict is text as well as colour. A status page that
                              distinguishes "passing" from "failing" only by hue is
                              unreadable to a colour-blind operator and useless in a
@@ -79,25 +108,7 @@
                     </div>
 
                     <div class="card-body">
-                        <dl class="row mb-0 small">
-                            @foreach ($check as $key => $value)
-                                @continue($key === 'status')
-                                <dt class="col-6 text-body-secondary text-capitalize">
-                                    {{ str_replace('_', ' ', $key) }}
-                                </dt>
-                                <dd class="col-6 mb-1 text-break">
-                                    @if (is_bool($value))
-                                        <i class="bi bi-{{ $value ? 'check-lg text-success' : 'dash-lg text-body-secondary' }}"></i>
-                                    @elseif (is_array($value))
-                                        @foreach ($value as $k => $v)
-                                            {{ $k }}: {{ is_bool($v) ? ($v ? 'yes' : 'no') : $v }}@if (! $loop->last), @endif
-                                        @endforeach
-                                    @else
-                                        {{ $value === null ? '—' : $value }}
-                                    @endif
-                                </dd>
-                            @endforeach
-                        </dl>
+                        @include('admin.system.partials.check-body', ['name' => $name, 'check' => $check])
                     </div>
                 </div>
             </div>
@@ -118,31 +129,29 @@
             <div class="row g-3">
                 <div class="col-12 col-md-6">
                     <div class="border rounded p-3 h-100">
-                        <div class="fw-semibold mb-1">
-                            <code>GET {{ route('livez') }}</code>
-                        </div>
+                        <div class="fw-semibold mb-1"><code>GET {{ route('livez') }}</code></div>
                         <div class="small text-body-secondary mb-2">
                             Liveness. Answers "should this process be restarted?"
                         </div>
                         <div class="small">
-                            <strong>503</strong> means restart. It does not touch the database: a
-                            database blip must not cause every replica to be restarted and turn a
-                            recoverable outage into a total one.
+                            Checks PHP, required extensions and storage. <strong>503</strong> means
+                            restart. It does not touch the database: a database blip must not cause
+                            every replica to be restarted and turn a recoverable outage into a total
+                            one.
                         </div>
                     </div>
                 </div>
 
                 <div class="col-12 col-md-6">
                     <div class="border rounded p-3 h-100">
-                        <div class="fw-semibold mb-1">
-                            <code>GET {{ route('readyz') }}</code>
-                        </div>
+                        <div class="fw-semibold mb-1"><code>GET {{ route('readyz') }}</code></div>
                         <div class="small text-body-secondary mb-2">
                             Readiness. Answers "should traffic be sent here?"
                         </div>
                         <div class="small">
-                            <strong>503</strong> means take this process out of rotation but leave it
-                            running. It does check the database, the cache and the queue.
+                            Checks database, migrations, cache, queue, scheduler, configuration and
+                            storage. <strong>503</strong> means take this process out of rotation
+                            but leave it running.
                         </div>
                     </div>
                 </div>

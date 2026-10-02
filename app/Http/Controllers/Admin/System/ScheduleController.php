@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Admin\System;
 
-use App\Http\Controllers\Controller;
 use App\Console\WorkSphereSchedule;
+use App\Http\Controllers\Controller;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
@@ -46,7 +45,7 @@ class ScheduleController extends Controller
         return view('admin.system.schedule', [
             'timezone' => (string) config('app.timezone'),
             'events' => collect($schedule->events())
-                ->map(fn (Event $event): array => $this->describe($event))
+                ->map(fn (Event $event): array => $this->row($event))
                 ->sortBy('next_run')
                 ->values()
                 ->all(),
@@ -56,7 +55,7 @@ class ScheduleController extends Controller
     /**
      * @return array<string, mixed>
      */
-    protected function describe(Event $event): array
+    protected function row(Event $event): array
     {
         $missing = [];
 
@@ -69,7 +68,8 @@ class ScheduleController extends Controller
         $next = $event->nextRunDate();
 
         return [
-            'description' => $event->description ?? '(no description)',
+            'description' => $this->describe($event),
+            'command' => $this->command($event),
             'expression' => $event->getExpression(),
             // Null for a one-shot event that has already run. Rendering "never"
             // would be a claim; null is a fact.
@@ -84,18 +84,77 @@ class ScheduleController extends Controller
     }
 
     /**
+     * What to show as the event's name.
+     *
+     * `Event::$description` is the WRONG field for a scheduled command. Laravel
+     * wraps `Schedule::command('reminders:dispatch')` in a callback, so the
+     * description is the literal string `Closure` unless the caller overrides it —
+     * and `WorkSphereSchedule` does not. Reading it produced a table of identical
+     * "Closure" rows, which is why this screen could not show what it was listing.
+     *
+     * The command string is the real identifier, so that is what is shown, with the
+     * description appended only when it says something the command does not.
+     */
+    protected function describe(Event $event): string
+    {
+        $command = $this->command($event);
+        $description = trim((string) ($event->description ?? ''));
+
+        // 'Closure' is Laravel's placeholder, not a description.
+        if ($description === '' || $description === 'Closure') {
+            return $command;
+        }
+
+        return $command === '' ? $description : $command.' — '.$description;
+    }
+
+    /**
+     * The Artisan command an event runs, without the interpreter prefix.
+     */
+    protected function command(Event $event): string
+    {
+        $command = trim((string) ($event->command ?? ''));
+
+        if ($command === '') {
+            return '';
+        }
+
+        /**
+         * Strip the interpreter, not just the first word.
+         *
+         * `Application::formatCommandString()` shell-quotes the PHP binary, so the
+         * raw value is `'…/Herd/bin/php' 'artisan' reminders:dispatch` — and a
+         * path containing a space (Herd's, on macOS) defeats a leading `\S+` match.
+         * Anchoring on `artisan` and taking everything after it is what actually
+         * identifies the command.
+         */
+        if (preg_match("#artisan'?\s+(.+)$#", $command, $matches) === 1) {
+            return trim($matches[1]);
+        }
+
+        return $command;
+    }
+
+    /**
      * Whether an event lacks a given protection.
      *
-     * `withoutOverlapping()` adds a `Mutex`, so its absence is the absence of that
-     * object. `onOneServer()` and `timezone()` set plain properties. Reading them
-     * as properties rather than by calling the setter is what makes this a check
-     * rather than a mutation.
+     * Read as PROPERTIES, never by calling the setters: calling
+     * `withoutOverlapping()` here would add the guard the screen claims to be
+     * checking for, and the check would then pass for every entry.
+     *
+     * `withoutOverlapping` is two facts, not one: the flag AND the mutex object it
+     * creates. A flag with no mutex does nothing, so both are required.
+     *
+     * @param  string  $protection  One of {@see self::PROTECTIONS}'s values.
      */
     protected function lacks(Event $event, string $protection): bool
     {
         return match ($protection) {
-            'withoutOverlapping' => $event->mutex === null,
-            'onOneServer' => empty($event->server),
+            'withoutOverlapping' => ! $event->withoutOverlapping || $event->mutex === null,
+            // A boolean in this framework version, NOT a `$server` array. Reading a
+            // property that does not exist made every entry report "missing",
+            // which is worse than not checking at all.
+            'onOneServer' => ! (bool) $event->onOneServer,
             'timezone' => $event->timezone === null,
             default => false,
         };

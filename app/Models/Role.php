@@ -31,4 +31,21 @@ class Role extends Model
     {
         return $this->hasMany(UserRole::class);
     }
+
+    /**
+     * The users holding this role.
+     *
+     * The inverse of `User::roles()` and defined the same way — through
+     * `user_roles`, `withTimestamps()` — so a role's roster and a user's roles can
+     * never disagree about what the pivot holds.
+     *
+     * This relation was MISSING, and `resources/views/admin/roles/show.blade.php`
+     * iterates `$role->users` twice. Every visit to a role's detail page therefore
+     * threw `Call to undefined relationship [users]`, which is not a layout
+     * problem but an unreachable screen: the page had never loaded.
+     */
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_roles')->withTimestamps();
+    }
 }

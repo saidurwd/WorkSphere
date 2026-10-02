@@ -34,13 +34,15 @@ class HealthController extends Controller
      */
     public function index(Request $request): View
     {
-        $this->authorize('system.manage');
+        $this->authorize('system.health');
 
         $report = $this->health->full();
 
         return view('admin.system.health', [
             'report' => $report,
             'ok' => $report['status'] === 'ok',
+            'labels' => array_map(self::label(...), array_keys($report['checks'])),
+            'icons' => self::ICONS,
             'failing' => array_filter(
                 $report['checks'],
                 fn (array $check): bool => $check['status'] === 'fail',
@@ -67,6 +69,79 @@ class HealthController extends Controller
     public function readyz(): JsonResponse
     {
         return $this->respond($this->health->readiness());
+    }
+
+    /**
+     * A glyph per check, so a card is recognisable before its text is read.
+     *
+     * @var array<string, string>
+     */
+    private const ICONS = [
+        'php' => 'filetype-php',
+        'extensions' => 'plug',
+        'configuration' => 'sliders',
+        'database' => 'database',
+        'migrations' => 'diagram-2',
+        'cache' => 'lightning-charge',
+        'storage' => 'hdd-stack',
+        'queue' => 'list-task',
+        'scheduler' => 'calendar-week',
+    ];
+
+    /**
+     * One sentence explaining what a check's verdict MEANS.
+     *
+     * "Queue: warn" is a label. "3 failed jobs have exhausted their retries" is
+     * something an operator can act on, and it is the difference between a status
+     * page and a diagnostic one.
+     *
+     * @param  array<string, mixed>  $check
+     */
+    public static function explain(string $name, array $check): string
+    {
+        return match ($name) {
+            'extensions' => 'Missing: '.implode(', ', (array) ($check['missing'] ?? [])),
+            'configuration' => implode(' ', (array) ($check['problems'] ?? ['No problems detected.'])),
+            'database' => (string) ($check['message'] ?? 'Reachable in '.($check['latency_ms'] ?? '?').' ms.'),
+            'migrations' => ($check['pending_count'] ?? 0) > 0
+                ? ($check['pending_count']).' migration(s) not applied: '.implode(', ', array_slice((array) ($check['pending'] ?? []), 0, 3))
+                : 'Schema matches the codebase.',
+            'cache' => 'The '.($check['store'] ?? 'configured').' store did not complete a write-and-read round trip.',
+            'storage' => 'Not writable: '.implode(', ', (array) ($check['unwritable'] ?? [])).'.',
+            'queue' => (int) ($check['failed'] ?? 0) > 0
+                ? (int) $check['failed'].' job(s) have exhausted their retries.'
+                : 'Nothing waiting for over an hour. Oldest job is '.($check['oldest_pending_minutes'] ?? 0).' minutes old.',
+            // Nested ternaries need parentheses at every level; PHP will not infer
+            // the grouping.
+            'scheduler' => ((int) ($check['events'] ?? 0) === 0)
+                ? 'Nothing is scheduled, so reminders and notifications will never fire.'
+                : (((int) ($check['unguarded_events'] ?? 0)) > 0
+                    ? ((int) $check['unguarded_events']).' event(s) lack overlap or single-server protection.'
+                    : ((int) $check['events']).' event(s) scheduled, all guarded.'),
+            default => match ($check['status']) {
+                'pass' => 'Healthy.',
+                'warn' => 'Needs attention.',
+                default => 'Check failed.',
+            },
+        };
+    }
+
+    /**
+     * A human label for a check name.
+     *
+     * `str_replace('_', ' ', $name)` alone renders `php` and `database` in lower
+     * case on a screen a person reads, and `Php` is worse than either. These are
+     * acronyms, so they are spelled as such.
+     */
+    public static function label(string $name): string
+    {
+        $words = ucwords(str_replace('_', ' ', $name));
+
+        return str_replace(
+            ['Php', 'Db', 'Cpu', 'Ram'],
+            ['PHP', 'DB', 'CPU', 'RAM'],
+            $words,
+        );
     }
 
     /**

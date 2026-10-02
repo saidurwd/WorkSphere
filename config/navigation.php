@@ -188,7 +188,7 @@ return [
             'admin' => true,
             'active' => ['admin.system.*'],
             'children' => [
-                ['label' => 'Health', 'icon' => 'heart-pulse', 'route' => 'admin.system.health.index', 'permission' => 'system.health'],
+                ['label' => 'System Health', 'icon' => 'heart-pulse', 'route' => 'admin.system.health.index', 'permission' => 'system.health'],
                 ['label' => 'Settings', 'icon' => 'sliders', 'route' => 'admin.system.settings.index', 'permission' => 'system.settings'],
                 ['label' => 'Queue & Jobs', 'icon' => 'list-task', 'route' => 'admin.system.queue.index', 'permission' => 'system.queue'],
                 ['label' => 'Scheduled Tasks', 'icon' => 'calendar-week', 'route' => 'admin.system.schedule.index', 'permission' => 'system.schedule'],
@@ -220,7 +220,7 @@ return [
                         // Employees, Companies, Departments and Locations are one
                         // controller behind a `{resource}` parameter, so each needs
                         // its own node — they are four screens, not one.
-                        ['label' => 'Employees', 'icon' => 'id-badge', 'route' => 'admin.reference.index', 'active' => ['admin.reference.*'], 'permission' => 'user.manage', 'params' => ['resource' => 'employees']],
+                        ['label' => 'Employees', 'icon' => 'person-vcard', 'route' => 'admin.reference.index', 'active' => ['admin.reference.*'], 'permission' => 'user.manage', 'params' => ['resource' => 'employees']],
                         ['label' => 'Companies', 'icon' => 'building', 'route' => 'admin.reference.index', 'active' => ['admin.reference.*'], 'permission' => 'user.manage', 'params' => ['resource' => 'companies']],
                         ['label' => 'Departments', 'icon' => 'diagram-3', 'route' => 'admin.reference.index', 'active' => ['admin.reference.*'], 'permission' => 'user.manage', 'params' => ['resource' => 'departments']],
                         ['label' => 'Locations', 'icon' => 'geo-alt', 'route' => 'admin.reference.index', 'active' => ['admin.reference.*'], 'permission' => 'user.manage', 'params' => ['resource' => 'locations']],

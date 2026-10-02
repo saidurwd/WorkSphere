@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Database\Migrations\Migrator;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -18,41 +21,106 @@ use Throwable;
  * LIVENESS AND READINESS ANSWER DIFFERENT QUESTIONS and are checked separately:
  *
  *   - **Liveness** (`/livez`) answers "should this process be restarted?". It
- *     checks what is broken about the process itself — memory, PHP extensions,
- *     whether the compiled-view directory is readable. It deliberately does NOT
- *     touch the database: a database blip must not cause an orchestrator to
- *     restart every replica and turn a recoverable outage into a total one.
+ *     checks what is broken about the process itself — memory, the compiled-view
+ *     directory. It deliberately does NOT touch the database: a database blip must
+ *     not cause an orchestrator to restart every replica and turn a recoverable
+ *     outage into a total one.
  *   - **Readiness** (`/readyz`) answers "should traffic be sent here?". It DOES
  *     check the database, the cache and the queue, because a process that cannot
  *     reach those cannot serve a page and should be taken out of rotation rather
  *     than killed.
  *
+ * EVERY CHECK NAMES SOMETHING AN OPERATOR CAN ACT ON. "Database: pass" is only
+ * useful next to the latency that produced it; "Extensions: pass" is only useful
+ * next to WHICH extension is missing. A check that reports a verdict and nothing
+ * else makes the reader go and find the detail somewhere else.
+ *
  * THE STATUS CODE IS THE POINT. An endpoint that returns 200 while reporting
  * failures is worse than none, because a monitor checking the status code sees a
  * healthy system. `degraded` returns 503 so it cannot be ignored.
+ *
+ * `warn` is a first-class verdict. A queue holding work, or migrations waiting to
+ * be applied, are not failures — they are facts somebody needs to see, and folding
+ * them into `pass` hides them while folding them into `fail` cries wolf.
  */
 class HealthCheck
 {
+    /**
+     * Extensions the application cannot run without.
+     *
+     * `pdo` and a driver are listed separately because the driver is chosen by
+     * `DB_CONNECTION` and "pdo is loaded but pdo_mysql is not" is precisely the
+     * failure this list exists to catch.
+     *
+     * @var list<string>
+     */
+    private const REQUIRED_EXTENSIONS = [
+        'pdo',
+        'mbstring',
+        'openssl',
+        'json',
+        'tokenizer',
+        'ctype',
+        'xml',
+        'fileinfo',
+    ];
+
+    /**
+     * Extensions that are not required but that a given deployment is likely to
+     * want, reported so their absence is visible rather than discovered.
+     *
+     * @var array<string, string>
+     */
+    private const OPTIONAL_EXTENSIONS = [
+        'intl' => 'Locale-aware dates and numbers.',
+        'bcmath' => 'Arbitrary-precision arithmetic.',
+        'curl' => 'Faster outbound HTTP than the stream wrapper.',
+        'gd' => 'Image manipulation for attachments.',
+        'zip' => 'In-memory archive handling.',
+    ];
+
+    public function __construct(
+        private readonly Application $app,
+        private readonly Filesystem $files,
+    ) {}
+
+    // ---- Documents ----------------------------------------------------------
+
+    /**
+     * Readiness: can this process serve traffic at all?
+     *
+     * @return array<string, mixed>
+     */
     public function readiness(): array
     {
         return $this->document([
             'database' => $this->database(),
+            'migrations' => $this->migrations(),
             'cache' => $this->cache(),
             'queue' => $this->queue(),
             'storage' => $this->storage(),
-        ]);
-    }
-
-    public function liveness(): array
-    {
-        return $this->document([
-            'php' => $this->php(),
-            'application' => $this->application(),
+            'scheduler' => $this->scheduler(),
+            'configuration' => $this->configuration(),
         ]);
     }
 
     /**
-     * Everything, for the administration screen.
+     * Liveness: should this process be restarted?
+     *
+     * @return array<string, mixed>
+     */
+    public function liveness(): array
+    {
+        return $this->document([
+            'php' => $this->php(),
+            'extensions' => $this->extensions(),
+            'storage' => $this->storage(),
+        ]);
+    }
+
+    /**
+     * Everything, for the administration screen. The screen and the probes read the
+     * same checks, so what an operator sees and what a monitor polls cannot differ.
      *
      * @return array<string, mixed>
      */
@@ -60,12 +128,14 @@ class HealthCheck
     {
         return $this->document([
             'php' => $this->php(),
-            'application' => $this->application(),
+            'extensions' => $this->extensions(),
+            'configuration' => $this->configuration(),
             'database' => $this->database(),
+            'migrations' => $this->migrations(),
             'cache' => $this->cache(),
-            'queue' => $this->queue(),
             'storage' => $this->storage(),
-            'schedule' => $this->schedule(),
+            'queue' => $this->queue(),
+            'scheduler' => $this->scheduler(),
         ]);
     }
 
@@ -90,7 +160,7 @@ class HealthCheck
             'checks' => $checks,
             'application' => [
                 'name' => config('app.name'),
-                'environment' => app()->environment(),
+                'environment' => $this->app->environment(),
                 // RFC 3339, i.e. ISO 8601 with an offset. An unqualified timestamp
                 // in a health document is ambiguous precisely when somebody is
                 // comparing two regions' worth of output.
@@ -99,40 +169,117 @@ class HealthCheck
         ];
     }
 
+    // ---- Checks -------------------------------------------------------------
+
     /**
+     * PHP runtime.
+     *
      * @return array<string, mixed>
      */
     protected function php(): array
     {
+        $limit = $this->memoryLimitBytes();
+        $usage = memory_get_usage(true);
+
         return $this->record(
-            (memory_limit_bytes() === -1 || memory_get_usage(true) < memory_limit_bytes()),
+            $limit === 0 || $usage < $limit,
             [
                 'version' => PHP_VERSION,
-                'memory_usage_bytes' => memory_get_usage(true),
-                'memory_limit_bytes' => memory_limit_bytes(),
-                'extensions' => [
-                    'pdo' => extension_loaded('pdo'),
-                    'mbstring' => extension_loaded('mbstring'),
-                    'openssl' => extension_loaded('openssl'),
-                ],
+                'memory_usage_bytes' => $usage,
+                'memory_limit_bytes' => $limit,
+                'sapi' => PHP_SAPI,
             ],
         );
     }
 
     /**
+     * Required and wanted PHP extensions, each named.
+     *
+     * A separate check from `php` because the remedies differ completely: a memory
+     * limit is a `php.ini` change, a missing extension is a package or a build
+     * flag. Folding them together leaves an operator knowing something is wrong and
+     * not knowing which.
+     *
      * @return array<string, mixed>
      */
-    protected function application(): array
+    protected function extensions(): array
     {
-        return $this->record(
-            is_readable(storage_path('framework/views')),
-            [
-                'debug' => (bool) config('app.debug'),
-                'timezone' => (string) config('app.timezone'),
-                'locale' => app()->getLocale(),
-                'compiled_views_writable' => is_writable(storage_path('framework/views')),
+        $required = [];
+
+        foreach (self::REQUIRED_EXTENSIONS as $extension) {
+            $required[$extension] = extension_loaded($extension);
+        }
+
+        // The driver is chosen per deployment, so it is checked against what is
+        // actually configured rather than a fixed list.
+        $required[$this->configuredDriverExtension()] = extension_loaded($this->configuredDriverExtension());
+
+        $missing = array_keys(array_filter($required, fn (bool $loaded): bool => ! $loaded));
+
+        $optional = [];
+
+        foreach (self::OPTIONAL_EXTENSIONS as $extension => $why) {
+            $optional[$extension] = extension_loaded($extension) ? 'loaded' : 'not loaded';
+        }
+
+        return $this->record($missing === [], [
+            'required_total' => count($required),
+            'required_loaded' => count($required) - count($missing),
+            'missing' => $missing,
+            'optional' => $optional,
+        ]);
+    }
+
+    /**
+     * Runtime configuration an operator should be able to confirm at a glance.
+     *
+     * These are the settings whose misconfiguration produces a confusing symptom
+     * rather than an error: `APP_DEBUG=true` in production leaks stack traces,
+     * a missing `APP_KEY` breaks encryption in a way that surfaces much later, and
+     * `SESSION_DRIVER=file` on a read-only container fails only on login.
+     *
+     * The application key is reported as PRESENT OR ABSENT and never printed. A
+     * health endpoint is exposed more widely than the application, and a key in the
+     * response would be a credential in a monitoring system.
+     *
+     * @return array<string, mixed>
+     */
+    protected function configuration(): array
+    {
+        $problems = [];
+
+        $debug = (bool) config('app.debug');
+
+        if ($debug && ! $this->app->environment(['local', 'testing'])) {
+            $problems[] = 'APP_DEBUG is on outside local/testing.';
+        }
+
+        $key = (string) config('app.key');
+
+        if ($key === '') {
+            $problems[] = 'APP_KEY is not set.';
+        }
+
+        if (config('app.env') === 'production' && config('app.url') === 'http://localhost') {
+            $problems[] = 'APP_URL is still the local default.';
+        }
+
+        return [
+            'status' => $problems === [] ? 'pass' : 'fail',
+            'environment' => (string) config('app.env'),
+            'debug' => $debug,
+            'app_key' => $key === '' ? 'missing' : 'set',
+            'url' => (string) config('app.url'),
+            'timezone' => (string) config('app.timezone'),
+            'locale' => $this->app->getLocale(),
+            'drivers' => [
+                'cache' => (string) config('cache.default'),
+                'session' => (string) config('session.driver'),
+                'queue' => (string) config('queue.default'),
+                'database' => (string) config('database.default'),
             ],
-        );
+            'problems' => $problems,
+        ];
     }
 
     /**
@@ -165,6 +312,63 @@ class HealthCheck
     }
 
     /**
+     * Whether every migration in the codebase has been applied.
+     *
+     * PENDING IS A WARNING, NOT A FAILURE. An unapplied migration means the schema
+     * is behind the code — worth seeing immediately — but the application serves
+     * traffic meanwhile, and taking it out of rotation for a schema lag would turn
+     * a deploy into an outage. UNREADABLE is a failure, because then nothing can be
+     * said about the schema at all.
+     *
+     * @return array<string, mixed>
+     */
+    protected function migrations(): array
+    {
+        try {
+            $ran = $this->app->make('migrator')->getRepository()->getRan();
+        } catch (Throwable) {
+            return $this->record(false, [
+                'status_detail' => 'The migrations table could not be read.',
+                'pending' => null,
+            ]);
+        }
+
+        $files = $this->app->make(Migrator::class)->paths()
+            ? $this->pendingMigrationNames($ran)
+            : [];
+
+        return [
+            'status' => $files === [] ? 'pass' : 'warn',
+            'applied' => count($ran),
+            'pending_count' => count($files),
+            // Names, not counts alone: "3 pending" tells an operator nothing about
+            // whether the next deploy is the one that applies them.
+            'pending' => array_slice($files, 0, 10),
+        ];
+    }
+
+    /**
+     * Migration files present on disk that the `migrations` table does not record.
+     *
+     * @param  list<string>  $ran
+     * @return list<string>
+     */
+    protected function pendingMigrationNames(array $ran): array
+    {
+        $files = [];
+
+        foreach ($this->app->make(Migrator::class)->paths() as $path) {
+            foreach ($this->files->glob($path.'/*.php') as $file) {
+                $files[] = basename($file, '.php');
+            }
+        }
+
+        sort($files);
+
+        return array_values(array_diff($files, $ran));
+    }
+
+    /**
      * @return array<string, mixed>
      */
     protected function cache(): array
@@ -174,6 +378,8 @@ class HealthCheck
         try {
             $key = 'system:health:probe';
 
+            // A write AND a read: a store that accepts writes and returns nothing
+            // is not a cache, and a read-only probe would call it healthy.
             cache()->put($key, 'ok', 10);
 
             $roundTrips = cache()->pull($key) === 'ok';
@@ -188,9 +394,40 @@ class HealthCheck
     }
 
     /**
+     * Storage writability, for the paths the application actually writes to.
+     *
+     * @return array<string, mixed>
+     */
+    protected function storage(): array
+    {
+        $paths = [
+            'framework' => storage_path('framework'),
+            'app' => storage_path('app'),
+            'logs' => storage_path('logs'),
+        ];
+
+        $unwritable = [];
+
+        foreach ($paths as $label => $path) {
+            if (! is_dir($path) || ! is_writable($path)) {
+                $unwritable[] = $label;
+            }
+        }
+
+        return $this->record($unwritable === [], [
+            'unwritable' => $unwritable,
+            // Readable even when nothing is writable, so an operator can see WHERE
+            // the problem is rather than being told only that there is one.
+            'paths' => $paths,
+        ]);
+    }
+
+    /**
+     * The queue: depth, failures and the age of the oldest waiting job.
+     *
      * A backlog is a WARNING, not a failure: a queue with work in it is a queue
-     * doing its job. Only an unreachable queue fails readiness, because then
-     * nothing is being processed at all.
+     * doing its job. Only an unreachable queue fails, because then nothing is being
+     * processed at all.
      *
      * @return array<string, mixed>
      */
@@ -203,12 +440,14 @@ class HealthCheck
             $failed = (int) DB::table('failed_jobs')->count();
             $oldest = DB::table('jobs')->min('created_at');
 
-            $oldestMinutes = $oldest === null
-                ? null
-                : (int) floor((time() - (int) $oldest) / 60);
+            $oldestMinutes = $oldest === null ? null : (int) floor((time() - (int) $oldest) / 60);
+
+            // Failed jobs are a failure: each one is work the application promised
+            // and will not now do, and the count only grows.
+            $status = $failed > 0 ? 'fail' : (($oldestMinutes !== null && $oldestMinutes >= 60) ? 'warn' : 'pass');
 
             return [
-                'status' => ($oldestMinutes !== null && $oldestMinutes >= 60) ? 'warn' : 'pass',
+                'status' => $status,
                 'connection' => $connection,
                 'pending' => $pending,
                 'failed' => $failed,
@@ -220,29 +459,83 @@ class HealthCheck
     }
 
     /**
+     * The scheduler: what is registered, in which zone, and when it next fires.
+     *
      * @return array<string, mixed>
      */
-    protected function storage(): array
-    {
-        $path = storage_path('app');
-        $writable = is_dir($path) ? is_writable($path) : is_writable(storage_path());
-
-        return $this->record($writable, [
-            'path' => $path,
-            'writable' => $writable,
-        ]);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    protected function schedule(): array
+    protected function scheduler(): array
     {
         try {
-            return $this->record(true, ['events' => count(app(Schedule::class)->events())]);
+            $events = $this->app->make(Schedule::class)->events();
         } catch (Throwable) {
             return $this->record(false, ['events' => 0]);
         }
+
+        $soonest = null;
+        $unguarded = 0;
+
+        foreach ($events as $event) {
+            $next = $event->nextRunDate();
+
+            if ($next !== null && ($soonest === null || $next < $soonest)) {
+                $soonest = $next;
+            }
+
+            // An entry without overlap or single-server protection runs twice the
+            // moment there is more than one scheduler.
+            if (! $event->withoutOverlapping || ! $event->onOneServer) {
+                $unguarded++;
+            }
+        }
+
+        return [
+            // No events at all means nothing is scheduled, which is a configuration
+            // failure rather than a healthy empty queue.
+            'status' => $events === [] ? 'fail' : ($unguarded > 0 ? 'warn' : 'pass'),
+            'events' => count($events),
+            'unguarded_events' => $unguarded,
+            'timezone' => (string) config('app.timezone'),
+            'next_run' => $soonest?->toIso8601String(),
+        ];
+    }
+
+    // ---- Helpers ------------------------------------------------------------
+
+    /**
+     * `ini_get('memory_limit')` returns a shorthand string — `128M`, `-1` — not a
+     * number, and comparing that against `memory_get_usage()` is a type error
+     * rather than a wrong answer. Parsed here, and `-1` normalised to 0 so
+     * "unlimited" is one comparison rather than two.
+     */
+    protected function memoryLimitBytes(): int
+    {
+        $raw = trim((string) ini_get('memory_limit'));
+
+        if ($raw === '' || (int) $raw === -1) {
+            return 0;
+        }
+
+        $value = (int) $raw;
+
+        return match (strtolower(substr($raw, -1))) {
+            'g' => $value * 1024 * 1024 * 1024,
+            'm' => $value * 1024 * 1024,
+            'k' => $value * 1024,
+            default => $value,
+        };
+    }
+
+    /**
+     * The PDO driver extension implied by the configured connection.
+     */
+    protected function configuredDriverExtension(): string
+    {
+        return match ((string) config('database.default')) {
+            'mysql', 'mariadb' => 'pdo_mysql',
+            'pgsql', 'postgres' => 'pdo_pgsql',
+            'sqlsrv' => 'pdo_sqlsrv',
+            default => 'pdo_sqlite',
+        };
     }
 
     /**

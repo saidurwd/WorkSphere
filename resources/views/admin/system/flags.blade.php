@@ -51,6 +51,22 @@
                     </thead>
                     <tbody>
                         @foreach ($flags as $flag)
+                            @php
+                                // Built here rather than inline in the attribute: a
+                                // multi-line `@json([ ... ])` inside an HTML attribute
+                                // defeats Blade's directive parser, which reports an
+                                // unclosed `[` and fails the whole page.
+                                $flagPayload = [
+                                    'key' => $flag['key'],
+                                    'name' => $flag['name'],
+                                    'description' => $flag['description'],
+                                    'type' => $flag['type'],
+                                    'value' => $flag['value'],
+                                    'rollout' => (int) $flag['rollout_percentage'],
+                                    'roles' => $flag['target_roles'] ?? [],
+                                ];
+                            @endphp
+
                             <tr>
                                 <th scope="row" class="fw-semibold">
                                     <code>{{ $flag['key'] }}</code>
@@ -114,15 +130,7 @@
                                         <button type="button" class="btn btn-outline-secondary"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#editFlag"
-                                                data-flag='@json([
-                                                    "key" => $flag["key"],
-                                                    "name" => $flag["name"],
-                                                    "description" => $flag["description"],
-                                                    "type" => $flag["type"],
-                                                    "value" => $flag["value"],
-                                                    "rollout" => (int) $flag["rollout_percentage"],
-                                                    "roles" => $flag["target_roles"] ?? [],
-                                                ])'
+                                                data-flag='@json($flagPayload)'
                                                 aria-label="Edit {{ $flag['key'] }}">
                                             <i class="bi bi-pencil"></i>
                                         </button>
@@ -148,7 +156,7 @@
     @endif
 
     {{-- Create --}}
-    <x-modal id="newFlag" title="New feature flag">
+    <x-modal name="newFlag" title="New feature flag">
         <form method="POST" action="{{ route('admin.system.flags.store') }}">
             @csrf
 
@@ -205,7 +213,7 @@
     </x-modal>
 
     {{-- Edit, populated from the row's button --}}
-    <x-modal id="editFlag" title="Edit feature flag">
+    <x-modal name="editFlag" title="Edit feature flag">
         <form method="POST" id="editFlagForm">
             @csrf
             @method('PUT')

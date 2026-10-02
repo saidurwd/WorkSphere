@@ -131,6 +131,65 @@ class NavigationStructureTest extends TestCase
         $this->assertSame([], $placeholders, 'These nodes have no meaningful icon.');
     }
 
+    /**
+     * Every icon names a glyph that actually exists.
+     *
+     * An icon name that is not in Bootstrap Icons does not error, does not fall
+     * back and does not warn: it renders an empty box. `id-badge` shipped that way
+     * on the Employees item and looked like a layout bug rather than a typo.
+     *
+     * Checked against the INSTALLED `bootstrap-icons` stylesheet rather than a
+     * hard-coded list, so an upgrade that renames a glyph is caught here instead of
+     * in a screenshot.
+     */
+    public function test_every_icon_exists_in_the_installed_bootstrap_icons(): void
+    {
+        $stylesheet = base_path('node_modules/bootstrap-icons/font/bootstrap-icons.css');
+
+        $this->assertFileExists(
+            $stylesheet,
+            'Bootstrap Icons is not installed, so the menu icons cannot be verified. '
+            .'Run `npm install`.',
+        );
+
+        $available = $this->availableIcons($stylesheet);
+
+        $unknown = [];
+
+        $this->walk($this->configMenu(), function (array $node, int $depth) use ($available, &$unknown): void {
+            $icon = (string) ($node['icon'] ?? '');
+
+            if ($icon !== '' && ! in_array($icon, $available, true)) {
+                $unknown[] = str_repeat('  ', $depth).($node['label'] ?? '?').' -> '.$icon;
+            }
+        });
+
+        $this->assertSame(
+            [],
+            $unknown,
+            "These icons are not in Bootstrap Icons, so they render as an empty box:\n".implode("\n", $unknown),
+        );
+    }
+
+    /**
+     * The glyph names the installed Bootstrap Icons stylesheet defines.
+     *
+     * Read from the stylesheet rather than a hard-coded list, so the set tracks
+     * whatever `package.json` actually resolved to. The `bi-` prefix the config
+     * omits is stripped here, once, so a comparison is like-for-like.
+     *
+     * @return list<string>
+     */
+    private function availableIcons(string $stylesheet): array
+    {
+        preg_match_all('/^\.(bi-[a-z0-9-]+)::before/m', (string) file_get_contents($stylesheet), $matches);
+
+        return array_values(array_unique(array_map(
+            static fn (string $icon): string => substr($icon, 3),
+            $matches[1],
+        )));
+    }
+
     public function test_labels_are_unique_among_siblings(): void
     {
         $duplicates = [];

@@ -60,16 +60,31 @@ class SettingsController extends Controller
         foreach ($input as $key => $value) {
             $definition = Settings::DEFAULTS[$key];
 
+            /**
+             * Validated as a single `value` field, NOT as `[$key => $value]`.
+             *
+             * Laravel resolves a dotted field name as a nested path, so
+             * `'security.max_failed_attempts' => '8'` is read as
+             * `data['security']['max_failed_attempts']` — which does not exist — and
+             * every such setting failed validation with "this field is required"
+             * regardless of what was submitted. Setting keys contain dots by
+             * design (`app.timezone`, `security.session_lifetime`), so the value is
+             * validated under a name that cannot be interpreted as a path and the
+             * error is reported back under the name the view reads.
+             */
             $validator = Validator::make(
-                [$key => $value],
-                [$key => $this->rulesFor($definition['type'])],
-                [$key => $this->messagesFor($definition['type'])],
+                ['value' => $value],
+                ['value' => $this->rulesFor($definition['type'])],
+                ['value.required' => 'This setting is required.', 'value.integer' => 'This setting must be a whole number.'],
             );
 
             if ($validator->fails()) {
+                $name = 'settings['.$key.']';
+
                 return back()
                     ->withInput()
-                    ->with('error', $definition['label'].': '.$validator->errors()->first($key));
+                    ->withErrors([$name => $validator->errors()->first('value')])
+                    ->with('error', $definition['label'].': '.$validator->errors()->first('value'));
             }
 
             $validated[$key] = $this->normalise($value, $definition['type']);
@@ -92,18 +107,6 @@ class SettingsController extends Controller
             'float' => ['required', 'numeric'],
             'boolean' => ['nullable', 'boolean'],
             default => ['nullable', 'string', 'max:255'],
-        };
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function messagesFor(string $type): array
-    {
-        return match ($type) {
-            'integer' => ['required' => 'This setting is required and must be a whole number.', 'integer' => 'This setting must be a whole number.'],
-            'float' => ['numeric' => 'This setting must be a number.'],
-            default => ['max' => 'This setting is limited to 255 characters.'],
         };
     }
 
