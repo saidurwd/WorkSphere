@@ -42,7 +42,7 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                    data-confirm="Delete backup "{{ $backup['filename'] }}"? This cannot be undone."
+                                                    data-confirm="Delete backup {{ $backup['filename'] }}? This cannot be undone."
                                                     data-confirm-button="Delete" aria-label="Delete" title="Delete">
                                                 <i class="bi bi-trash3"></i>
                                             </button>

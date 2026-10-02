@@ -6,6 +6,7 @@ use App\Services\ActivityLogger;
 use App\Services\MysqlDumpExport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -48,23 +49,64 @@ class DatabaseBackupController extends Controller
     {
         $this->authorize('super-admin-only');
 
-        $backups = [];
+        $disk = Storage::disk('local');
+
+        $files = [];
 
         foreach ($this->files() as $file) {
-            $backups[] = [
-                'name' => $file,
-                'size' => Storage::disk('local')->size(self::DIRECTORY.'/'.$file),
-                'created_at' => Storage::disk('local')->lastModified(self::DIRECTORY.'/'.$file),
+            $path = self::DIRECTORY.'/'.$file;
+
+            $files[] = [
+                'filename' => $file,
+                'size' => $disk->size($path),
+                'created_at' => $disk->lastModified($path),
             ];
         }
 
-        // Newest first.
-        usort($backups, static fn (array $a, array $b): int => $b['created_at'] <=> $a['created_at']);
+        // Newest first, and sorted BEFORE the rows are shaped for display:
+        // ordering the rendered strings would sort them alphabetically, so
+        // "2 hours ago" would land ahead of "3 days ago".
+        usort($files, static fn (array $a, array $b): int => $b['created_at'] <=> $a['created_at']);
+
+        // Shaped to what the view reads. These keys are not arbitrary: the
+        // download and delete routes are both parameterised by `filename`, so the
+        // view hands the value straight to route().
+        //
+        // The controller used to supply `name`, `size` and `created_at` while the
+        // view read `filename`, `human_size` and `last_modified_human`. The
+        // mismatch raised `Undefined array key "filename"` as soon as a backup
+        // existed, which is why it went unnoticed: the directory starts empty, so
+        // the only path that ever ran in a test or on a fresh install was the
+        // empty-state branch.
+        $backups = array_map(fn (array $file): array => [
+            'filename' => $file['filename'],
+            'human_size' => $this->humanSize($file['size']),
+            'last_modified_human' => Carbon::createFromTimestamp($file['created_at'])->diffForHumans(),
+        ], $files);
 
         return view('database-backups.index', [
             'backups' => $backups,
             'retention' => self::RETENTION,
         ]);
+    }
+
+    /**
+     * A byte count as something an operator can read at a glance.
+     *
+     * A backup is a whole database, so the raw byte count is routinely seven
+     * digits with nothing to carry the unit. Binary units, because that is what
+     * the storage layer reports.
+     */
+    protected function humanSize(int $bytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+        $power = $bytes > 0 ? (int) floor(log($bytes, 1024)) : 0;
+        $power = min($power, count($units) - 1);
+
+        $value = $bytes / (1024 ** $power);
+
+        return ($power === 0 ? (string) (int) $value : number_format($value, 1)).' '.$units[$power];
     }
 
     public function store(Request $request): RedirectResponse

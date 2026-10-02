@@ -64,7 +64,7 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center"
-                                                    data-confirm="Delete project "{{ $project->name }}"? This cannot be undone."
+                                                    data-confirm="Delete project {{ $project->name }}? This cannot be undone."
                                                     data-confirm-button="Delete" aria-label="Delete" title="Delete">
                                                 <i class="bi bi-trash3"></i>
                                             </button>
