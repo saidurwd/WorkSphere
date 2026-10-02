@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 
 /**
@@ -31,6 +32,27 @@ use Illuminate\Console\Scheduling\Schedule;
 class WorkSphereSchedule
 {
     public function __construct(private readonly Schedule $schedule) {}
+
+    /**
+     * The registered events, from a schedule built for the purpose.
+     *
+     * NOT `$schedule->events()` on the container's singleton. Laravel populates
+     * that lazily, so during an ordinary HTTP request — where nothing resolves the
+     * `Schedule` — it is EMPTY, and the system health screen reported "nothing is
+     * scheduled" and failed readiness on a system whose scheduler was working
+     * perfectly. Building a schedule and registering onto it is deterministic and
+     * does not depend on who happened to resolve what first.
+     *
+     * @return list<Event>
+     */
+    public static function events(): array
+    {
+        $schedule = new Schedule(now()->timezone((string) config('app.timezone')));
+
+        (new self($schedule))->register();
+
+        return $schedule->events();
+    }
 
     public function register(): void
     {

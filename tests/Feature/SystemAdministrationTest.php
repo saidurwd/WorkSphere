@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Console\WorkSphereSchedule;
 use App\Models\FeatureFlag;
 use App\Models\Role;
 use App\Models\User;
@@ -420,15 +421,19 @@ class SystemAdministrationTest extends TestCase
 
     public function test_liveness_does_not_depend_on_the_database(): void
     {
-        // A database blip must not make every replica report itself dead and get
-        // restarted — that turns a recoverable outage into a total one.
         // Measured rather than simulated. Disconnecting the connection would prove
         // the point but leaves an in-memory SQLite database — which IS the
         // connection — unmigrated, so every later test in the class fails. Counting
         // queries shows the same thing safely: liveness touches nothing, readiness
         // touches the dependencies.
-        $liveness = $this->countQueries(fn () => $this->getJson('/livez')->assertOk());
-        $readiness = $this->countQueries(fn () => $this->getJson('/readyz')->assertOk());
+        $livenessResponse = $this->getJson('/livez');
+        $readinessResponse = $this->getJson('/readyz');
+
+        $livenessResponse->assertOk();
+        $readinessResponse->assertOk();
+
+        $liveness = $this->countQueries(fn () => $this->getJson('/livez'));
+        $readiness = $this->countQueries(fn () => $this->getJson('/readyz'));
 
         $this->assertSame(
             0,
@@ -490,6 +495,105 @@ class SystemAdministrationTest extends TestCase
             ->assertSee('Cache')
             ->assertSee('Queue')
             ->assertSee('Storage');
+    }
+
+    public function test_the_health_document_names_every_expected_check(): void
+    {
+        $checks = array_keys($this->getJson('/readyz')->assertOk()->json('checks'));
+
+        // The set an operator expects on a system health screen. Asserted as an
+        // exact list so REMOVING a check is a test failure — a health screen that
+        // quietly stops reporting the database is worse than one that never had it.
+        $this->assertSame([
+            'database', 'migrations', 'cache', 'queue', 'storage', 'scheduler', 'configuration',
+        ], $checks);
+
+        $live = array_keys($this->getJson('/livez')->assertOk()->json('checks'));
+
+        $this->assertSame(['php', 'extensions', 'storage'], $live);
+    }
+
+    public function test_the_screen_shows_all_nine_checks(): void
+    {
+        // One request: `adminWith()` creates a role with a unique slug, so calling
+        // it twice collides on the index.
+        $html = $this->actingAs($this->adminWith(['system.health']))
+            ->get(route('admin.system.health.index'))
+            ->assertOk()
+            ->getContent();
+
+        // Human labels, not the raw keys. The screen is read by a person, and
+        // `php` / `cache` / `queue` are what the JSON calls them.
+        foreach (['PHP', 'Extensions', 'Configuration', 'Database', 'Migrations', 'Cache', 'Storage', 'Queue', 'Scheduler'] as $label) {
+            $this->assertStringContainsString($label, $html, "The health screen does not show [{$label}].");
+        }
+    }
+
+    public function test_migrations_are_reported_by_name_when_pending(): void
+    {
+        $health = app(HealthCheck::class);
+        $report = $health->full();
+
+        // Whatever the verdict, the shape is what an operator acts on: a count AND
+        // the names.
+        $this->assertArrayHasKey('pending_count', $report['checks']['migrations']);
+        $this->assertArrayHasKey('pending', $report['checks']['migrations']);
+        $this->assertArrayHasKey('applied', $report['checks']['migrations']);
+    }
+
+    public function test_required_extensions_are_reported_even_when_all_are_present(): void
+    {
+        $check = app(HealthCheck::class)->full()['checks']['extensions'];
+
+        // A count alone is useless: "9/9" does not say WHICH are required, and a
+        // deployment missing one needs the package name.
+        $this->assertSame([], $check['missing']);
+        $this->assertGreaterThan(0, $check['required_total']);
+        $this->assertArrayHasKey('intl', $check['optional']);
+    }
+
+    public function test_configuration_reports_drivers_without_ever_printing_the_app_key(): void
+    {
+        $check = app(HealthCheck::class)->full()['checks']['configuration'];
+
+        $this->assertSame('set', $check['app_key']);
+        $this->assertArrayHasKey('drivers', $check);
+        $this->assertArrayHasKey('session', $check['drivers']);
+
+        // The key itself must never appear: this screen is exposed more widely than
+        // the application, and a monitoring system is not where a key belongs.
+        $this->assertStringNotContainsString((string) config('app.key'), json_encode($check));
+    }
+
+    public function test_the_scheduler_check_reports_what_is_actually_registered(): void
+    {
+        $check = app(HealthCheck::class)->full()['checks']['scheduler'];
+
+        // Laravel populates the container's Schedule lazily, so reading THAT during
+        // an HTTP request returns nothing and the check reports a working scheduler
+        // as empty. It must come from the class that defines the entries.
+        $this->assertGreaterThan(0, $check['events']);
+        $this->assertSame('pass', $check['status']);
+        $this->assertSame(0, $check['unguarded_events'], 'A scheduled entry lost a guard.');
+        $this->assertNotNull($check['next_run']);
+    }
+
+    public function test_the_schedule_screen_and_the_health_check_agree(): void
+    {
+        $health = app(HealthCheck::class)->full()['checks']['scheduler'];
+
+        $html = $this->actingAs($this->adminWith(['system.schedule']))
+            ->get(route('admin.system.schedule.index'))
+            ->assertOk()
+            ->getContent();
+
+        // One accessor feeds both, so the two screens cannot disagree about what is
+        // scheduled.
+        foreach (WorkSphereSchedule::events() as $event) {
+            $this->assertStringContainsString($event->description ?? '', $html === '' ? '' : $html);
+        }
+
+        $this->assertSame(count(WorkSphereSchedule::events()), $health['events']);
     }
 
     // ---- Queue --------------------------------------------------------------

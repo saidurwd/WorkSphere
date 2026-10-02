@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use Illuminate\Console\Scheduling\Schedule;
+use App\Console\WorkSphereSchedule;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Filesystem\Filesystem;
@@ -466,7 +466,12 @@ class HealthCheck
     protected function scheduler(): array
     {
         try {
-            $events = $this->app->make(Schedule::class)->events();
+            // From the class that defines them, not the container's singleton —
+            // see `WorkSphereSchedule::events()` for why that distinction matters.
+            // Laravel populates the singleton lazily, so in an ordinary HTTP request
+            // it is empty, and this check reported "nothing is scheduled" on a
+            // system whose scheduler was working perfectly.
+            $events = WorkSphereSchedule::events();
         } catch (Throwable) {
             return $this->record(false, ['events' => 0]);
         }

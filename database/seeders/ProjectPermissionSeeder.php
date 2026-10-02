@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Role as RoleSlug;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\RolePermission;
@@ -35,6 +36,10 @@ class ProjectPermissionSeeder extends Seeder
         'project.update',
         'project.delete',
         'task.view',
+        // Reports on OTHER people's work. Distinct from `task.view`, which is
+        // scoped to what the caller may see: the workload report, the workload
+        // export and the four management dashboard widgets need this one.
+        'task.view_all',
         'task.create',
         'task.update',
         'task.manage',
@@ -57,7 +62,6 @@ class ProjectPermissionSeeder extends Seeder
         'meeting.submit_minutes',
         'meeting.approve_minutes',
         'meeting.publish_minutes',
-        'meeting.manage_templates',
         'meeting.manage_types',
         'meeting.manage_tags',
         'meeting.view_reports',
@@ -98,6 +102,9 @@ class ProjectPermissionSeeder extends Seeder
                     $name => Permission::query()->firstOrCreate(['permission_name' => $name]),
                 ]);
             $permissionIds = $permissions->pluck('id');
+
+            $this->provisionRoles();
+
             $adminRoleIds = Role::query()
                 ->whereIn('slug', config('authorization.admin_roles', []))
                 ->pluck('id');
@@ -115,5 +122,24 @@ class ProjectPermissionSeeder extends Seeder
 
             Permission::query()->whereNotIn('id', $permissionIds)->delete();
         });
+    }
+
+    /**
+     * Create any role the application refers to that does not exist yet.
+     *
+     * The grant loop below looks roles up by slug. On a database that has never
+     * had a role created through the admin UI — which is every freshly migrated
+     * one, since no other seeder writes to `roles` — that lookup matched nothing
+     * and the whole permission set was seeded but assigned to no one, so every
+     * gated screen 403'd even for an administrator holding the role.
+     */
+    private function provisionRoles(): void
+    {
+        foreach (RoleSlug::cases() as $role) {
+            Role::query()->firstOrCreate(
+                ['slug' => $role->value],
+                ['name' => $role->label()],
+            );
+        }
     }
 }

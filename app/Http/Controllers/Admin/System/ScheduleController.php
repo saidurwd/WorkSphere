@@ -38,13 +38,11 @@ class ScheduleController extends Controller
     {
         $this->authorize('system.schedule');
 
-        $schedule = new Schedule(now()->timezone(config('app.timezone')));
-
-        (new WorkSphereSchedule($schedule))->register();
-
         return view('admin.system.schedule', [
             'timezone' => (string) config('app.timezone'),
-            'events' => collect($schedule->events())
+            // The same accessor the health check uses, so the two screens cannot
+            // disagree about what is scheduled.
+            'events' => collect(WorkSphereSchedule::events())
                 ->map(fn (Event $event): array => $this->row($event))
                 ->sortBy('next_run')
                 ->values()

@@ -31,6 +31,7 @@ use Modules\Projects\Models\Project;
 use Modules\Tasks\Models\Task;
 use Modules\Todos\Models\Todo;
 use Modules\Todos\Policies\TodoPolicy;
+use Tests\Feature\PermissionCatalogTest;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -168,6 +169,21 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(fn (User $user): ?bool => $user->hasRole(RoleSlug::SuperAdmin->value) ? true : null);
 
         $this->enforceStrictMassAssignment();
+    }
+
+    /**
+     * Every ability this provider registers a gate for, including the role-gated
+     * `@super-admin` ones.
+     *
+     * Exposed so {@see PermissionCatalogTest} can prove each gate
+     * names a permission the seeder actually creates. A gate whose requirement is
+     * not in `ProjectPermissionSeeder`'s allow-list is a gate no one can pass.
+     *
+     * @return list<string>
+     */
+    public function requiredPermissions(): array
+    {
+        return array_values(array_unique(array_values($this->gates)));
     }
 
     /**
