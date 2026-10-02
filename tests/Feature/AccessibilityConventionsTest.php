@@ -364,6 +364,45 @@ class AccessibilityConventionsTest extends TestCase
         );
     }
 
+    public function test_no_view_declares_the_same_id_twice(): void
+    {
+        // WCAG 1.3.1. A duplicated id is not cosmetic: `<label for="remarks">`
+        // resolves to the FIRST match, so with three modals on one page each
+        // carrying `remarks` the other two labels silently point at a control in
+        // a modal that is closed.
+        //
+        // It was found through a real defect rather than by inspection. Two modal
+        // pairs both declared `edit_title`, so `openEditAgendaModal` — which does
+        // `getElementById('edit_title').value = title` — resolved to the earlier
+        // *action item* modal and filled that one instead, leaving "Edit agenda"
+        // blank. The ids are namespaced per modal now; this is what stops that.
+        //
+        // Source-level only, and deliberately so: a literal id duplicated inside a
+        // Blade `@foreach` renders many times but is written once, so counting
+        // occurrences in the source finds the authoring mistake without flagging
+        // every repeated row.
+        $offenders = [];
+
+        foreach ($this->interactiveViews() as $view) {
+            preg_match_all('/\bid="([^"{}\s]+)"/', $this->code($view), $matches);
+
+            $duplicates = array_keys(array_filter(
+                array_count_values($matches[1]),
+                static fn (int $count): bool => $count > 1,
+            ));
+
+            foreach ($duplicates as $id) {
+                $offenders[] = str_replace(base_path().'/', '', $view).': #'.$id;
+            }
+        }
+
+        $this->assertSame(
+            [],
+            $offenders,
+            "An id must be unique in a document:\n".implode("\n", $offenders),
+        );
+    }
+
     public function test_the_forbidden_page_renders_on_the_guest_layout(): void
     {
         // It used to be a standalone document with its own font stack and its

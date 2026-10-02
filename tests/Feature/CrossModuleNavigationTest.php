@@ -101,7 +101,14 @@ class CrossModuleNavigationTest extends TestCase
     public function test_a_todo_can_be_created_from_an_obligation(): void
     {
         $user = $this->userWithPermissions(['todos.create', 'todos.create_for_others']);
-        $obligation = ObligationFactory::new()->create(['title' => 'Renew the vendor contract']);
+        // Pinned rather than left to the factory's `randomElement`: the obligations
+        // scale is `low|medium|high|critical`, so this test used to fail on roughly
+        // one run in four — which is worse than no test at all, because a green run
+        // says nothing. The `critical` case has its own test below.
+        $obligation = ObligationFactory::new()->create([
+            'title' => 'Renew the vendor contract',
+            'priority' => 'high',
+        ]);
 
         $this->actingAs($user)
             ->post(route('todos.links.from.obligation', $obligation))
@@ -110,11 +117,39 @@ class CrossModuleNavigationTest extends TestCase
         $todo = Todo::query()->withoutGlobalScopes()->firstOrFail();
 
         $this->assertSame('Renew the vendor contract', $todo->title);
+        $this->assertSame('high', $todo->priority->value);
         $this->assertDatabaseHas('todo_links', [
             'todo_id' => $todo->id,
             'linkable_type' => Obligation::class,
             'linkable_id' => $obligation->id,
         ]);
+    }
+
+    /**
+     * `critical` is the top of the obligations scale and has no case on the shared
+     * `Priority` enum, so the conversion has to map it deliberately.
+     *
+     * Both failure modes are guarded here, because both shipped: passing the raw
+     * value through raised a ValueError inside the enum cast and 500'd the request,
+     * and mapping it to nothing let `tryFrom()` fall back to Medium — a critical
+     * obligation arriving as a medium To-Do, which does not fail anything at all.
+     */
+    public function test_a_critical_obligation_becomes_an_urgent_todo_rather_than_erroring_or_downgrading(): void
+    {
+        $user = $this->userWithPermissions(['todos.create', 'todos.create_for_others']);
+        $obligation = ObligationFactory::new()->create([
+            'title' => 'Lift the production certificate',
+            'priority' => 'critical',
+        ]);
+
+        $this->actingAs($user)
+            ->from(route('obligations.show', $obligation))
+            ->post(route('todos.links.from.obligation', $obligation))
+            ->assertRedirect();
+
+        $todo = Todo::query()->withoutGlobalScopes()->firstOrFail();
+
+        $this->assertSame('urgent', $todo->priority->value);
     }
 
     public function test_creating_a_todo_for_someone_else_requires_create_for_others(): void

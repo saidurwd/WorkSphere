@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use Modules\Meetings\Models\Meeting;
+use Modules\Meetings\Models\MeetingAgenda;
 use Modules\Meetings\Models\MeetingParticipant;
 use Modules\Obligations\Models\Obligation;
 use Modules\Obligations\Models\ObligationDocument;
@@ -66,9 +67,16 @@ class NPlusOneDetectionTest extends TestCase
             // collection rendered inside it.
             'todo show' => ['/todos/{todo}', 'web', DetailSeeders::checklistFor('{todo}')],
             'task show' => ['/tasks/{task}', 'web', DetailSeeders::timeEntriesFor('{task}')],
-            'meeting show' => ['/meetings/{meeting}', 'web', DetailSeeders::participantsFor('{meeting}')],
+            'meeting show' => ['/meetings/{meeting}', 'web', DetailSeeders::meetingDetailFor('{meeting}')],
             'obligation show' => ['/obligations/{obligation}', 'web', DetailSeeders::documentsFor('{obligation}')],
             'api todo show' => ['/api/v1/todos/{todo}', 'api', DetailSeeders::checklistFor('{todo}')],
+
+            // Both of these render `$agenda->presentedBy->name`. Neither was measured
+            // before, which is how a missing `agendas.presentedBy` eager load shipped:
+            // `meeting show` was seeded with participants only, so no agenda row ever
+            // reached the relation.
+            'meeting agendas index' => ['/meetings/{meeting}/agendas', 'web', DetailSeeders::agendasFor('{meeting}')],
+            'meeting print' => ['/meetings/{meeting}/print', 'web', DetailSeeders::agendasFor('{meeting}')],
         ];
     }
 
@@ -295,6 +303,45 @@ final class DetailSeeders
         return fn (int $count) => MeetingParticipant::factory()
             ->count($count)
             ->create(['meeting_id' => self::$resolved[$placeholder]]);
+    }
+
+    /**
+     * Agendas, each with a presenter.
+     *
+     * `presented_by` is set NON-NULL on purpose, for the same reason the `employee`
+     * probe is on a non-null foreign key: a null key short-circuits inside
+     * `getRelationshipFromMethod` and never reaches the database, so a seeder that
+     * left it null would measure a screen structurally incapable of exhibiting this
+     * N+1 — the guard would pass on the one input that hides the bug.
+     */
+    public static function agendasFor(string $placeholder): callable
+    {
+        return function (int $count) use ($placeholder): void {
+            $meetingId = self::$resolved[$placeholder];
+            $presenter = User::factory()->create();
+
+            foreach (range(1, $count) as $index) {
+                MeetingAgenda::factory()->presentedBy($presenter)->create([
+                    'meeting_id' => $meetingId,
+                    'agenda_no' => $index,
+                    'sort_order' => $index,
+                ]);
+            }
+        };
+    }
+
+    /**
+     * Participants AND agendas, for the screens that render both.
+     *
+     * Seeding only participants left the agenda relation unmeasured on `meeting
+     * show`, which is the screen where the missing eager load was found.
+     */
+    public static function meetingDetailFor(string $placeholder): callable
+    {
+        return function (int $count) use ($placeholder): void {
+            self::participantsFor($placeholder)($count);
+            self::agendasFor($placeholder)($count);
+        };
     }
 
     public static function documentsFor(string $placeholder): callable

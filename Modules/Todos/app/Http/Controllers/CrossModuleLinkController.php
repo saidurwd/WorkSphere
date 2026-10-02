@@ -73,7 +73,7 @@ class CrossModuleLinkController extends Controller
         $todo = app(TodoService::class)->create($request->user(), [
             'title' => $this->titleFor($obligation->title, $request->input('title')),
             'description' => $this->descriptionFromObligation($obligation),
-            'priority' => $obligation->priority ?? Priority::Medium,
+            'priority' => $this->priorityFor($obligation->priority),
             'status' => WorkItemStatus::InProgress,
             'assignee_id' => $obligation->owner_user_id,
             'department_id' => $obligation->department_id,
@@ -166,6 +166,13 @@ class CrossModuleLinkController extends Controller
     protected function priorityFor(?string $priority): Priority
     {
         $mapped = match ($priority) {
+            // `critical` is the top of the obligations and action-items scale
+            // (`low|medium|high|critical`) and has no case on the shared enum. This
+            // arm exists for two reasons: without it `tryFrom()` returns null and a
+            // critical obligation silently arrives as a *medium* To-Do, and the
+            // obligation path used to bypass this helper and hand the raw string to
+            // the enum cast, which raised a ValueError and 500'd the request.
+            'critical' => Priority::Urgent->value,
             'important', 'urgent' => Priority::High->value,
             default => $priority,
         };

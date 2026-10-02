@@ -207,16 +207,16 @@
             @csrf
             <div class="modal-body">
                 <div class="mb-3">
-                    <label for="decision_no" class="form-label">Decision # <span style="color: var(--danger);">*</span></label>
-                    <input type="number" name="decision_no" id="decision_no" class="form-control" value="{{ old('decision_no', $meeting->decisions->count() + 1) }}" min="1" required>
+                    <label for="addDecisionModal-decision_no" class="form-label">Decision # <span style="color: var(--danger);">*</span></label>
+                    <input type="number" name="decision_no" id="addDecisionModal-decision_no" class="form-control" value="{{ old('decision_no', $meeting->decisions->count() + 1) }}" min="1" required>
                 </div>
                 <div class="mb-3">
-                    <label for="decision_title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="decision_title" id="decision_title" class="form-control" value="{{ old('decision_title') }}" required>
+                    <label for="addDecisionModal-decision_title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
+                    <input type="text" name="decision_title" id="addDecisionModal-decision_title" class="form-control" value="{{ old('decision_title') }}" required>
                 </div>
                 <div class="mb-3">
-                    <label for="decision_type" class="form-label">Type <span style="color: var(--danger);">*</span></label>
-                    <select name="decision_type" id="decision_type" class="form-select">
+                    <label for="addDecisionModal-decision_type" class="form-label">Type <span style="color: var(--danger);">*</span></label>
+                    <select name="decision_type" id="addDecisionModal-decision_type" class="form-select">
                         <option value="approved" {{ old('decision_type') === 'approved' ? 'selected' : '' }}>Approved</option>
                         <option value="rejected" {{ old('decision_type') === 'rejected' ? 'selected' : '' }}>Rejected</option>
                         <option value="deferred" {{ old('decision_type') === 'deferred' ? 'selected' : '' }}>Deferred</option>
@@ -225,16 +225,16 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="decision_status" class="form-label">Status <span style="color: var(--danger);">*</span></label>
-                    <select name="decision_status" id="decision_status" class="form-select">
+                    <label for="addDecisionModal-decision_status" class="form-label">Status <span style="color: var(--danger);">*</span></label>
+                    <select name="decision_status" id="addDecisionModal-decision_status" class="form-select">
                         <option value="active" {{ old('decision_status') === 'active' ? 'selected' : '' }}>Active</option>
                         <option value="superseded" {{ old('decision_status') === 'superseded' ? 'selected' : '' }}>Superseded</option>
                         <option value="cancelled" {{ old('decision_status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="approved_by" class="form-label">Approved By</label>
-                    <select name="approved_by" id="approved_by" class="form-select">
+                    <label for="addDecisionModal-approved_by" class="form-label">Approved By</label>
+                    <select name="approved_by" id="addDecisionModal-approved_by" class="form-select">
                         <option value="">Select Approver</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}" {{ old('approved_by') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
@@ -242,20 +242,20 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="decision_date" class="form-label">Decision Date</label>
-                    <input type="date" name="decision_date" id="decision_date" class="form-control" value="{{ old('decision_date') }}">
+                    <label for="addDecisionModal-decision_date" class="form-label">Decision Date</label>
+                    <input type="date" name="decision_date" id="addDecisionModal-decision_date" class="form-control" value="{{ old('decision_date') }}">
                 </div>
                 <div class="mb-3">
-                    <label for="effective_date" class="form-label">Effective Date</label>
-                    <input type="date" name="effective_date" id="effective_date" class="form-control" value="{{ old('effective_date') }}">
+                    <label for="addDecisionModal-effective_date" class="form-label">Effective Date</label>
+                    <input type="date" name="effective_date" id="addDecisionModal-effective_date" class="form-control" value="{{ old('effective_date') }}">
                 </div>
                 <div class="mb-3">
-                    <label for="decision_description" class="form-label">Description</label>
-                    <textarea name="decision_description" id="decision_description" class="form-control" rows="3">{{ old('decision_description') }}</textarea>
+                    <label for="addDecisionModal-decision_description" class="form-label">Description</label>
+                    <textarea name="decision_description" id="addDecisionModal-decision_description" class="form-control" rows="3">{{ old('decision_description') }}</textarea>
                 </div>
                 <div class="mb-3">
-                    <label for="remarks" class="form-label">Remarks</label>
-                    <textarea name="remarks" id="remarks" class="form-control" rows="2">{{ old('remarks') }}</textarea>
+                    <label for="addDecisionModal-remarks" class="form-label">Remarks</label>
+                    <textarea name="remarks" id="addDecisionModal-remarks" class="form-control" rows="2">{{ old('remarks') }}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -275,21 +275,21 @@
                 <h5 class="modal-title" id="editDecisionModal-label">Edit Decision</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-        <form id="editDecisionForm" method="POST">
+        <form id="editDecisionModal-form" method="POST">
             @csrf
             @method('PUT')
             <div class="modal-body">
                 <div class="mb-3">
-                    <label for="edit_decision_no" class="form-label">Decision # <span style="color: var(--danger);">*</span></label>
-                    <input type="number" name="decision_no" id="edit_decision_no" class="form-control" min="1" required>
+                    <label for="editDecisionModal-decision_no" class="form-label">Decision # <span style="color: var(--danger);">*</span></label>
+                    <input type="number" name="decision_no" id="editDecisionModal-decision_no" class="form-control" min="1" required>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_decision_title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="decision_title" id="edit_decision_title" class="form-control" required>
+                    <label for="editDecisionModal-decision_title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
+                    <input type="text" name="decision_title" id="editDecisionModal-decision_title" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_decision_type" class="form-label">Type <span style="color: var(--danger);">*</span></label>
-                    <select name="decision_type" id="edit_decision_type" class="form-select">
+                    <label for="editDecisionModal-decision_type" class="form-label">Type <span style="color: var(--danger);">*</span></label>
+                    <select name="decision_type" id="editDecisionModal-decision_type" class="form-select">
                         <option value="approved">Approved</option>
                         <option value="rejected">Rejected</option>
                         <option value="deferred">Deferred</option>
@@ -298,16 +298,16 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_decision_status" class="form-label">Status <span style="color: var(--danger);">*</span></label>
-                    <select name="decision_status" id="edit_decision_status" class="form-select">
+                    <label for="editDecisionModal-decision_status" class="form-label">Status <span style="color: var(--danger);">*</span></label>
+                    <select name="decision_status" id="editDecisionModal-decision_status" class="form-select">
                         <option value="active">Active</option>
                         <option value="superseded">Superseded</option>
                         <option value="cancelled">Cancelled</option>
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_approved_by" class="form-label">Approved By</label>
-                    <select name="approved_by" id="edit_approved_by" class="form-select">
+                    <label for="editDecisionModal-approved_by" class="form-label">Approved By</label>
+                    <select name="approved_by" id="editDecisionModal-approved_by" class="form-select">
                         <option value="">Select Approver</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}">{{ $user->name }}</option>
@@ -315,20 +315,20 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_decision_date" class="form-label">Decision Date</label>
-                    <input type="date" name="decision_date" id="edit_decision_date" class="form-control">
+                    <label for="editDecisionModal-decision_date" class="form-label">Decision Date</label>
+                    <input type="date" name="decision_date" id="editDecisionModal-decision_date" class="form-control">
                 </div>
                 <div class="mb-3">
-                    <label for="edit_effective_date" class="form-label">Effective Date</label>
-                    <input type="date" name="effective_date" id="edit_effective_date" class="form-control">
+                    <label for="editDecisionModal-effective_date" class="form-label">Effective Date</label>
+                    <input type="date" name="effective_date" id="editDecisionModal-effective_date" class="form-control">
                 </div>
                 <div class="mb-3">
-                    <label for="edit_decision_description" class="form-label">Description</label>
-                    <textarea name="decision_description" id="edit_decision_description" class="form-control" rows="3"></textarea>
+                    <label for="editDecisionModal-decision_description" class="form-label">Description</label>
+                    <textarea name="decision_description" id="editDecisionModal-decision_description" class="form-control" rows="3"></textarea>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_remarks" class="form-label">Remarks</label>
-                    <textarea name="remarks" id="edit_remarks" class="form-control" rows="2"></textarea>
+                    <label for="editDecisionModal-remarks" class="form-label">Remarks</label>
+                    <textarea name="remarks" id="editDecisionModal-remarks" class="form-control" rows="2"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -449,20 +449,20 @@
             @csrf
             <div class="modal-body">
                 <div class="mb-3">
-                    <label for="action_no" class="form-label">Action # <span style="color: var(--danger);">*</span></label>
-                    <input type="number" name="action_no" id="action_no" class="form-control" value="{{ old('action_no', $meeting->actionItems->count() + 1) }}" min="1" required>
+                    <label for="addActionItemModal-action_no" class="form-label">Action # <span style="color: var(--danger);">*</span></label>
+                    <input type="number" name="action_no" id="addActionItemModal-action_no" class="form-control" value="{{ old('action_no', $meeting->actionItems->count() + 1) }}" min="1" required>
                 </div>
                 <div class="mb-3">
-                    <label for="title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="title" id="title" class="form-control" value="{{ old('title') }}" required>
+                    <label for="addActionItemModal-title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
+                    <input type="text" name="title" id="addActionItemModal-title" class="form-control" value="{{ old('title') }}" required>
                 </div>
                 <div class="mb-3">
-                    <label for="description" class="form-label">Description</label>
-                    <textarea name="description" id="description" class="form-control" rows="3">{{ old('description') }}</textarea>
+                    <label for="addActionItemModal-description" class="form-label">Description</label>
+                    <textarea name="description" id="addActionItemModal-description" class="form-control" rows="3">{{ old('description') }}</textarea>
                 </div>
                 <div class="mb-3">
-                    <label for="assigned_to" class="form-label">Assigned To</label>
-                    <select name="assigned_to" id="assigned_to" class="form-select">
+                    <label for="addActionItemModal-assigned_to" class="form-label">Assigned To</label>
+                    <select name="assigned_to" id="addActionItemModal-assigned_to" class="form-select">
                         <option value="">Select Assignee</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}" {{ old('assigned_to') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
@@ -470,8 +470,8 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="assigned_department_id" class="form-label">Department</label>
-                    <select name="assigned_department_id" id="assigned_department_id" class="form-select">
+                    <label for="addActionItemModal-assigned_department_id" class="form-label">Department</label>
+                    <select name="assigned_department_id" id="addActionItemModal-assigned_department_id" class="form-select">
                         <option value="">Select Department</option>
                         @foreach($departments as $department)
                             <option value="{{ $department->id }}" {{ old('assigned_department_id') == $department->id ? 'selected' : '' }}>{{ $department->department_name }}</option>
@@ -479,8 +479,8 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="priority" class="form-label">Priority <span style="color: var(--danger);">*</span></label>
-                    <select name="priority" id="priority" class="form-select">
+                    <label for="addActionItemModal-priority" class="form-label">Priority <span style="color: var(--danger);">*</span></label>
+                    <select name="priority" id="addActionItemModal-priority" class="form-select">
                         <option value="low" {{ old('priority') === 'low' ? 'selected' : '' }}>Low</option>
                         <option value="medium" {{ old('priority') === 'medium' ? 'selected' : '' }}>Medium</option>
                         <option value="high" {{ old('priority') === 'high' ? 'selected' : '' }}>High</option>
@@ -488,12 +488,12 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="due_date" class="form-label">Due Date</label>
-                    <input type="date" name="due_date" id="due_date" class="form-control" value="{{ old('due_date') }}">
+                    <label for="addActionItemModal-due_date" class="form-label">Due Date</label>
+                    <input type="date" name="due_date" id="addActionItemModal-due_date" class="form-control" value="{{ old('due_date') }}">
                 </div>
                 <div class="mb-3">
-                    <label for="status" class="form-label">Status <span style="color: var(--danger);">*</span></label>
-                    <select name="status" id="status" class="form-select">
+                    <label for="addActionItemModal-status" class="form-label">Status <span style="color: var(--danger);">*</span></label>
+                    <select name="status" id="addActionItemModal-status" class="form-select">
                         <option value="open" {{ old('status') === 'open' ? 'selected' : '' }}>Open</option>
                         <option value="in_progress" {{ old('status') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
                         <option value="completed" {{ old('status') === 'completed' ? 'selected' : '' }}>Completed</option>
@@ -501,8 +501,8 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="remarks" class="form-label">Remarks</label>
-                    <textarea name="remarks" id="remarks" class="form-control" rows="2">{{ old('remarks') }}</textarea>
+                    <label for="addActionItemModal-remarks" class="form-label">Remarks</label>
+                    <textarea name="remarks" id="addActionItemModal-remarks" class="form-control" rows="2">{{ old('remarks') }}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -522,25 +522,25 @@
                 <h5 class="modal-title" id="editActionItemModal-label">Edit Action Item</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-        <form id="editActionItemForm" method="POST">
+        <form id="editActionItemModal-form" method="POST">
             @csrf
             @method('PUT')
             <div class="modal-body">
                 <div class="mb-3">
-                    <label for="edit_action_no" class="form-label">Action # <span style="color: var(--danger);">*</span></label>
-                    <input type="number" name="action_no" id="edit_action_no" class="form-control" min="1" required>
+                    <label for="editActionItemModal-action_no" class="form-label">Action # <span style="color: var(--danger);">*</span></label>
+                    <input type="number" name="action_no" id="editActionItemModal-action_no" class="form-control" min="1" required>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="title" id="edit_title" class="form-control" required>
+                    <label for="editActionItemModal-title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
+                    <input type="text" name="title" id="editActionItemModal-title" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_description" class="form-label">Description</label>
-                    <textarea name="description" id="edit_description" class="form-control" rows="3"></textarea>
+                    <label for="editActionItemModal-description" class="form-label">Description</label>
+                    <textarea name="description" id="editActionItemModal-description" class="form-control" rows="3"></textarea>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_assigned_to" class="form-label">Assigned To</label>
-                    <select name="assigned_to" id="edit_assigned_to" class="form-select">
+                    <label for="editActionItemModal-assigned_to" class="form-label">Assigned To</label>
+                    <select name="assigned_to" id="editActionItemModal-assigned_to" class="form-select">
                         <option value="">Select Assignee</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}">{{ $user->name }}</option>
@@ -548,8 +548,8 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_assigned_department_id" class="form-label">Department</label>
-                    <select name="assigned_department_id" id="edit_assigned_department_id" class="form-select">
+                    <label for="editActionItemModal-assigned_department_id" class="form-label">Department</label>
+                    <select name="assigned_department_id" id="editActionItemModal-assigned_department_id" class="form-select">
                         <option value="">Select Department</option>
                         @foreach($departments as $department)
                             <option value="{{ $department->id }}">{{ $department->department_name }}</option>
@@ -557,8 +557,8 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_priority" class="form-label">Priority <span style="color: var(--danger);">*</span></label>
-                    <select name="priority" id="edit_priority" class="form-select">
+                    <label for="editActionItemModal-priority" class="form-label">Priority <span style="color: var(--danger);">*</span></label>
+                    <select name="priority" id="editActionItemModal-priority" class="form-select">
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
                         <option value="high">High</option>
@@ -566,12 +566,12 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_due_date" class="form-label">Due Date</label>
-                    <input type="date" name="due_date" id="edit_due_date" class="form-control">
+                    <label for="editActionItemModal-due_date" class="form-label">Due Date</label>
+                    <input type="date" name="due_date" id="editActionItemModal-due_date" class="form-control">
                 </div>
                 <div class="mb-3">
-                    <label for="edit_status" class="form-label">Status <span style="color: var(--danger);">*</span></label>
-                    <select name="status" id="edit_status" class="form-select">
+                    <label for="editActionItemModal-status" class="form-label">Status <span style="color: var(--danger);">*</span></label>
+                    <select name="status" id="editActionItemModal-status" class="form-select">
                         <option value="open">Open</option>
                         <option value="in_progress">In Progress</option>
                         <option value="completed">Completed</option>
@@ -579,8 +579,8 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_remarks" class="form-label">Remarks</label>
-                    <textarea name="remarks" id="edit_remarks" class="form-control" rows="2"></textarea>
+                    <label for="editActionItemModal-remarks" class="form-label">Remarks</label>
+                    <textarea name="remarks" id="editActionItemModal-remarks" class="form-control" rows="2"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -600,40 +600,40 @@
                 <h5 class="modal-title" id="createTaskModal-label">Create Task from Action Item</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-        <form id="createTaskForm" method="POST">
+        <form id="createTaskModal-form" method="POST">
             @csrf
             <div class="modal-body">
                 <div class="mb-3">
-                    <label for="task_title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="title" id="task_title" class="form-control" required>
+                    <label for="createTaskModal-task_title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
+                    <input type="text" name="title" id="createTaskModal-task_title" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label for="task_description" class="form-label">Description</label>
-                    <textarea name="description" id="task_description" class="form-control" rows="3"></textarea>
+                    <label for="createTaskModal-task_description" class="form-label">Description</label>
+                    <textarea name="description" id="createTaskModal-task_description" class="form-control" rows="3"></textarea>
                 </div>
                 <div class="mb-3">
-                    <label for="task_priority" class="form-label">Priority <span style="color: var(--danger);">*</span></label>
-                    <select name="priority" id="task_priority" class="form-select">
+                    <label for="createTaskModal-task_priority" class="form-label">Priority <span style="color: var(--danger);">*</span></label>
+                    <select name="priority" id="createTaskModal-task_priority" class="form-select">
                         <option value="low">Low</option>
                         <option value="medium" selected>Medium</option>
                         <option value="high">High</option>
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="task_status" class="form-label">Status <span style="color: var(--danger);">*</span></label>
-                    <select name="status" id="task_status" class="form-select">
+                    <label for="createTaskModal-task_status" class="form-label">Status <span style="color: var(--danger);">*</span></label>
+                    <select name="status" id="createTaskModal-task_status" class="form-select">
                         <option value="pending" selected>Pending</option>
                         <option value="in_progress">In Progress</option>
                         <option value="completed">Completed</option>
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="task_due_date" class="form-label">Due Date</label>
-                    <input type="date" name="due_date" id="task_due_date" class="form-control">
+                    <label for="createTaskModal-task_due_date" class="form-label">Due Date</label>
+                    <input type="date" name="due_date" id="createTaskModal-task_due_date" class="form-control">
                 </div>
                 <div class="mb-3">
-                    <label for="task_responsible_user_id" class="form-label">Responsible User</label>
-                    <select name="responsible_user_id" id="task_responsible_user_id" class="form-select">
+                    <label for="createTaskModal-task_responsible_user_id" class="form-label">Responsible User</label>
+                    <select name="responsible_user_id" id="createTaskModal-task_responsible_user_id" class="form-select">
                         <option value="">Select User</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}">{{ $user->name }}</option>
@@ -658,12 +658,12 @@
                 <h5 class="modal-title" id="linkTaskModal-label">Link Existing Task</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-        <form id="linkTaskForm" method="POST">
+        <form id="linkTaskModal-form" method="POST">
             @csrf
             <div class="modal-body">
                 <div class="mb-3">
-                    <label for="link_task_id" class="form-label">Select Task <span style="color: var(--danger);">*</span></label>
-                    <select name="task_id" id="link_task_id" class="form-select" required>
+                    <label for="linkTaskModal-link_task_id" class="form-label">Select Task <span style="color: var(--danger);">*</span></label>
+                    <select name="task_id" id="linkTaskModal-link_task_id" class="form-select" required>
                         <option value="">Select a task</option>
                         @foreach($tasks as $task)
                             <option value="{{ $task->id }}">
@@ -748,8 +748,8 @@
             @csrf
             <div class="modal-body">
                 <div class="mb-3">
-                    <label for="user_id" class="form-label">User <span style="color: var(--danger);">*</span></label>
-                    <select name="user_id" id="user_id" class="form-select" required>
+                    <label for="addParticipantModal-user_id" class="form-label">User <span style="color: var(--danger);">*</span></label>
+                    <select name="user_id" id="addParticipantModal-user_id" class="form-select" required>
                         <option value="">Select User</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
@@ -757,8 +757,8 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="participant_type" class="form-label">Type <span style="color: var(--danger);">*</span></label>
-                    <select name="participant_type" id="participant_type" class="form-select">
+                    <label for="addParticipantModal-participant_type" class="form-label">Type <span style="color: var(--danger);">*</span></label>
+                    <select name="participant_type" id="addParticipantModal-participant_type" class="form-select">
                         <option value="organizer" {{ old('participant_type') === 'organizer' ? 'selected' : '' }}>Organizer</option>
                         <option value="chairperson" {{ old('participant_type') === 'chairperson' ? 'selected' : '' }}>Chairperson</option>
                         <option value="member" {{ old('participant_type') === 'member' ? 'selected' : '' }}>Member</option>
@@ -768,8 +768,8 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="attendance_status" class="form-label">Attendance <span style="color: var(--danger);">*</span></label>
-                    <select name="attendance_status" id="attendance_status" class="form-select">
+                    <label for="addParticipantModal-attendance_status" class="form-label">Attendance <span style="color: var(--danger);">*</span></label>
+                    <select name="attendance_status" id="addParticipantModal-attendance_status" class="form-select">
                         <option value="invited" {{ old('attendance_status') === 'invited' ? 'selected' : '' }}>Invited</option>
                         <option value="accepted" {{ old('attendance_status') === 'accepted' ? 'selected' : '' }}>Accepted</option>
                         <option value="declined" {{ old('attendance_status') === 'declined' ? 'selected' : '' }}>Declined</option>
@@ -779,8 +779,8 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="remarks" class="form-label">Remarks</label>
-                    <textarea name="remarks" id="remarks" class="form-control" rows="2">{{ old('remarks') }}</textarea>
+                    <label for="addParticipantModal-remarks" class="form-label">Remarks</label>
+                    <textarea name="remarks" id="addParticipantModal-remarks" class="form-control" rows="2">{{ old('remarks') }}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -800,13 +800,13 @@
                 <h5 class="modal-title" id="editParticipantModal-label">Edit Participant</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-        <form id="editParticipantForm" method="POST">
+        <form id="editParticipantModal-form" method="POST">
             @csrf
             @method('PUT')
             <div class="modal-body">
                 <div class="mb-3">
-                    <label for="edit_user_id" class="form-label">User <span style="color: var(--danger);">*</span></label>
-                    <select name="user_id" id="edit_user_id" class="form-select" required>
+                    <label for="editParticipantModal-user_id" class="form-label">User <span style="color: var(--danger);">*</span></label>
+                    <select name="user_id" id="editParticipantModal-user_id" class="form-select" required>
                         <option value="">Select User</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}">{{ $user->name }}</option>
@@ -814,8 +814,8 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_participant_type" class="form-label">Type <span style="color: var(--danger);">*</span></label>
-                    <select name="participant_type" id="edit_participant_type" class="form-select">
+                    <label for="editParticipantModal-participant_type" class="form-label">Type <span style="color: var(--danger);">*</span></label>
+                    <select name="participant_type" id="editParticipantModal-participant_type" class="form-select">
                         <option value="organizer">Organizer</option>
                         <option value="chairperson">Chairperson</option>
                         <option value="member">Member</option>
@@ -825,8 +825,8 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_attendance_status" class="form-label">Attendance <span style="color: var(--danger);">*</span></label>
-                    <select name="attendance_status" id="edit_attendance_status" class="form-select">
+                    <label for="editParticipantModal-attendance_status" class="form-label">Attendance <span style="color: var(--danger);">*</span></label>
+                    <select name="attendance_status" id="editParticipantModal-attendance_status" class="form-select">
                         <option value="invited">Invited</option>
                         <option value="accepted">Accepted</option>
                         <option value="declined">Declined</option>
@@ -836,8 +836,8 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_remarks" class="form-label">Remarks</label>
-                    <textarea name="remarks" id="edit_remarks" class="form-control" rows="2"></textarea>
+                    <label for="editParticipantModal-remarks" class="form-label">Remarks</label>
+                    <textarea name="remarks" id="editParticipantModal-remarks" class="form-control" rows="2"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -908,12 +908,12 @@
             @csrf
             <div class="modal-body">
                 <div class="mb-3">
-                    <label for="file" class="form-label">File <span style="color: var(--danger);">*</span></label>
-                    <input type="file" name="file" id="file" class="form-control" required>
+                    <label for="addAttachmentModal-file" class="form-label">File <span style="color: var(--danger);">*</span></label>
+                    <input type="file" name="file" id="addAttachmentModal-file" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label for="description" class="form-label">Description</label>
-                    <textarea name="description" id="description" class="form-control" rows="3">{{ old('description') }}</textarea>
+                    <label for="addAttachmentModal-description" class="form-label">Description</label>
+                    <textarea name="description" id="addAttachmentModal-description" class="form-control" rows="3">{{ old('description') }}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -970,16 +970,16 @@
             @csrf
             <div class="modal-body">
                 <div class="mb-3">
-                    <label for="agenda_no" class="form-label">Agenda # <span style="color: var(--danger);">*</span></label>
-                    <input type="number" name="agenda_no" id="agenda_no" class="form-control" value="{{ old('agenda_no', $meeting->agendas->count() + 1) }}" min="1" required>
+                    <label for="addAgendaModal-agenda_no" class="form-label">Agenda # <span style="color: var(--danger);">*</span></label>
+                    <input type="number" name="agenda_no" id="addAgendaModal-agenda_no" class="form-control" value="{{ old('agenda_no', $meeting->agendas->count() + 1) }}" min="1" required>
                 </div>
                 <div class="mb-3">
-                    <label for="title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="title" id="title" class="form-control" value="{{ old('title') }}" required>
+                    <label for="addAgendaModal-title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
+                    <input type="text" name="title" id="addAgendaModal-title" class="form-control" value="{{ old('title') }}" required>
                 </div>
                 <div class="mb-3">
-                    <label for="presented_by" class="form-label">Presented By</label>
-                    <select name="presented_by" id="presented_by" class="form-select">
+                    <label for="addAgendaModal-presented_by" class="form-label">Presented By</label>
+                    <select name="presented_by" id="addAgendaModal-presented_by" class="form-select">
                         <option value="">Select Presenter</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}" {{ old('presented_by') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
@@ -987,12 +987,12 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="estimated_minutes" class="form-label">Estimated Minutes</label>
-                    <input type="number" name="estimated_minutes" id="estimated_minutes" class="form-control" value="{{ old('estimated_minutes') }}" min="1">
+                    <label for="addAgendaModal-estimated_minutes" class="form-label">Estimated Minutes</label>
+                    <input type="number" name="estimated_minutes" id="addAgendaModal-estimated_minutes" class="form-control" value="{{ old('estimated_minutes') }}" min="1">
                 </div>
                 <div class="mb-3">
-                    <label for="status" class="form-label">Status</label>
-                    <select name="status" id="status" class="form-select">
+                    <label for="addAgendaModal-status" class="form-label">Status</label>
+                    <select name="status" id="addAgendaModal-status" class="form-select">
                         <option value="pending" {{ old('status') === 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="in_progress" {{ old('status') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
                         <option value="completed" {{ old('status') === 'completed' ? 'selected' : '' }}>Completed</option>
@@ -1000,12 +1000,12 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="sort_order" class="form-label">Sort Order</label>
-                    <input type="number" name="sort_order" id="sort_order" class="form-control" value="{{ old('sort_order', 0) }}" min="0">
+                    <label for="addAgendaModal-sort_order" class="form-label">Sort Order</label>
+                    <input type="number" name="sort_order" id="addAgendaModal-sort_order" class="form-control" value="{{ old('sort_order', 0) }}" min="0">
                 </div>
                 <div class="mb-3">
-                    <label for="description" class="form-label">Description</label>
-                    <textarea name="description" id="description" class="form-control" rows="3">{{ old('description') }}</textarea>
+                    <label for="addAgendaModal-description" class="form-label">Description</label>
+                    <textarea name="description" id="addAgendaModal-description" class="form-control" rows="3">{{ old('description') }}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1025,21 +1025,21 @@
                 <h5 class="modal-title" id="editAgendaModal-label">Edit Agenda Item</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-        <form id="editAgendaForm" method="POST">
+        <form id="editAgendaModal-form" method="POST">
             @csrf
             @method('PUT')
             <div class="modal-body">
                 <div class="mb-3">
-                    <label for="edit_agenda_no" class="form-label">Agenda # <span style="color: var(--danger);">*</span></label>
-                    <input type="number" name="agenda_no" id="edit_agenda_no" class="form-control" min="1" required>
+                    <label for="editAgendaModal-agenda_no" class="form-label">Agenda # <span style="color: var(--danger);">*</span></label>
+                    <input type="number" name="agenda_no" id="editAgendaModal-agenda_no" class="form-control" min="1" required>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
-                    <input type="text" name="title" id="edit_title" class="form-control" required>
+                    <label for="editAgendaModal-title" class="form-label">Title <span style="color: var(--danger);">*</span></label>
+                    <input type="text" name="title" id="editAgendaModal-title" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_presented_by" class="form-label">Presented By</label>
-                    <select name="presented_by" id="edit_presented_by" class="form-select">
+                    <label for="editAgendaModal-presented_by" class="form-label">Presented By</label>
+                    <select name="presented_by" id="editAgendaModal-presented_by" class="form-select">
                         <option value="">Select Presenter</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}">{{ $user->name }}</option>
@@ -1047,12 +1047,12 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_estimated_minutes" class="form-label">Estimated Minutes</label>
-                    <input type="number" name="estimated_minutes" id="edit_estimated_minutes" class="form-control" min="1">
+                    <label for="editAgendaModal-estimated_minutes" class="form-label">Estimated Minutes</label>
+                    <input type="number" name="estimated_minutes" id="editAgendaModal-estimated_minutes" class="form-control" min="1">
                 </div>
                 <div class="mb-3">
-                    <label for="edit_status" class="form-label">Status</label>
-                    <select name="status" id="edit_status" class="form-select">
+                    <label for="editAgendaModal-status" class="form-label">Status</label>
+                    <select name="status" id="editAgendaModal-status" class="form-select">
                         <option value="pending">Pending</option>
                         <option value="in_progress">In Progress</option>
                         <option value="completed">Completed</option>
@@ -1060,12 +1060,12 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_sort_order" class="form-label">Sort Order</label>
-                    <input type="number" name="sort_order" id="edit_sort_order" class="form-control" min="0">
+                    <label for="editAgendaModal-sort_order" class="form-label">Sort Order</label>
+                    <input type="number" name="sort_order" id="editAgendaModal-sort_order" class="form-control" min="0">
                 </div>
                 <div class="mb-3">
-                    <label for="edit_description" class="form-label">Description</label>
-                    <textarea name="description" id="edit_description" class="form-control" rows="3"></textarea>
+                    <label for="editAgendaModal-description" class="form-label">Description</label>
+                    <textarea name="description" id="editAgendaModal-description" class="form-control" rows="3"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1111,67 +1111,67 @@
     }
 
     function openEditAgendaModal(id, title, description, presentedBy, estimatedMinutes, status, sortOrder, agendaNo) {
-        document.getElementById('editAgendaForm').action = '/meetings/{{ $meeting->id }}/agendas/' + id;
-        document.getElementById('edit_agenda_no').value = agendaNo;
-        document.getElementById('edit_title').value = title;
-        document.getElementById('edit_description').value = description;
-        document.getElementById('edit_presented_by').value = presentedBy;
-        document.getElementById('edit_estimated_minutes').value = estimatedMinutes;
-        document.getElementById('edit_status').value = status;
-        document.getElementById('edit_sort_order').value = sortOrder;
+        document.getElementById('editAgendaModal-form').action = '/meetings/{{ $meeting->id }}/agendas/' + id;
+        document.getElementById('editAgendaModal-agenda_no').value = agendaNo;
+        document.getElementById('editAgendaModal-title').value = title;
+        document.getElementById('editAgendaModal-description').value = description;
+        document.getElementById('editAgendaModal-presented_by').value = presentedBy;
+        document.getElementById('editAgendaModal-estimated_minutes').value = estimatedMinutes;
+        document.getElementById('editAgendaModal-status').value = status;
+        document.getElementById('editAgendaModal-sort_order').value = sortOrder;
         openModal('editAgendaModal');
     }
 
     function openEditDecisionModal(id, title, description, type, status, decisionDate, approvedBy, effectiveDate, remarks, decisionNo) {
-        document.getElementById('editDecisionForm').action = '/meetings/{{ $meeting->id }}/decisions/' + id;
-        document.getElementById('edit_decision_no').value = decisionNo;
-        document.getElementById('edit_decision_title').value = title;
-        document.getElementById('edit_decision_description').value = description;
-        document.getElementById('edit_decision_type').value = type;
-        document.getElementById('edit_decision_status').value = status;
-        document.getElementById('edit_decision_date').value = decisionDate;
-        document.getElementById('edit_approved_by').value = approvedBy;
-        document.getElementById('edit_effective_date').value = effectiveDate;
-        document.getElementById('edit_remarks').value = remarks;
+        document.getElementById('editDecisionModal-form').action = '/meetings/{{ $meeting->id }}/decisions/' + id;
+        document.getElementById('editDecisionModal-decision_no').value = decisionNo;
+        document.getElementById('editDecisionModal-decision_title').value = title;
+        document.getElementById('editDecisionModal-decision_description').value = description;
+        document.getElementById('editDecisionModal-decision_type').value = type;
+        document.getElementById('editDecisionModal-decision_status').value = status;
+        document.getElementById('editDecisionModal-decision_date').value = decisionDate;
+        document.getElementById('editDecisionModal-approved_by').value = approvedBy;
+        document.getElementById('editDecisionModal-effective_date').value = effectiveDate;
+        document.getElementById('editDecisionModal-remarks').value = remarks;
         openModal('editDecisionModal');
     }
 
     function openEditActionItemModal(id, title, description, assignedTo, assignedDepartment, priority, dueDate, status, actionNo) {
-        document.getElementById('editActionItemForm').action = '/meetings/{{ $meeting->id }}/action-items/' + id;
-        document.getElementById('edit_action_no').value = actionNo;
-        document.getElementById('edit_title').value = title;
-        document.getElementById('edit_description').value = description;
-        document.getElementById('edit_assigned_to').value = assignedTo;
-        document.getElementById('edit_assigned_department_id').value = assignedDepartment;
-        document.getElementById('edit_priority').value = priority;
-        document.getElementById('edit_due_date').value = dueDate;
-        document.getElementById('edit_status').value = status;
+        document.getElementById('editActionItemModal-form').action = '/meetings/{{ $meeting->id }}/action-items/' + id;
+        document.getElementById('editActionItemModal-action_no').value = actionNo;
+        document.getElementById('editActionItemModal-title').value = title;
+        document.getElementById('editActionItemModal-description').value = description;
+        document.getElementById('editActionItemModal-assigned_to').value = assignedTo;
+        document.getElementById('editActionItemModal-assigned_department_id').value = assignedDepartment;
+        document.getElementById('editActionItemModal-priority').value = priority;
+        document.getElementById('editActionItemModal-due_date').value = dueDate;
+        document.getElementById('editActionItemModal-status').value = status;
         openModal('editActionItemModal');
     }
 
     function openEditParticipantModal(id, userId, participantType, attendanceStatus, remarks) {
-        document.getElementById('editParticipantForm').action = '/meetings/{{ $meeting->id }}/participants/' + id;
-        document.getElementById('edit_user_id').value = userId;
-        document.getElementById('edit_participant_type').value = participantType;
-        document.getElementById('edit_attendance_status').value = attendanceStatus;
-        document.getElementById('edit_remarks').value = remarks;
+        document.getElementById('editParticipantModal-form').action = '/meetings/{{ $meeting->id }}/participants/' + id;
+        document.getElementById('editParticipantModal-user_id').value = userId;
+        document.getElementById('editParticipantModal-participant_type').value = participantType;
+        document.getElementById('editParticipantModal-attendance_status').value = attendanceStatus;
+        document.getElementById('editParticipantModal-remarks').value = remarks;
         openModal('editParticipantModal');
     }
 
     function openCreateTaskModal(actionItemId, title, description, dueDate, assignedTo) {
-        document.getElementById('createTaskForm').action = '/meetings/{{ $meeting->id }}/action-items/' + actionItemId + '/tasks';
-        document.getElementById('task_title').value = title || '';
-        document.getElementById('task_description').value = description || '';
-        document.getElementById('task_priority').value = 'medium';
-        document.getElementById('task_status').value = 'pending';
-        document.getElementById('task_due_date').value = dueDate || '';
-        document.getElementById('task_responsible_user_id').value = assignedTo || '';
+        document.getElementById('createTaskModal-form').action = '/meetings/{{ $meeting->id }}/action-items/' + actionItemId + '/tasks';
+        document.getElementById('createTaskModal-task_title').value = title || '';
+        document.getElementById('createTaskModal-task_description').value = description || '';
+        document.getElementById('createTaskModal-task_priority').value = 'medium';
+        document.getElementById('createTaskModal-task_status').value = 'pending';
+        document.getElementById('createTaskModal-task_due_date').value = dueDate || '';
+        document.getElementById('createTaskModal-task_responsible_user_id').value = assignedTo || '';
         openModal('createTaskModal');
     }
 
     function openLinkTaskModal(actionItemId) {
-        document.getElementById('linkTaskForm').action = '/meetings/{{ $meeting->id }}/action-items/' + actionItemId + '/tasks/link';
-        document.getElementById('link_task_id').value = '';
+        document.getElementById('linkTaskModal-form').action = '/meetings/{{ $meeting->id }}/action-items/' + actionItemId + '/tasks/link';
+        document.getElementById('linkTaskModal-link_task_id').value = '';
         openModal('linkTaskModal');
     }
 </script>

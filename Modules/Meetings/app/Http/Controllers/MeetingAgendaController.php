@@ -18,7 +18,14 @@ class MeetingAgendaController extends Controller
     {
         $this->authorize('view', $meeting);
 
-        $agendas = $meeting->agendas()->orderBy('sort_order')->paginate(15);
+        // `presentedBy` is read by the table below. Without this the row count
+        // sets the query count, and under `Model::preventLazyLoading()` — which
+        // AppServiceProvider enables everywhere except the test suite — the
+        // first row 500s the page rather than merely slowing it down.
+        $agendas = $meeting->agendas()
+            ->with('presentedBy')
+            ->orderBy('sort_order')
+            ->paginate(15);
         $users = $this->referenceData()->users();
 
         return view('meetings.agendas.index', compact('meeting', 'agendas', 'users'));
