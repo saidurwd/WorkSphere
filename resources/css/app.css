@@ -7,3 +7,5 @@
 
 @import './tokens.css';
 @import './widgets.css';
+
+@import url('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.21/main.min.css');
