@@ -3,11 +3,12 @@
 namespace Modules\Obligations\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Support\StatusBadge;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 use Modules\Obligations\Models\Obligation;
 use Modules\Obligations\Models\ObligationType;
 use Modules\Tasks\Models\Task;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
 
 class ObligationDashboardController extends Controller
 {
@@ -74,12 +75,13 @@ class ObligationDashboardController extends Controller
             'label' => ucfirst($row->priority),
             'count' => (int) $row->total,
             'pct' => $priorityTotal > 0 ? (int) round((int) $row->total / $priorityTotal * 100) : 0,
-            'color' => match ($row->priority) {
-                'critical' => 'var(--bs-danger)',
-                'high' => 'var(--bs-warning)',
-                'medium' => 'var(--bs-info)',
-                'low' => 'var(--bs-success)',
-            },
+            // `StatusBadge`, not an inline match. The inline version listed four
+            // cases and no default, so a priority outside that set threw an
+            // `UnhandledMatchError` and the whole dashboard returned a 500 — for
+            // every user, because the grouping query reads the column, not the
+            // caller's rows. One shared map with a fallback is the fix GAP-020
+            // asked for and never got here.
+            'color' => StatusBadge::priorityColor($row->priority),
         ])->all();
 
         $mapObligation = static function (Obligation $o): array {
@@ -92,12 +94,7 @@ class ObligationDashboardController extends Controller
                 'url' => route('obligations.show', $o),
                 'badge' => [
                     'text' => ucfirst($o->risk_level),
-                    'variant' => match ($o->risk_level) {
-                        'critical' => 'danger',
-                        'high' => 'warning',
-                        'medium' => 'primary',
-                        'low' => 'secondary',
-                    },
+                    'variant' => StatusBadge::priorityVariant($o->risk_level),
                 ],
             ];
         };

@@ -2,14 +2,17 @@
 
 namespace Modules\Meetings\Models;
 
+use App\Models\Department;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
-use App\Models\Department;
 use Modules\Tasks\Models\Task;
 
 class MeetingActionItem extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'meeting_id',
         'agenda_id',

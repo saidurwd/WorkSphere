@@ -6,6 +6,7 @@ use App\Enums\WorkItemStatus;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\User;
+use App\Support\ResolvesReferenceData;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +21,8 @@ use Modules\Tasks\Services\TaskRemarkSynchroniser;
 
 class TaskController extends Controller
 {
+    use ResolvesReferenceData;
+
     public function index(Request $request): View
     {
         $user = Auth::user();
@@ -77,7 +80,7 @@ class TaskController extends Controller
         }
 
         $tasks = $query->paginate(15)->withQueryString();
-        $users = User::orderBy('name')->get(['id', 'name']);
+        $users = $this->referenceData()->users();
         $projects = Project::orderBy('name')->get(['id', 'name']);
 
         return view('tasks.index', [
@@ -278,7 +281,7 @@ class TaskController extends Controller
         $this->authorize('create', Task::class);
 
         return view('tasks.create', [
-            'users' => User::orderBy('name')->get(['id', 'name']),
+            'users' => $this->referenceData()->users(),
             'projects' => Project::orderBy('name')->get(['id', 'name']),
         ]);
     }
@@ -319,7 +322,7 @@ class TaskController extends Controller
 
         return view('tasks.edit', [
             'task' => $task,
-            'users' => User::orderBy('name')->get(['id', 'name']),
+            'users' => $this->referenceData()->users(),
             'projects' => Project::orderBy('name')->get(['id', 'name']),
         ]);
     }

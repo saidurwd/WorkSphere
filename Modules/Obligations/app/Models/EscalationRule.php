@@ -4,11 +4,14 @@ namespace Modules\Obligations\Models;
 
 use App\Models\Company;
 use App\Models\Department;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EscalationRule extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'obligation_type_id',
         // Phase 8 GAP-031. A NULL value means the rule is global, which is what

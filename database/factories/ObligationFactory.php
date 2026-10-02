@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Enums\Priority;
 use App\Models\Company;
 use App\Models\Department;
 use App\Models\Location;
@@ -40,11 +39,18 @@ class ObligationFactory extends Factory
             'auto_renew' => false,
             'recurrence_type' => null,
             'recurrence_interval' => null,
-            // `critical` is a risk_level value, not a priority one. Leaking it in
-            // here produced rows that the shared Priority enum cannot represent —
-            // and a factory row only fails when something casts it, so the failure
-            // surfaced as an unrelated random failure.
-            'priority' => fake()->randomElement(Priority::values()),
+            // `obligations.priority` is NOT the shared `Priority` enum. Every write path
+            // in the application validates it as `low|medium|high|critical`
+            // (ObligationController store and update), and the seeder uses only
+            // those four. The shared enum additionally carries `normal`,
+            // `important` and `urgent`, which belong to `meetings.priority` and
+            // `meeting_action_items.priority`.
+            //
+            // A factory that draws from the wrong vocabulary builds rows the
+            // application would refuse to create — and, because the dashboard
+            // maps priority to a badge with an EXHAUSTIVE match, those rows 500'd
+            // a real page. The vocabulary is the one the application enforces.
+            'priority' => fake()->randomElement(['low', 'medium', 'high', 'critical']),
             'risk_level' => fake()->randomElement(['low', 'medium', 'high', 'critical']),
             'estimated_cost' => fake()->randomFloat(2, 1000, 100000),
             'currency' => 'BDT',

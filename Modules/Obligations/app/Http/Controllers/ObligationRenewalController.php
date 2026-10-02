@@ -3,7 +3,7 @@
 namespace Modules\Obligations\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Support\ResolvesReferenceData;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +16,8 @@ use Modules\Obligations\Services\ObligationRecurrenceService;
 
 class ObligationRenewalController extends Controller
 {
+    use ResolvesReferenceData;
+
     public function create(Obligation $obligation): View
     {
         $this->authorize('renew', $obligation);
@@ -30,7 +32,7 @@ class ObligationRenewalController extends Controller
         return view('obligations.renew', [
             'obligation' => $obligation,
             'vendors' => Vendor::where('status', 'active')->orderBy('vendor_name')->get(['id', 'vendor_name']),
-            'users' => User::orderBy('name')->get(['id', 'name']),
+            'users' => $this->referenceData()->users(),
             'suggested' => $suggested,
         ]);
     }

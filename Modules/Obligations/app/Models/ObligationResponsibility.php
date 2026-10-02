@@ -2,13 +2,15 @@
 
 namespace Modules\Obligations\Models;
 
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
-use Modules\Obligations\Models\Obligation;
 
 class ObligationResponsibility extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['obligation_id', 'user_id', 'responsibility_type', 'escalation_level', 'active'];
 
     protected function casts(): array

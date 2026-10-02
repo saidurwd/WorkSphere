@@ -35,7 +35,12 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "Tests\\": "tests/",
+            "Modules\\Meetings\\Tests\\": "Modules/Meetings/tests/",
+            "Modules\\Obligations\\Tests\\": "Modules/Obligations/tests/",
+            "Modules\\Projects\\Tests\\": "Modules/Projects/tests/",
+            "Modules\\Tasks\\Tests\\": "Modules/Tasks/tests/",
+            "Modules\\Todos\\Tests\\": "Modules/Todos/tests/"
         }
     },
     "scripts": {

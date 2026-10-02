@@ -2,12 +2,15 @@
 
 namespace Modules\Obligations\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class NotificationRule extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'obligation_type_id',
         'days_before_expiry',

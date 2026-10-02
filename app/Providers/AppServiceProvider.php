@@ -3,10 +3,14 @@
 namespace App\Providers;
 
 use App\Enums\Role as RoleSlug;
+use App\Models\Company;
+use App\Models\Department;
+use App\Models\Location;
 use App\Models\Role;
 use App\Models\User;
 use App\Observers\ActivityObserver;
 use App\Observers\AuditObserver;
+use App\Observers\ReferenceDataObserver;
 use App\Policies\MeetingActionItemPolicy;
 use App\Policies\MeetingPolicy;
 use App\Policies\ObligationPolicy;
@@ -22,6 +26,7 @@ use Illuminate\Support\ServiceProvider;
 use Modules\Meetings\Models\Meeting;
 use Modules\Meetings\Models\MeetingActionItem;
 use Modules\Obligations\Models\Obligation;
+use Modules\Obligations\Models\Vendor;
 use Modules\Projects\Models\Project;
 use Modules\Tasks\Models\Task;
 use Modules\Todos\Models\Todo;
@@ -53,9 +58,16 @@ class AppServiceProvider extends ServiceProvider
      * @var array<class-string<Model>, list<class-string>>
      */
     protected array $observed = [
-        User::class => [AuditObserver::class, ActivityObserver::class],
+        User::class => [AuditObserver::class, ActivityObserver::class, ReferenceDataObserver::class],
         Role::class => [AuditObserver::class],
         Task::class => [AuditObserver::class, ActivityObserver::class],
+        // The reference-list caches are invalidated from the model, not from the
+        // controllers that read them, so a user renamed through the API invalidates
+        // exactly as one renamed through a screen does.
+        Department::class => [ReferenceDataObserver::class],
+        Location::class => [ReferenceDataObserver::class],
+        Vendor::class => [ReferenceDataObserver::class],
+        Company::class => [ReferenceDataObserver::class],
         Project::class => [AuditObserver::class, ActivityObserver::class],
         Meeting::class => [AuditObserver::class, ActivityObserver::class],
         Obligation::class => [AuditObserver::class, ActivityObserver::class],
@@ -164,11 +176,20 @@ class AppServiceProvider extends ServiceProvider
      * Surface accidental non-fillable attribute writes as exceptions rather than
      * silently dropping them. Enabled in local and testing only: in production a
      * forgotten column must degrade, not take the request down.
+     *
+     * Lazy loading is the same trade and gets the same treatment. It throws
+     * `LazyLoadingViolationException` wherever a relation is read without having
+     * been eager-loaded, which turns a one-query-per-row page into a 500 — useful
+     * in development, unacceptable in production, so `testing` is included and
+     * `production` is not. `ModelFlagIsolationTest` holds the flag steady across
+     * tests, which matters here because a leak in either direction would make this
+     * silently stop working.
      */
     protected function enforceStrictMassAssignment(): void
     {
         if (app()->environment(['local', 'testing'])) {
             Model::preventSilentlyDiscardingAttributes();
+            Model::preventLazyLoading(! $this->app->runningUnitTests());
         }
     }
 }

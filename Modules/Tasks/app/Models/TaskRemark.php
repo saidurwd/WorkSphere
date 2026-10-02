@@ -2,15 +2,17 @@
 
 namespace Modules\Tasks\Models;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
-use Modules\Tasks\Models\Task;
 
 #[Fillable(['task_id', 'user_id', 'remark', 'attachment'])]
 class TaskRemark extends Model
 {
+    use HasFactory;
+
     protected function casts(): array
     {
         return [];

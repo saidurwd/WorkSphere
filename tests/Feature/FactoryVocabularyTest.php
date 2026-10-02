@@ -5,12 +5,15 @@ namespace Tests\Feature;
 use App\Enums\Priority;
 use App\Enums\Visibility;
 use App\Enums\WorkItemStatus;
+use App\Support\StatusBadge;
 use Database\Factories\MeetingFactory;
 use Database\Factories\ObligationFactory;
 use Database\Factories\TaskFactory;
 use Database\Factories\TodoFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\Rules\In;
 use Modules\Meetings\Models\Meeting;
+use Modules\Obligations\Http\Requests\IndexObligationRequest;
 use Modules\Obligations\Models\Obligation;
 use Modules\Tasks\Models\Task;
 use Modules\Todos\Models\Todo;
@@ -94,17 +97,55 @@ class FactoryVocabularyTest extends TestCase
         $this->assertSame([], $failures, implode("\n", $failures));
     }
 
-    public function test_obligation_priority_only_uses_priority_values(): void
+    /**
+     * `obligations.priority` is NOT the shared `Priority` vocabulary.
+     *
+     * `Obligation` does not cast the column, `ObligationController` validates it as
+     * `low|medium|high|critical` on both store and update, and the seeder uses
+     * exactly those four. The shared `Priority` enum has no `critical` case at all —
+     * it is the `meetings.priority` / `meeting_action_items.priority` vocabulary,
+     * which is `normal|important|urgent`.
+     *
+     * This test used to assert the factory produced `Priority` values, which is what
+     * let the factory draw from the WRONG enum: it emitted `normal`, `important`
+     * and `urgent`, none of which the obligations form would accept. The assertion
+     * passed because those values happen to be Priority values; it was checking the
+     * wrong property.
+     *
+     * @see StatusBadge::PRIORITY_VARIANTS which spans both vocabularies
+     */
+    public function test_obligation_priority_only_uses_obligation_priority_values(): void
     {
+        $allowed = ['low', 'medium', 'high', 'critical'];
+
         for ($round = 0; $round < self::ROUNDS; $round++) {
             $obligation = ObligationFactory::new()->create();
 
             $this->assertContains(
-                $obligation->priority?->value ?? $obligation->priority,
-                Priority::values(),
-                'obligations.priority is cast to Priority, so the factory must only produce Priority values.',
+                (string) $obligation->priority,
+                $allowed,
+                'The obligations form validates priority as low|medium|high|critical, so the factory '
+                .'must not produce a value the form rejects.',
             );
         }
+    }
+
+    public function test_every_obligation_priority_value_passes_form_validation(): void
+    {
+        // Ties the vocabulary to the thing that actually rejects it, so the two
+        // cannot drift apart again.
+        $rule = (new IndexObligationRequest)->rules()['priority'][0] ?? null;
+
+        if ($rule instanceof In) {
+            $this->assertSame(['low', 'medium', 'high', 'critical'], $rule->values);
+        }
+
+        $this->assertNotContains(
+            'critical',
+            Priority::values(),
+            'If `critical` gained a Priority case, the two vocabularies would overlap and this '
+            .'test would no longer distinguish them.',
+        );
     }
 
     public function test_meeting_priority_only_uses_priority_values(): void

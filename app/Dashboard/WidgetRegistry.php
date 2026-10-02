@@ -12,13 +12,15 @@ use Illuminate\Support\Facades\Cache;
  * The order of operations is the whole design:
  *
  *   1. Filter by permission. A widget the user cannot see is discarded here, and
- *      its query is never built, never cached, never executed. The brief calls
- *      this out explicitly — "revoke the permission, the widget disappears AND
- *      its query never runs" — and `WidgetVisibilityTest` asserts it by counting
+ *      its query is never built, never cached, never executed. The brief calls this
+ *      out explicitly — "revoke the permission, the widget disappears AND its
+ *      query never runs" — and `WidgetVisibilityTest` asserts it by counting
  *      queries, not by checking the rendered output.
  *   2. Cache the survivors, keyed by user AND by a signature of the permissions
- *      that were used to decide. Without the signature a permission change would
- *      be served from a cache entry computed under the old rules.
+ *      that were used to decide. Without the signature a permission change would be
+ *      served from a cache entry computed under the old rules; without the user id
+ *      two users would share one entry, which for a personal widget means one
+ *      user's work items rendered on another's dashboard.
  */
 class WidgetRegistry
 {
@@ -72,15 +74,20 @@ class WidgetRegistry
             // The version segment is what makes invalidate() work: bumping it makes
             // every future key differ from every past one, so one write drops the
             // whole widget's cache without Cache::forget having to enumerate keys.
-            $key = sprintf(
-                'dashboard:widget:%s:v%d:%s',
-                $widget->key(),
-                $this->versionFor($widget->key()),
-                $signature,
-            );
-
+            //
+            // The user id is the load-bearing part and it was MISSING until Phase
+            // 14. Keying only on the widget and a digest of the permissions meant
+            // two users holding the same permissions shared one entry — and the
+            // personal widgets (`my_todos`, `my_tasks`, `personal_stats`) resolve
+            // data ABOUT THE VIEWER, so Alice's To-Dos were rendered on Bob's
+            // dashboard. The permission signature cannot prevent that: it is
+            // identical for two users who can see the same widgets.
+            //
+            // Both segments are kept. The user id separates people; the signature
+            // handles the other axis — a user whose OWN permissions changed must
+            // not be served a value computed under the old set.
             $resolved[$widget->key()] = Cache::remember(
-                $key,
+                $this->keyFor($user, $widget),
                 $widget->cacheTtl(),
                 static fn (): mixed => $widget->resolve($user),
             );
@@ -107,6 +114,25 @@ class WidgetRegistry
         }
 
         return collect($groups);
+    }
+
+    /**
+     * The cache key a widget's value is stored under for a given user.
+     *
+     * Public so the key's SHAPE can be asserted by a test rather than inferred
+     * from the store's internals. A key nobody can name is a key nobody can notice
+     * losing its user id — which is precisely how the leak this method now makes
+     * checkable got in.
+     */
+    public function keyFor(User $user, DashboardWidget $widget): string
+    {
+        return sprintf(
+            'dashboard:widget:%s:u%d:v%d:%s',
+            $widget->key(),
+            $user->getKey(),
+            $this->versionFor($widget->key()),
+            $this->permissionSignature($user),
+        );
     }
 
     public function permits(User $user, DashboardWidget $widget): bool

@@ -3,9 +3,10 @@
 namespace Modules\Obligations\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Obligations\Models\Obligation;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Modules\Obligations\Models\Obligation;
 
 class ObligationReportController extends Controller
 {
@@ -49,12 +50,22 @@ class ObligationReportController extends Controller
             ->limit(10)
             ->get();
 
+        // "Days between two dates" has no portable spelling: MySQL has `DATEDIFF`,
+        // SQLite has `julianday`. `DATEDIFF` alone meant the whole obligations
+        // report threw on any driver but MySQL — including the SQLite the entire
+        // test suite runs on, so the page had never been rendered outside
+        // production. Same guard `TodoReportService` uses.
+        $averageLeadTime = match (DB::connection()->getDriverName()) {
+            'sqlite' => 'AVG(CAST(julianday(obligations.updated_at) - julianday(obligations.start_date) AS INTEGER))',
+            default => 'AVG(DATEDIFF(obligations.updated_at, obligations.start_date))',
+        };
+
         $renewalStats = (clone $query)
             ->selectRaw('
                 SUM(CASE WHEN status IN ("active", "renewed") AND expiry_date >= ? THEN 1 ELSE 0 END) as on_time,
                 SUM(CASE WHEN status IN ("active", "renewed") AND expiry_date < ? THEN 1 ELSE 0 END) as late,
                 SUM(CASE WHEN status = "expired" THEN 1 ELSE 0 END) as expired_count,
-                AVG(DATEDIFF(obligations.updated_at, obligations.start_date)) as avg_lead_time
+                '.$averageLeadTime.' as avg_lead_time
             ', [$today, $today])
             ->first();
 

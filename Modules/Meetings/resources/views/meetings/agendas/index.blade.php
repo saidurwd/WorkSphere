@@ -30,7 +30,7 @@
                                 <td>{{ $agenda->presentedBy->name ?? 'N/A' }}</td>
                                 <td>{{ $agenda->estimated_minutes ?? 'N/A' }}</td>
                                 <td>
-                                    <x-badge :variant="\App\Support\StatusBadge::variant($agenda->status)">
+                                    <x-badge :variant="\App\Support\StatusBadge::variant($agenda->status)" />
                                 </td>
                                 <td>{{ $agenda->sort_order }}</td>
                                 <td>

@@ -79,10 +79,12 @@
                                 <td>{{ $item->assignedDepartment->department_name ?? 'N/A' }}</td>
                                 <td>{{ $item->due_date ? $item->due_date->format('M d, Y') : 'N/A' }}</td>
                                 <td>
-                                    <x-badge :variant="\App\Support\StatusBadge::variant($item->status)">
-                                    @if($item->isOverdue())
-                                        <x-badge variant="danger">Overdue</x-badge>
-                                    @endif
+                                    <span class="d-inline-flex align-items-center gap-1">
+                                        <x-badge :variant="\App\Support\StatusBadge::variant($item->status)" />
+                                        @if($item->isOverdue())
+                                            <x-badge variant="danger">Overdue</x-badge>
+                                        @endif
+                                    </span>
                                 </td>
                                 <td>
                                     @if($item->task)

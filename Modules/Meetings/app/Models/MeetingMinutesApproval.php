@@ -2,12 +2,15 @@
 
 namespace Modules\Meetings\Models;
 
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
 
 class MeetingMinutesApproval extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'meeting_id',
         'step_no',

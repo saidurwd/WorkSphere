@@ -75,6 +75,28 @@ final class StatusBadge
     private const FALLBACK = 'secondary';
 
     /**
+     * Priority → a CSS colour, for charts and progress bars that cannot use a
+     * Bootstrap variant.
+     *
+     * Lives beside `PRIORITY_VARIANTS` rather than in a controller because the
+     * charts and the badges describe the same priority and had drifted apart: the
+     * dashboard coloured `critical` one way and badged it another.
+     *
+     * @var array<string, string>
+     */
+    private const PRIORITY_COLORS = [
+        'low' => 'var(--bs-success)',
+        'normal' => 'var(--bs-success)',
+        'medium' => 'var(--bs-info)',
+        'important' => 'var(--bs-warning)',
+        'high' => 'var(--bs-warning)',
+        'urgent' => 'var(--bs-danger)',
+        'critical' => 'var(--bs-danger)',
+    ];
+
+    private const FALLBACK_COLOR = 'var(--bs-secondary)';
+
+    /**
      * Bootstrap contextual variant for a work-item status.
      */
     public static function variant(WorkItemStatus|string|null $status): string
@@ -85,6 +107,20 @@ final class StatusBadge
     public static function priorityVariant(Priority|string|null $priority): string
     {
         return self::lookup(self::PRIORITY_VARIANTS, self::value($priority));
+    }
+
+    /**
+     * A CSS colour for a priority, for anything that paints rather than badges.
+     *
+     * Falls back for a value outside the map. A dashboard that 500s because a
+     * column holds a string nobody anticipated is a page that is one data-entry
+     * mistake away from being down for everybody who looks at it.
+     */
+    public static function priorityColor(Priority|string|null $priority): string
+    {
+        $value = self::value($priority);
+
+        return $value === null ? self::FALLBACK_COLOR : (self::PRIORITY_COLORS[$value] ?? self::FALLBACK_COLOR);
     }
 
     public static function visibilityVariant(Visibility|string|null $visibility): string

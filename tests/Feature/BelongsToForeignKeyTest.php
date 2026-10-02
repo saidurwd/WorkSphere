@@ -24,10 +24,17 @@ use Tests\TestCase;
  * parsed out of the source, so the answer is the one the framework would
  * actually use at runtime.
  *
- * Resolving those relations flips global model state — it turns on
- * `preventAccessingMissingAttributes` — so the flags are captured and restored in
- * a `finally`. Without that, this class silently broke 58 unrelated tests that
- * ran after it.
+ * Resolving those relations flips global model state. It used to restore only two
+ * of the three flags it disturbs — `preventAccessingMissingAttributes` and
+ * `preventSilentlyDiscardingAttributes` — and left
+ * `automaticallyEagerLoadRelationships` switched on for the rest of the process.
+ * That leak made every test after this one run with relations silently
+ * eager-loaded, which is what finally made the N+1 measurement suite fail with a
+ * number that made no sense.
+ *
+ * `Tests\TestCase` now restores all four centrally, so nothing has to remember
+ * which ones a given piece of code touches. The local `finally` stays because this
+ * test wants the flags off for its OWN duration, not merely restored afterwards.
  */
 class BelongsToForeignKeyTest extends TestCase
 {
@@ -35,10 +42,7 @@ class BelongsToForeignKeyTest extends TestCase
 
     public function test_every_inferred_foreign_key_exists(): void
     {
-        $preventMissing = Model::preventsAccessingMissingAttributes();
-        $preventDiscarding = Model::preventsSilentlyDiscardingAttributes();
-
-        try {
+        $this->withModelFlagsRestored(function (): void {
             $problems = [];
 
             foreach ($this->models() as $modelClass) {
@@ -59,10 +63,7 @@ class BelongsToForeignKeyTest extends TestCase
             }
 
             $this->assertSame([], $problems, implode("\n", $problems));
-        } finally {
-            Model::preventAccessingMissingAttributes($preventMissing);
-            Model::preventSilentlyDiscardingAttributes($preventDiscarding);
-        }
+        });
     }
 
     /**

@@ -3,7 +3,7 @@
 namespace Modules\Meetings\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Support\ResolvesReferenceData;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -12,10 +12,12 @@ use Modules\Meetings\Models\MeetingParticipant;
 
 class MeetingParticipantController extends Controller
 {
+    use ResolvesReferenceData;
+
     public function index(Meeting $meeting): View
     {
         $participants = $meeting->participants()->with('user')->paginate(15);
-        $users = User::orderBy('name')->get(['id', 'name']);
+        $users = $this->referenceData()->users();
 
         return view('meetings.participants.index', compact('meeting', 'participants', 'users'));
     }
@@ -24,7 +26,7 @@ class MeetingParticipantController extends Controller
     {
         $this->authorize('update', $meeting);
 
-        $users = User::orderBy('name')->get(['id', 'name']);
+        $users = $this->referenceData()->users();
 
         return view('meetings.participants.create', compact('meeting', 'users'));
     }
@@ -52,7 +54,7 @@ class MeetingParticipantController extends Controller
     {
         $this->authorize('update', $meeting);
 
-        $users = User::orderBy('name')->get(['id', 'name']);
+        $users = $this->referenceData()->users();
 
         return view('meetings.participants.edit', compact('meeting', 'participant', 'users'));
     }

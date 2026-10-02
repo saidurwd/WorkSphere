@@ -105,6 +105,14 @@ class TodoNotificationService
             $todo->title,
             $type,
             $actorName,
+            // The channels this recipient actually has left after their
+            // preferences. Passing them is what makes an opt-out mean something:
+            // without it the notification delivers on both regardless, and the
+            // preference table silently does nothing.
+            array_map(
+                fn (NotificationChannel $channel): string => $channel->value,
+                $channels,
+            ),
         );
 
         try {

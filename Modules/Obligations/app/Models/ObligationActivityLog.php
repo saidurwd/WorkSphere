@@ -4,12 +4,15 @@ namespace Modules\Obligations\Models;
 
 use App\Models\ActivityLog;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class ObligationActivityLog extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'obligation_id',
         'user_id',

@@ -3,16 +3,17 @@
 namespace Modules\Meetings\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Department;
-use Modules\Meetings\Models\Meeting;
-use Modules\Meetings\Models\MeetingType;
-use App\Models\User;
-use Modules\Meetings\Services\MeetingReportService;
+use App\Support\ResolvesReferenceData;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Modules\Meetings\Models\Meeting;
+use Modules\Meetings\Models\MeetingType;
+use Modules\Meetings\Services\MeetingReportService;
 
 class MeetingReportController extends Controller
 {
+    use ResolvesReferenceData;
+
     public function __construct(private MeetingReportService $reportService) {}
 
     public function meetings(Request $request): View
@@ -21,8 +22,8 @@ class MeetingReportController extends Controller
         $meetings = $this->reportService->meetingSummary($filters);
 
         $types = MeetingType::orderBy('sort_order')->get();
-        $departments = Department::orderBy('department_name')->get();
-        $users = User::orderBy('name')->get(['id', 'name']);
+        $departments = $this->referenceData()->departments();
+        $users = $this->referenceData()->users();
 
         return view('meetings.reports.meetings', compact('meetings', 'types', 'departments', 'users', 'filters'));
     }
@@ -33,8 +34,8 @@ class MeetingReportController extends Controller
         $actions = $this->reportService->actionItemReport($filters);
 
         $meetings = Meeting::orderByDesc('meeting_date')->get(['id', 'title', 'meeting_no']);
-        $users = User::orderBy('name')->get(['id', 'name']);
-        $departments = Department::orderBy('department_name')->get();
+        $users = $this->referenceData()->users();
+        $departments = $this->referenceData()->departments();
 
         return view('meetings.reports.actions', compact('actions', 'meetings', 'users', 'departments', 'filters'));
     }
@@ -49,7 +50,7 @@ class MeetingReportController extends Controller
     public function personWise(): View
     {
         $report = $this->reportService->personWiseAccountability();
-        $users = User::orderBy('name')->get(['id', 'name']);
+        $users = $this->referenceData()->users();
 
         return view('meetings.reports.person_wise', compact('report', 'users'));
     }
@@ -57,7 +58,7 @@ class MeetingReportController extends Controller
     public function departmentWise(): View
     {
         $report = $this->reportService->departmentPerformance();
-        $departments = Department::orderBy('department_name')->get();
+        $departments = $this->referenceData()->departments();
 
         return view('meetings.reports.department_wise', compact('report', 'departments'));
     }

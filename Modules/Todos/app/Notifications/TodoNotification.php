@@ -29,6 +29,24 @@ class TodoNotification extends Notification
         public readonly string $title,
         public readonly NotificationType $type,
         public readonly string $actorName = '',
+        /**
+         * The channels `TodoNotificationService` resolved for this recipient, after
+         * consulting `notification_preferences`.
+         *
+         * This argument exists because `via()` used to hard-code both channels.
+         * The service already computed a per-channel answer — and recorded the
+         * channels it chose in the `notification_logs` row — but the notification
+         * then ignored it and delivered on both. So a user who opted out of email
+         * was still emailed: `notification_preferences` looked like it worked,
+         * because the opt-OUT case was never distinguishable from "opted in to
+         * something".
+         *
+         * Empty means "no preference was applied", which is the right default for a
+         * notification constructed directly rather than through the service.
+         *
+         * @var list<string>
+         */
+        public readonly array $channels = [],
     ) {}
 
     /**
@@ -36,7 +54,9 @@ class TodoNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return [NotificationChannel::Database->value, NotificationChannel::Mail->value];
+        return $this->channels !== []
+            ? $this->channels
+            : [NotificationChannel::Database->value, NotificationChannel::Mail->value];
     }
 
     /**

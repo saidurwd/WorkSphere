@@ -4,6 +4,7 @@ namespace Modules\Tasks\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\ResolvesReferenceData;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -13,6 +14,8 @@ use Modules\Tasks\Models\TaskTransfer;
 
 class TaskTransferController extends Controller
 {
+    use ResolvesReferenceData;
+
     public function index(Request $request): View
     {
         $selectedTaskId = $request->integer('task_id', 0);
@@ -31,7 +34,7 @@ class TaskTransferController extends Controller
         return view('task-transfers.index', [
             'transfers' => $transfers,
             'tasks' => Task::orderBy('title')->get(['id', 'title']),
-            'users' => User::orderBy('name')->get(['id', 'name']),
+            'users' => $this->referenceData()->users(),
             'selectedTaskId' => $selectedTaskId,
         ]);
     }

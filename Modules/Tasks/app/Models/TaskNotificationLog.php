@@ -2,13 +2,15 @@
 
 namespace Modules\Tasks\Models;
 
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
-use Modules\Tasks\Models\Task;
 
 class TaskNotificationLog extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'task_id',
         'user_id',

@@ -3,8 +3,7 @@
 namespace Modules\Meetings\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Department;
-use App\Models\User;
+use App\Support\ResolvesReferenceData;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -17,6 +16,8 @@ use Modules\Tasks\Models\Task;
 
 class MeetingActionItemController extends Controller
 {
+    use ResolvesReferenceData;
+
     public function index(Request $request): View
     {
         $user = auth()->user();
@@ -46,8 +47,8 @@ class MeetingActionItemController extends Controller
 
         $actionItems = $query->orderByDesc('due_date')->paginate(15)->withQueryString();
         $meetings = Meeting::orderByDesc('meeting_date')->get(['id', 'title', 'meeting_no']);
-        $users = User::orderBy('name')->get(['id', 'name']);
-        $departments = Department::orderBy('department_name')->get();
+        $users = $this->referenceData()->users();
+        $departments = $this->referenceData()->departments();
 
         return view('meetings.action_items.index', compact('actionItems', 'meetings', 'users', 'departments'));
     }
@@ -63,7 +64,11 @@ class MeetingActionItemController extends Controller
 
     public function store(Request $request, Meeting $meeting): RedirectResponse
     {
-        $this->authorize('create_action', $meeting);
+        // `manageActionItems`, not `create_action`. `MeetingPolicy` has no
+        // `create_action` method, so the Gate could not resolve the old ability and
+        // every account without the `super-admin` role was refused — creating an
+        // action item was impossible outside that role.
+        $this->authorize('manageActionItems', $meeting);
 
         $validated = $request->validate([
             'action_no' => ['required', 'integer', 'min:1'],

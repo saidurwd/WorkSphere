@@ -663,7 +663,7 @@
                         <option value="">Select a task</option>
                         @foreach($tasks as $task)
                             <option value="{{ $task->id }}">
-                                {{ $task->task_no ?? 'Task #'.$task->id }} - {{ $task->title }} ({{ ucfirst($task->status) }})
+                                {{ $task->task_no ?? 'Task #'.$task->id }} - {{ $task->title }} ({{ \App\Support\StatusBadge::label($task->status) }})
                             </option>
                         @endforeach
                     </select>

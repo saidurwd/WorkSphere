@@ -3,10 +3,8 @@
 namespace Modules\Obligations\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Company;
 use App\Models\Department;
-use App\Models\Location;
-use App\Models\User;
+use App\Support\ResolvesReferenceData;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +18,8 @@ use Modules\Obligations\Services\ObligationActivitySynchroniser;
 
 class ObligationController extends Controller
 {
+    use ResolvesReferenceData;
+
     public function index(Request $request): View
     {
         $user = Auth::user();
@@ -93,11 +93,11 @@ class ObligationController extends Controller
             'filters' => $filters,
             'types' => ObligationType::orderBy('type_name')->get(['id', 'type_name']),
             'categories' => ObligationCategory::orderBy('category_name')->get(['id', 'category_name']),
-            'companies' => Company::orderBy('company_name')->get(['id', 'company_name']),
+            'companies' => $this->referenceData()->companies(),
             'departments' => Department::orderBy('department_name')->get(['id', 'department_name']),
-            'locations' => Location::orderBy('location_name')->get(['id', 'location_name']),
-            'vendors' => Vendor::orderBy('vendor_name')->get(['id', 'vendor_name']),
-            'users' => User::orderBy('name')->get(['id', 'name']),
+            'locations' => $this->referenceData()->locations(),
+            'vendors' => $this->referenceData()->vendors(),
+            'users' => $this->referenceData()->users(),
         ]);
     }
 
@@ -108,11 +108,14 @@ class ObligationController extends Controller
         return view('obligations.create', [
             'types' => ObligationType::where('active', true)->orderBy('type_name')->get(['id', 'type_name']),
             'categories' => ObligationCategory::where('active', true)->orderBy('category_name')->get(['id', 'category_name']),
-            'companies' => Company::where('status', 'active')->orderBy('company_name')->get(['id', 'company_name']),
+            'companies' => $this->referenceData()->companies(scope: 'active'),
             'departments' => Department::where('status', 'active')->orderBy('department_name')->get(['id', 'department_name']),
-            'locations' => Location::where('status', 'active')->orderBy('location_name')->get(['id', 'location_name']),
-            'vendors' => Vendor::where('status', 'active')->orderBy('vendor_name')->get(['id', 'vendor_name']),
-            'users' => User::orderBy('name')->get(['id', 'name']),
+            'locations' => $this->referenceData()->locations(scope: 'active'),
+            // `scope: 'active'` rather than the unfiltered list: the form must not offer a
+            // retired vendor. The scope is part of the cache key, so this filtered
+            // list cannot collide with — or be served from — the full one.
+            'vendors' => $this->referenceData()->vendors(scope: 'active'),
+            'users' => $this->referenceData()->users(),
         ]);
     }
 
@@ -194,11 +197,14 @@ class ObligationController extends Controller
             'obligation' => $obligation,
             'types' => ObligationType::where('active', true)->orderBy('type_name')->get(['id', 'type_name']),
             'categories' => ObligationCategory::where('active', true)->orderBy('category_name')->get(['id', 'category_name']),
-            'companies' => Company::where('status', 'active')->orderBy('company_name')->get(['id', 'company_name']),
+            'companies' => $this->referenceData()->companies(scope: 'active'),
             'departments' => Department::where('status', 'active')->orderBy('department_name')->get(['id', 'department_name']),
-            'locations' => Location::where('status', 'active')->orderBy('location_name')->get(['id', 'location_name']),
-            'vendors' => Vendor::where('status', 'active')->orderBy('vendor_name')->get(['id', 'vendor_name']),
-            'users' => User::orderBy('name')->get(['id', 'name']),
+            'locations' => $this->referenceData()->locations(scope: 'active'),
+            // `scope: 'active'` rather than the unfiltered list: the form must not offer a
+            // retired vendor. The scope is part of the cache key, so this filtered
+            // list cannot collide with — or be served from — the full one.
+            'vendors' => $this->referenceData()->vendors(scope: 'active'),
+            'users' => $this->referenceData()->users(),
         ]);
     }
 

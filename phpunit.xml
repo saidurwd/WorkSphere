@@ -7,14 +7,29 @@
     <testsuites>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
+            <directory>Modules/Meetings/tests/Unit</directory>
+            <directory>Modules/Obligations/tests/Unit</directory>
+            <directory>Modules/Projects/tests/Unit</directory>
+            <directory>Modules/Tasks/tests/Unit</directory>
+            <directory>Modules/Todos/tests/Unit</directory>
         </testsuite>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
+            <directory>Modules/Meetings/tests/Feature</directory>
+            <directory>Modules/Obligations/tests/Feature</directory>
+            <directory>Modules/Projects/tests/Feature</directory>
+            <directory>Modules/Tasks/tests/Feature</directory>
+            <directory>Modules/Todos/tests/Feature</directory>
         </testsuite>
     </testsuites>
     <source>
         <include>
             <directory>app</directory>
+            <directory>Modules/Meetings/app</directory>
+            <directory>Modules/Obligations/app</directory>
+            <directory>Modules/Projects/app</directory>
+            <directory>Modules/Tasks/app</directory>
+            <directory>Modules/Todos/app</directory>
         </include>
     </source>
     <php>

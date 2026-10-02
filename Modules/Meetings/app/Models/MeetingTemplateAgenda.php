@@ -2,11 +2,14 @@
 
 namespace Modules\Meetings\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MeetingTemplateAgenda extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'template_id',
         'title',

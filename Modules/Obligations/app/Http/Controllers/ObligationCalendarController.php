@@ -3,11 +3,11 @@
 namespace Modules\Obligations\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Obligations\Models\Obligation;
-use Modules\Tasks\Models\Task;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Modules\Obligations\Models\Obligation;
+use Modules\Tasks\Models\Task;
 
 class ObligationCalendarController extends Controller
 {
@@ -36,6 +36,14 @@ class ObligationCalendarController extends Controller
                 'high' => '#f59e0b',
                 'medium' => '#3b82f6',
                 'low' => '#10b981',
+                // A default arm, because `risk_level` is a plain string column and
+                // this match had none: a value outside the four threw an
+                // `UnhandledMatchError` and the calendar returned a 500 for every
+                // obligation on it. The obligation dashboard hit exactly this and is
+                // now on `StatusBadge`; this one keeps its literal palette — which
+                // FullCalendar needs, since it paints outside the Bootstrap cascade
+                // — but no longer fails on an unanticipated value.
+                default => '#6b7280',
             },
             'textColor' => '#ffffff',
             'extendedProps' => [

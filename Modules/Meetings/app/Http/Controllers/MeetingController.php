@@ -3,8 +3,7 @@
 namespace Modules\Meetings\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Department;
-use App\Models\User;
+use App\Support\ResolvesReferenceData;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,6 +20,8 @@ use Modules\Tasks\Models\Task;
 
 class MeetingController extends Controller
 {
+    use ResolvesReferenceData;
+
     public function __construct(private MeetingService $meetingService) {}
 
     public function index(Request $request): View
@@ -66,7 +67,7 @@ class MeetingController extends Controller
 
         $meetings = $query->orderByDesc('meeting_date')->paginate(15)->withQueryString();
         $types = MeetingType::orderBy('sort_order')->get();
-        $departments = Department::orderBy('department_name')->get();
+        $departments = $this->referenceData()->departments();
 
         return view('meetings.index', compact('meetings', 'types', 'departments', 'filters'));
     }
@@ -76,8 +77,8 @@ class MeetingController extends Controller
         $this->authorize('create', Meeting::class);
 
         $types = MeetingType::orderBy('sort_order')->get();
-        $users = User::orderBy('name')->get(['id', 'name']);
-        $departments = Department::orderBy('department_name')->get();
+        $users = $this->referenceData()->users();
+        $departments = $this->referenceData()->departments();
 
         return view('meetings.create', compact('types', 'users', 'departments'));
     }
@@ -136,8 +137,8 @@ class MeetingController extends Controller
             'minutesApprovals.approver',
         ]);
 
-        $users = User::orderBy('name')->get(['id', 'name']);
-        $departments = Department::orderBy('department_name')->get();
+        $users = $this->referenceData()->users();
+        $departments = $this->referenceData()->departments();
         $tasks = Task::orderByDesc('created_at')->get(['id', 'task_no', 'title', 'status', 'priority']);
 
         return view('meetings.show', compact('meeting', 'users', 'departments', 'tasks'));
@@ -174,8 +175,8 @@ class MeetingController extends Controller
         $this->authorize('update', $meeting);
 
         $types = MeetingType::orderBy('sort_order')->get();
-        $users = User::orderBy('name')->get(['id', 'name']);
-        $departments = Department::orderBy('department_name')->get();
+        $users = $this->referenceData()->users();
+        $departments = $this->referenceData()->departments();
 
         return view('meetings.edit', compact('meeting', 'types', 'users', 'departments'));
     }
