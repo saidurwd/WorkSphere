@@ -1,28 +1,30 @@
 @props(['node', 'depth' => 0])
 
 @php
-    $isAdmin = auth()->user()?->hasAnyRole(config('authorization.admin_roles', [])) ?? false;
+    /**
+     * Rendering only. Every decision — whether this node is visible, whether it is
+     * the current location, where it points — belongs to `App\Support\NavigationMenu`,
+     * where it can be tested without rendering a page.
+     *
+     * @var \App\Support\NavigationMenu $menu
+     */
+    $menu = app(\App\Support\NavigationMenu::class);
 
-    $children = collect($node['children'] ?? [])
-        ->reject(fn (array $child): bool => ($child['admin'] ?? false) && ! $isAdmin)
-        ->values();
+    $children = $node['children'] ?? [];
+    $hasChildren = $children !== [];
 
-    $hasChildren = $children->isNotEmpty();
-
-    $isActive = collect($node['active'] ?? [$node['route'] ?? ''])
-        ->filter()
-        ->contains(fn (string $pattern): bool => request()->routeIs($pattern));
-
-    $isBranchActive = $hasChildren && $children->contains(
-        fn (array $child): bool => collect($child['active'] ?? [$child['route'] ?? ''])
-            ->filter()
-            ->contains(fn (string $pattern): bool => request()->routeIs($pattern))
-    );
+    $url = $menu->url($node);
+    $isCurrent = $menu->isCurrent($node);
+    $isBranchActive = $hasChildren && $menu->isActive($node);
 @endphp
 
-<li class="nav-item {{ $hasChildren && $isBranchActive ? 'menu-open' : '' }}">
+<li class="nav-item {{ $isBranchActive ? 'menu-open' : '' }}">
     @if ($hasChildren)
-        <a href="#" class="nav-link">
+        {{-- A branch is a disclosure, not a link. `href="#"` with `aria-expanded`
+             keeps it keyboard-operable; the previous tree had no aria state at all,
+             so a screen reader could not tell an expanded group from a collapsed
+             one. --}}
+        <a href="#" class="nav-link" aria-expanded="{{ $isBranchActive ? 'true' : 'false' }}">
             <i class="nav-icon bi bi-{{ $node['icon'] }}"></i>
             <p>
                 {{ $node['label'] }}
@@ -36,9 +38,9 @@
             @endforeach
         </ul>
     @else
-        <a href="{{ route($node['route']) }}"
-           class="nav-link {{ $isActive ? 'active' : '' }}"
-           @if ($isActive) aria-current="page" @endif>
+        <a href="{{ $url }}"
+           class="nav-link {{ $isCurrent ? 'active' : '' }}"
+           @if ($isCurrent) aria-current="page" @endif>
             <i class="nav-icon bi bi-{{ $node['icon'] }}"></i>
             <p>{{ $node['label'] }}</p>
         </a>

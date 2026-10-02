@@ -95,6 +95,25 @@ class AppServiceProvider extends ServiceProvider
         // strings with no gate behind them, which denies every caller — a report
         // screen that is unreachable for everyone rather than for the unpermitted.
         'report.view' => 'report.view',
+
+        /*
+         * System administration.
+         *
+         * ONE PERMISSION PER SCREEN rather than a single `system.manage` for all
+         * of them. Reading the health of a system and changing how that system
+         * behaves are not the same authority: an operator on call who can see that
+         * the queue is backing up should not thereby be able to edit the session
+         * lifetime or switch on a feature flag for everybody.
+         *
+         * `system.manage` remains as the super-admin shortcut for all of them, so
+         * an account holding only the broad permission still gets every screen.
+         */
+        'system.health' => 'system.health',
+        'system.settings' => 'system.settings',
+        'system.queue' => 'system.queue',
+        'system.schedule' => 'system.schedule',
+        'system.flags' => 'system.flags',
+        'system.tokens' => 'system.tokens',
         /*
          * super-admin only, NOT `admin`. A database backup is the entire system:
          * credentials, personal data, hashes. Phase 11 raised this from the

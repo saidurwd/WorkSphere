@@ -1,9 +1,13 @@
 @php
-    $isAdmin = auth()->user()?->hasAnyRole(config('authorization.admin_roles', [])) ?? false;
+    /**
+     * Filtering, pruning and active-state all live in `App\Support\NavigationMenu`.
+     * This component only draws what it is given, which is why the sidebar can be
+     * tested as a data structure rather than as markup.
+     */
+    $menu = app(\App\Support\NavigationMenu::class);
+    $nodes = $menu->forUser(auth()->user());
 
-    $menu = collect(config('navigation.menu', []))
-        ->reject(fn (array $node): bool => ($node['admin'] ?? false) && ! $isAdmin)
-        ->values();
+    $section = null;
 @endphp
 
 <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
@@ -32,7 +36,15 @@
 
         <nav class="mt-2" aria-label="Main navigation">
             <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
-                @foreach ($menu as $node)
+                @foreach ($nodes as $node)
+                    {{-- Section headings come from the config and are emitted only
+                         when something survived filtering underneath them, so a
+                         heading never appears as a rule with nothing under it. --}}
+                    @if (($node['section'] ?? null) && $node['section'] !== $section)
+                        @php($section = $node['section'])
+                        <li class="nav-header text-uppercase small fw-semibold text-body-secondary px-3 pt-3 pb-1">{{ $section }}</li>
+                    @endif
+
                     <x-sidebar-menu-item :node="$node" />
                 @endforeach
             </ul>

@@ -6,6 +6,12 @@ use App\Http\Controllers\Admin\LoginLogController;
 use App\Http\Controllers\Admin\ReferenceDataController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SecurityEventController;
+use App\Http\Controllers\Admin\System\FeatureFlagController;
+use App\Http\Controllers\Admin\System\HealthController;
+use App\Http\Controllers\Admin\System\QueueController;
+use App\Http\Controllers\Admin\System\ScheduleController;
+use App\Http\Controllers\Admin\System\SettingsController;
+use App\Http\Controllers\Admin\System\TokenController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -126,10 +132,47 @@ Route::middleware(['web', 'auth', 'admin'])
             ->name('database-backups.destroy');
     });
 
+/*
+ * Machine-facing health probes. Outside every auth group because an orchestrator
+ * cannot hold a session, and deliberately narrow: each returns a verdict and a few
+ * facts, never a DSN, a credential or a row count.
+ */
+Route::get('livez', [HealthController::class, 'livez'])->name('livez');
+Route::get('readyz', [HealthController::class, 'readyz'])->name('readyz');
+
 Route::middleware(['web', 'auth', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        // System administration. Each screen behind its OWN permission rather than
+        // the blanket `system.manage`, so an operator who can read the health of
+        // the system is not thereby also handed the ability to change how it
+        // behaves. `system.manage` remains as the super-admin shortcut.
+        Route::prefix('system')->name('system.')->group(function () {
+            Route::get('health', [HealthController::class, 'index'])->name('health.index');
+
+            Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
+            Route::post('settings', [SettingsController::class, 'update'])->name('settings.update');
+
+            Route::get('queue', [QueueController::class, 'index'])->name('queue.index');
+            Route::post('queue/retry', [QueueController::class, 'retry'])->name('queue.retry');
+            Route::post('queue/retry-all', [QueueController::class, 'retryAll'])->name('queue.retry-all');
+            Route::post('queue/forget', [QueueController::class, 'forget'])->name('queue.forget');
+            Route::post('queue/flush', [QueueController::class, 'flush'])->name('queue.flush');
+
+            Route::get('schedule', [ScheduleController::class, 'index'])->name('schedule.index');
+
+            Route::get('flags', [FeatureFlagController::class, 'index'])->name('flags.index');
+            Route::post('flags', [FeatureFlagController::class, 'store'])->name('flags.store');
+            Route::put('flags/{flag}', [FeatureFlagController::class, 'update'])->name('flags.update');
+            Route::post('flags/{flag}/toggle', [FeatureFlagController::class, 'toggle'])->name('flags.toggle');
+            Route::delete('flags/{flag}', [FeatureFlagController::class, 'destroy'])->name('flags.destroy');
+
+            Route::get('tokens', [TokenController::class, 'index'])->name('tokens.index');
+            Route::delete('tokens/{tokenId}', [TokenController::class, 'destroy'])->name('tokens.destroy');
+            Route::post('tokens/revoke-others', [TokenController::class, 'destroyOthers'])->name('tokens.destroy-others');
+        });
+
         Route::get('users', [UserController::class, 'index'])->name('users.index');
         Route::get('users/create', [UserController::class, 'create'])->name('users.create');
         Route::post('users', [UserController::class, 'store'])->name('users.store');

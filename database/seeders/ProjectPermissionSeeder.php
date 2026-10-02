@@ -13,6 +13,15 @@ class ProjectPermissionSeeder extends Seeder
     /** @var list<string> */
     private const PERMISSIONS = [
         'report.view',
+
+        // System administration, one per screen. See the gates block in
+        // AppServiceProvider for why these are six permissions rather than one.
+        'system.health',
+        'system.settings',
+        'system.queue',
+        'system.schedule',
+        'system.flags',
+        'system.tokens',
         'user.manage',
         'role.manage',
         'privilege.manage',
