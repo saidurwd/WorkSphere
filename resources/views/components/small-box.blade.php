@@ -20,7 +20,7 @@
     <i class="bi bi-{{ $icon }} small-box-icon" aria-hidden="true"></i>
 
     @if ($href)
-        <a href="{{ $href }}" class="small-box-footer link-light">
+        <a href="{{ $href }}" class="small-box-footer">
             {{ $footer ?? 'View more' }} <i class="bi bi-arrow-right ms-1"></i>
         </a>
     @endif

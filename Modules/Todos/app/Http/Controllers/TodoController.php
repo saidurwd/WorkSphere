@@ -376,7 +376,7 @@ class TodoController extends Controller
         return $query
             ->when($filters['overdue'] === true, fn ($q) => $q->overdue())
             ->when($filters['recurring'] === true, fn ($q) => $q->recurring())
-            ->orderByRaw('due_date IS NULL, due_date')
+            ->orderByRaw('due_date IS NULL, due_date DESC')
             ->orderByDesc('id');
     }
 

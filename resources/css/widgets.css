@@ -115,6 +115,17 @@
     flex-shrink: 0;
 }
 
+/* AdminLTE expects white metric-card links, but this application uses dark
+   foregrounds on its success, warning, info, and danger fills. Keep the
+   card's semantic foreground on its action as well so the entire card is
+   readable in both themes. */
+.small-box > .small-box-footer,
+.small-box > .small-box-footer:hover,
+.small-box > .small-box-footer:focus-visible {
+    color: inherit;
+    text-decoration: none;
+}
+
 /* Placeholder AdminLTE reveals via [data-lte-search-empty] when a menu
    search returns nothing. */
 .sidebar-search-empty {

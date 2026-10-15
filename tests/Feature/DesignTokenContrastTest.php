@@ -374,4 +374,26 @@ class DesignTokenContrastTest extends TestCase
             );
         }
     }
+
+    public function test_metric_card_actions_inherit_their_accessible_foreground(): void
+    {
+        // AdminLTE's stock metric-card examples use a white `link-light`
+        // action. That fails on this application's warning, success, info,
+        // and danger fills, whose accessible foreground is dark. The action
+        // must inherit the semantic foreground assigned to the card instead.
+        $component = (string) file_get_contents(base_path('resources/views/components/small-box.blade.php'));
+        $css = $this->stripComments($this->widgets());
+
+        $this->assertStringNotContainsString(
+            'link-light',
+            $component,
+            'Metric-card actions must not force a white label over semantic status fills.',
+        );
+
+        $this->assertMatchesRegularExpression(
+            '/\.small-box\s*>\s*\.small-box-footer[^}]*color:\s*inherit;/',
+            $css,
+            'Metric-card actions must inherit the card foreground in every theme.',
+        );
+    }
 }

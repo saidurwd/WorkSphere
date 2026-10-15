@@ -252,4 +252,43 @@ class TodoScreenRenderTest extends TestCase
             ->assertOk()
             ->assertSee('My own work');
     }
+
+    public function test_the_index_grid_lists_todos_latest_due_first(): void
+    {
+        $user = $this->userWithPermissions(['todos.create']);
+
+        Todo::factory()->createdBy($user)->create([
+            'title' => 'Task Zebra',
+            'due_date' => '2026-10-20',
+        ]);
+        Todo::factory()->createdBy($user)->create([
+            'title' => 'Task Mango',
+            'due_date' => '2026-10-10',
+        ]);
+        Todo::factory()->createdBy($user)->create([
+            'title' => 'Task Apple',
+            'due_date' => '2026-10-05',
+        ]);
+        Todo::factory()->createdBy($user)->create([
+            'title' => 'Task Yew',
+            'due_date' => null,
+        ]);
+
+        $content = $this->actingAs($user)->get(route('todos.index'))->getContent();
+
+        $posZebra = mb_strpos($content, 'Task Zebra');
+        $posMango = mb_strpos($content, 'Task Mango');
+        $posApple = mb_strpos($content, 'Task Apple');
+        $posYew = mb_strpos($content, 'Task Yew');
+
+        $this->assertNotFalse($posZebra, 'Latest-due To-Do is missing from the grid.');
+        $this->assertNotFalse($posMango, 'Middle-due To-Do is missing from the grid.');
+        $this->assertNotFalse($posApple, 'Earliest-due To-Do is missing from the grid.');
+        $this->assertNotFalse($posYew, 'Undated To-Do is missing from the grid.');
+
+        // Latest due date first, then descending; undated rows sink to the bottom.
+        $this->assertLessThan($posMango, $posZebra, 'Latest due must rank before middle due.');
+        $this->assertLessThan($posApple, $posMango, 'Middle due must rank before earliest due.');
+        $this->assertGreaterThan($posApple, $posYew, 'Undated To-Do must come after dated ones.');
+    }
 }
