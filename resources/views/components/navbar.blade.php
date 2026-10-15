@@ -40,7 +40,7 @@
     <div class="container-fluid d-flex align-items-center">
         <ul class="navbar-nav flex-shrink-0">
             <li class="nav-item">
-                <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" aria-label="Toggle navigation">
+                <a class="nav-link" href="#" role="button" aria-label="Toggle navigation" x-on:click.prevent="$store.sidebar.toggle()">
                     <i class="bi bi-list"></i>
                 </a>
             </li>
@@ -152,7 +152,7 @@
             @endauth
 
             <li class="nav-item">
-                <a class="nav-link" data-lte-toggle="fullscreen" href="#" role="button" aria-label="Toggle fullscreen">
+                <a class="nav-link" href="#" role="button" aria-label="Toggle fullscreen" x-on:click.prevent="$store.ui.fullscreen()">
                     <i class="bi bi-fullscreen"></i>
                 </a>
             </li>

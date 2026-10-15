@@ -18,21 +18,25 @@
     $isBranchActive = $hasChildren && $menu->isActive($node);
 @endphp
 
-<li class="nav-item {{ $isBranchActive ? 'menu-open' : '' }}">
+<li class="nav-item"
+    @if ($hasChildren) x-data="{ open: {{ $isBranchActive ? 'true' : 'false' }} }" @endif>
     @if ($hasChildren)
-        {{-- A branch is a disclosure, not a link. `href="#"` with `aria-expanded`
-             keeps it keyboard-operable; the previous tree had no aria state at all,
-             so a screen reader could not tell an expanded group from a collapsed
-             one. --}}
-        <a href="#" class="nav-link" aria-expanded="{{ $isBranchActive ? 'true' : 'false' }}">
-            <i class="nav-icon bi bi-{{ $node['icon'] }}"></i>
-            <p>
-                {{ $node['label'] }}
-                <i class="nav-arrow bi bi-chevron-right"></i>
-            </p>
+        {{-- A branch is a disclosure, not a link. `href="#"` with a static
+             `aria-expanded` keeps the group's initial state discoverable to
+             assistive technology; Alpine only animates the list, it does not
+             re-bind the attribute. --}}
+        <a href="#" class="nav-link"
+           aria-expanded="{{ $isBranchActive ? 'true' : 'false' }}"
+           x-on:click.prevent="open = !open">
+            <span class="nav-link-icon">
+                <i class="bi bi-{{ $node['icon'] }}"></i>
+            </span>
+            <span class="nav-link-title">{{ $node['label'] }}</span>
+
+            <i class="bi bi-chevron-right ms-auto" :class="{ 'rotate': open }"></i>
         </a>
 
-        <ul class="nav nav-treeview">
+        <ul class="navbar-nav flex-column ms-3" x-show="open">
             @foreach ($children as $child)
                 <x-sidebar-menu-item :node="$child" :depth="$depth + 1" />
             @endforeach
@@ -41,8 +45,10 @@
         <a href="{{ $url }}"
            class="nav-link {{ $isCurrent ? 'active' : '' }}"
            @if ($isCurrent) aria-current="page" @endif>
-            <i class="nav-icon bi bi-{{ $node['icon'] }}"></i>
-            <p>{{ $node['label'] }}</p>
+            <span class="nav-link-icon">
+                <i class="bi bi-{{ $node['icon'] }}"></i>
+            </span>
+            <span class="nav-link-title">{{ $node['label'] }}</span>
         </a>
     @endif
 </li>

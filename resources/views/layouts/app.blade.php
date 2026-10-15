@@ -15,7 +15,7 @@
     @stack('styles')
 </head>
 
-<body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
+<body class="layout-fluid bg-body-tertiary">
 
 <a href="#main-content" class="skip-link">Skip to main content</a>
 

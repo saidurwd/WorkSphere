@@ -591,11 +591,11 @@ class NavigationStructureTest extends TestCase
         $plain = $this->actingAs($this->plainUser())->get('/dashboard')->assertOk()->getContent();
 
         // A heading with nothing beneath it is a rule on the page with no label.
-        $this->assertStringNotContainsString('nav-header', $plain);
+        $this->assertStringNotContainsString('nav-section-title', $plain);
 
         $admin = $this->actingAs($this->superAdmin(['user.manage']))->get('/dashboard')->assertOk()->getContent();
 
-        $this->assertStringContainsString('nav-header', $admin);
+        $this->assertStringContainsString('nav-section-title', $admin);
     }
 
     // ---- Helpers ------------------------------------------------------------

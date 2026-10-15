@@ -1,7 +1,7 @@
 /*
- * Project widgets layered on top of AdminLTE 4 + Bootstrap 5.3.
- * Only genuinely project-specific styles belong here; anything Bootstrap or
- * AdminLTE already provides must be used directly from markup instead.
+ * Project widgets layered on top of Tabler + Bootstrap 5.3.
+ * Only genuinely project-specific styles belong here; anything the framework
+ * already provides must be used directly from markup instead.
  */
 
 /*
@@ -13,10 +13,10 @@
  * therefore loses the cascade on every .btn, .nav-link and .form-control in
  * the app without ever saying so. The component selectors are listed
  * explicitly to match that weight and win on order, because this file is
- * imported after AdminLTE.
+ * imported after the framework CSS.
  *
  * `:focus-visible` rather than `:focus` throughout: a mouse click on a text
- * field should not leave a ring behind.
+ * field should not draw a ring, and matching `:focus` here would put one back.
  */
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible,
 .btn:focus-visible,
@@ -115,10 +115,10 @@
     flex-shrink: 0;
 }
 
-/* AdminLTE expects white metric-card links, but this application uses dark
-   foregrounds on its success, warning, info, and danger fills. Keep the
-   card's semantic foreground on its action as well so the entire card is
-   readable in both themes. */
+/* Metric card (`x-small-box`) foregrounds. The action link must inherit the
+   card's semantic foreground assigned via `.text-bg-*` so the entire card
+   stays readable in both themes — overriding the white a framework default
+   would otherwise impose on a status fill. */
 .small-box > .small-box-footer,
 .small-box > .small-box-footer:hover,
 .small-box > .small-box-footer:focus-visible {
@@ -126,13 +126,39 @@
     text-decoration: none;
 }
 
-/* Placeholder AdminLTE reveals via [data-lte-search-empty] when a menu
-   search returns nothing. */
-.sidebar-search-empty {
-    padding: 0.5rem 0.75rem;
+/* Metric card geometry: a coloured tile with a right-aligned icon. Tabler CSS
+   supplies the `.text-bg-*` fills and Bootstrap supplies the rest; only the
+   layout the framework no longer provides is restated here. */
+.small-box {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+    min-height: 90px;
 }
 
-/* Print views reuse the AdminLTE shell but drop the chrome. */
+.small-box .inner {
+    padding: 0.6rem 1rem 0.85rem;
+}
+
+.small-box h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.small-box p {
+    margin: 0;
+}
+
+.small-box .small-box-icon {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    font-size: 2rem;
+    opacity: 0.35;
+}
+
+/* Print views reuse the app shell but drop the chrome. */
 @media print {
     .app-sidebar,
     .app-header,

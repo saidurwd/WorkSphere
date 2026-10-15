@@ -6,7 +6,6 @@ import Swal from 'sweetalert2';
 import DataTable from 'datatables.net-bs5';
 
 import 'bootstrap';
-import 'admin-lte';
 
 import 'tom-select/dist/css/tom-select.bootstrap5.css';
 import 'flatpickr/dist/flatpickr.css';
@@ -43,6 +42,46 @@ Alpine.store('theme', {
         document.documentElement.setAttribute('data-bs-theme', value);
         document.documentElement.classList.toggle('dark', value === 'dark');
         document.cookie = `theme=${value}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
+    },
+});
+
+/**
+ * Sidebar drawer state. Shared between the navbar toggle and the `<aside>`
+ * through the global Alpine store, so the two never disagree.
+ */
+Alpine.store('sidebar', {
+    open: false,
+
+    toggle() {
+        this.open = !this.open;
+    },
+
+    openDrawer() {
+        this.open = true;
+    },
+
+    closeDrawer() {
+        this.open = false;
+    },
+});
+
+/**
+ * UI helpers that used to be AdminLTE's `data-lte-toggle` hooks: the header
+ * full-screen toggle, implemented on the native Fullscreen API.
+ */
+Alpine.store('ui', {
+    fullscreen() {
+        const doc = document;
+
+        if (!doc.fullscreenElement) {
+            doc.documentElement.requestFullscreen().catch(() => {});
+
+            return;
+        }
+
+        if (doc.exitFullscreen) {
+            doc.exitFullscreen();
+        }
     },
 });
 

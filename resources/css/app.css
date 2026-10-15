@@ -1,11 +1,16 @@
-/* AdminLTE 4 bundles Bootstrap 5.3 in its own stylesheet (admin-lte@4.9.1
-   peer-depends on bootstrap ^5.3.8), so importing bootstrap.css here as well
-   would ship the whole framework twice and let the two copies drift. */
-@import 'admin-lte/dist/css/adminlte.css';
+/* Tabler CSS bundles Bootstrap 5.3 (Bootstrap Icons is imported separately
+   below), so importing bootstrap.css here as well would ship the whole
+   framework twice and let the two copies drift.
+
+   Import order is deliberate: the project's own CSS follows Tabler so its
+   token overrides (`.text-bg-*` foregrounds, `--bs-*-bg-rgb` triplets) and
+   the shell layout win over the framework defaults. */
+@import '@tabler/core/dist/css/tabler.css';
 
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
 @import './tokens.css';
 @import './widgets.css';
+@import './layout.css';
 
 @import url('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.21/main.min.css');
