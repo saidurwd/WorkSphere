@@ -22,6 +22,8 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SearchSuggestController;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
@@ -201,3 +203,14 @@ Route::middleware(['web', 'auth', 'admin'])
         Route::get('security-events', [SecurityEventController::class, 'index'])->name('security-events.index');
         Route::get('security-events/{securityEvent}', [SecurityEventController::class, 'show'])->name('security-events.show');
     });
+
+/* TEMP DEBUG ROUTE - remove after inspection. */
+Route::get('/__preview', function () {
+    if (! app()->environment('local')) {
+        abort(404);
+    }
+
+    Auth::loginUsingId(User::first()->id);
+
+    return redirect('/dashboard');
+});

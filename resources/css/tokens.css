@@ -137,6 +137,58 @@
     --bs-focus-ring-color: var(--app-ring);
     --bs-focus-ring-width: 0.25rem;
 
+    /* Tabler rewrites Bootstrap's contextual utilities to read its own
+       `--tblr-*` palette, so `.text-bg-*` fills and the `bg-body-*` surfaces
+       resolved to Tabler's blue and grey instead of to the tokens above — the
+       metric tiles came out Tabler blue and the sidebar came out light grey.
+       Point the palette at the app tokens. Each resolves per theme because
+       `--app-*` is redeclared in the dark block below and a var() is
+       substituted where it is used, not where it is declared. */
+    --tblr-primary: var(--app-primary);
+    --tblr-secondary: var(--app-secondary);
+    --tblr-success: var(--app-success);
+    --tblr-info: var(--app-info);
+    --tblr-warning: var(--app-warning);
+    --tblr-danger: var(--app-danger);
+    --tblr-light: var(--app-secondary);
+    --tblr-dark: var(--app-primary);
+    --tblr-muted: var(--app-muted-foreground);
+
+    --tblr-primary-fg: var(--app-primary-foreground);
+    --tblr-success-fg: var(--app-success-foreground);
+    --tblr-info-fg: var(--app-info-foreground);
+    --tblr-warning-fg: var(--app-warning-foreground);
+    --tblr-danger-fg: var(--app-danger-foreground);
+
+    --tblr-primary-rgb: var(--bs-primary-rgb);
+    --tblr-secondary-rgb: var(--bs-secondary-rgb);
+    --tblr-success-rgb: var(--bs-success-rgb);
+    --tblr-info-rgb: var(--bs-info-rgb);
+    --tblr-warning-rgb: var(--bs-warning-rgb);
+    --tblr-danger-rgb: var(--bs-danger-rgb);
+
+    --tblr-body-color: var(--app-foreground);
+    --tblr-body-bg: var(--app-background);
+    --tblr-body-color-rgb: 9, 9, 11;
+    --tblr-body-bg-rgb: var(--bs-body-bg-rgb);
+    --tblr-emphasis-color: var(--app-foreground);
+    --tblr-secondary-color: var(--app-muted-foreground);
+    --tblr-link-color: var(--app-foreground);
+    --tblr-link-hover-color: var(--app-foreground);
+    --tblr-border-color: var(--app-border);
+
+    --tblr-bg-surface: var(--app-background);
+    --tblr-bg-surface-secondary: var(--app-muted);
+    --tblr-bg-surface-tertiary: var(--app-muted);
+    --tblr-secondary-bg: var(--app-secondary);
+    --tblr-tertiary-bg: var(--app-muted);
+    --tblr-card-bg: var(--app-card);
+    --tblr-card-color: var(--app-card-foreground);
+    --tblr-card-cap-bg: var(--app-card);
+    --tblr-card-cap-color: var(--app-card-foreground);
+    --tblr-card-subtitle-color: var(--app-muted-foreground);
+    --tblr-card-border-color: var(--app-border);
+
     /* Legacy token names used by inline styles in the existing screens */
     --background: var(--app-background);
     --foreground: var(--app-foreground);
@@ -245,6 +297,55 @@
     --bs-body-tertiary-bg-rgb: 9, 9, 11;
 
     --bs-focus-ring-color: var(--app-ring);
+
+    /* The same Tabler mapping as in `:root`, restated here because Tabler also
+       declares these variables under `[data-bs-theme=dark]` and a bare `:root`
+       rule would lose to it. Same `--app-*` references, so the values still
+       arrive from this block. */
+    --tblr-primary: var(--app-primary);
+    --tblr-secondary: var(--app-secondary);
+    --tblr-success: var(--app-success);
+    --tblr-info: var(--app-info);
+    --tblr-warning: var(--app-warning);
+    --tblr-danger: var(--app-danger);
+    --tblr-light: var(--app-secondary);
+    --tblr-dark: var(--app-primary);
+    --tblr-muted: var(--app-muted-foreground);
+
+    --tblr-primary-fg: var(--app-primary-foreground);
+    --tblr-success-fg: var(--app-success-foreground);
+    --tblr-info-fg: var(--app-info-foreground);
+    --tblr-warning-fg: var(--app-warning-foreground);
+    --tblr-danger-fg: var(--app-danger-foreground);
+
+    --tblr-primary-rgb: var(--bs-primary-rgb);
+    --tblr-secondary-rgb: var(--bs-secondary-rgb);
+    --tblr-success-rgb: var(--bs-success-rgb);
+    --tblr-info-rgb: var(--bs-info-rgb);
+    --tblr-warning-rgb: var(--bs-warning-rgb);
+    --tblr-danger-rgb: var(--bs-danger-rgb);
+
+    --tblr-body-color: var(--app-foreground);
+    --tblr-body-bg: var(--app-background);
+    --tblr-body-color-rgb: 250, 250, 250;
+    --tblr-body-bg-rgb: var(--bs-body-bg-rgb);
+    --tblr-emphasis-color: var(--app-foreground);
+    --tblr-secondary-color: var(--app-muted-foreground);
+    --tblr-link-color: var(--app-foreground);
+    --tblr-link-hover-color: var(--app-foreground);
+    --tblr-border-color: var(--app-border);
+
+    --tblr-bg-surface: var(--app-background);
+    --tblr-bg-surface-secondary: var(--app-muted);
+    --tblr-bg-surface-tertiary: var(--app-muted);
+    --tblr-secondary-bg: var(--app-secondary);
+    --tblr-tertiary-bg: var(--app-muted);
+    --tblr-card-bg: var(--app-card);
+    --tblr-card-color: var(--app-card-foreground);
+    --tblr-card-cap-bg: var(--app-card);
+    --tblr-card-cap-color: var(--app-card-foreground);
+    --tblr-card-subtitle-color: var(--app-muted-foreground);
+    --tblr-card-border-color: var(--app-border);
 
     /* A shadow drawn in black on a near-black page is invisible, so the dark
        cards are separated by the border above rather than by elevation. */

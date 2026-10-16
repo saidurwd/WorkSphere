@@ -85,11 +85,17 @@ html {
     padding: 0;
 }
 
-/* Desktop: the sidebar becomes an always-visible column. */
+/* Desktop: the sidebar becomes an always-visible column, and the header sits
+   BESIDE it rather than beneath it — spanning full width put the header under
+   the sidebar's top edge. */
 @media (min-width: 1024px) {
     .app-sidebar {
         width: var(--app-sidebar-width);
         transform: none;
+    }
+
+    .app-header {
+        left: var(--app-sidebar-width);
     }
 
     .app-main {

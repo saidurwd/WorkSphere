@@ -41,7 +41,37 @@
 
 <x-confirm-dialog />
 
+@if (app()->environment('local'))
+    <script>
+        (function () {
+            function go() {
+                try {
+                    var el = function (s) { return document.querySelector(s); };
+                    var rect = function (e) { if (!e) return null; var r = e.getBoundingClientRect(); return { l: Math.round(r.left), t: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) }; };
+                    var out = {
+                        bodyClass: document.body.className,
+                        sidebar: rect(el('.app-sidebar')),
+                        header: rect(el('.app-header')),
+                        main: rect(el('.app-main')),
+                        navbarNav: rect(el('.app-sidebar .navbar-nav')),
+                        box: rect(el('.small-box')),
+                        sidebarCss: (function () { var s = el('.app-sidebar'); return s ? { width: getComputedStyle(s).width, position: getComputedStyle(s).position, transform: getComputedStyle(s).transform } : null; })(),
+                        mainMarginLeft: (function () { var m = el('.app-main'); return m ? getComputedStyle(m).marginLeft : null; })(),
+                        boxBgs: (function () { var r = []; document.querySelectorAll('.small-box').forEach(function (n) { r.push(getComputedStyle(n).backgroundColor); }); return r.slice(0, 5); })(),
+                        varSidebarWidth: getComputedStyle(document.documentElement).getPropertyValue('--app-sidebar-width'),
+                        docW: document.documentElement.clientWidth
+                    };
+                    document.title = '__PROBE__' + JSON.stringify(out);
+                } catch (e) {
+                    document.title = '__PROBE_ERR__' + (e && e.message);
+                }
+            }
+            if (document.readyState !== 'loading') { setTimeout(go, 0); } else { document.addEventListener('DOMContentLoaded', function () { setTimeout(go, 0); }); }
+            window.addEventListener('load', go);
+        })();
+    </script>
+@endif
+
 @stack('scripts')
 </body>
-
 </html>

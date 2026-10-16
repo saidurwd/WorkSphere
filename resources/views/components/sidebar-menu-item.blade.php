@@ -21,12 +21,13 @@
 <li class="nav-item"
     @if ($hasChildren) x-data="{ open: {{ $isBranchActive ? 'true' : 'false' }} }" @endif>
     @if ($hasChildren)
-        {{-- A branch is a disclosure, not a link. `href="#"` with a static
-             `aria-expanded` keeps the group's initial state discoverable to
-             assistive technology; Alpine only animates the list, it does not
-             re-bind the attribute. --}}
+        {{-- A branch is a disclosure, not a link. `href="#"` is never followed;
+             clicking toggles the group. `aria-expanded` is rendered server-side for
+             the initial state (no-JS accessibility) and rebound reactively via
+             Alpine so assistive technology reflects toggles afterwards. --}}
         <a href="#" class="nav-link"
            aria-expanded="{{ $isBranchActive ? 'true' : 'false' }}"
+           :aria-expanded="open"
            x-on:click.prevent="open = !open">
             <span class="nav-link-icon">
                 <i class="bi bi-{{ $node['icon'] }}"></i>
