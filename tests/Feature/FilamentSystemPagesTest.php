@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Filament\Pages\System\SystemSettings;
+use App\Filament\Resources\ApiTokens\Pages\ListApiTokens;
 use App\Filament\Resources\FeatureFlags\Pages\CreateFeatureFlag;
 use App\Filament\Resources\FeatureFlags\Pages\EditFeatureFlag;
 use App\Filament\Resources\FeatureFlags\Pages\ListFeatureFlags;
@@ -116,5 +117,48 @@ class FilamentSystemPagesTest extends TestCase
         Livewire::test(ListFeatureFlags::class)->callTableAction('delete', $flag);
 
         $this->assertFalse($flags->enabled('gone'));
+    }
+
+    public function test_the_token_list_shows_only_your_own_tokens_and_never_a_value(): void
+    {
+        $mine = $this->superAdmin();
+        $theirs = $this->superAdmin();
+
+        $own = $mine->createToken('nightly', ['read']);
+        $other = $theirs->createToken('theirs', ['read']);
+
+        $this->actingAs($mine);
+
+        Livewire::test(ListApiTokens::class)
+            ->assertCanSeeTableRecords([$own->accessToken])
+            ->assertCanNotSeeTableRecords([$other->accessToken])
+            ->assertDontSee($own->plainTextToken);
+    }
+
+    public function test_a_token_can_be_revoked_by_its_owner(): void
+    {
+        $user = $this->superAdmin();
+        $token = $user->createToken('one', ['read']);
+
+        $this->actingAs($user);
+
+        Livewire::test(ListApiTokens::class)->callTableAction('revoke', $token->accessToken);
+
+        $this->assertSame(0, $user->tokens()->count());
+    }
+
+    public function test_revoking_others_clears_every_token_on_the_account(): void
+    {
+        $user = $this->superAdmin();
+        $user->createToken('one', ['read']);
+        $user->createToken('two', ['read']);
+        $theirs = $this->superAdmin()->createToken('theirs', ['read']);
+
+        $this->actingAs($user);
+
+        Livewire::test(ListApiTokens::class)->callAction('revokeOthers');
+
+        $this->assertSame(0, $user->tokens()->count());
+        $this->assertDatabaseHas('personal_access_tokens', ['id' => $theirs->accessToken->id]);
     }
 }
