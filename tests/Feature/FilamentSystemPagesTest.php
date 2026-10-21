@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Pages\System\SystemHealth;
+use App\Filament\Pages\System\SystemQueue;
+use App\Filament\Pages\System\SystemSchedule;
 use App\Filament\Pages\System\SystemSettings;
 use App\Filament\Resources\ApiTokens\Pages\ListApiTokens;
 use App\Filament\Resources\FeatureFlags\Pages\CreateFeatureFlag;
@@ -11,6 +14,7 @@ use App\Models\FeatureFlag;
 use App\Services\FeatureFlags;
 use App\Services\Settings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\InteractsWithRoles;
 use Tests\TestCase;
@@ -160,5 +164,94 @@ class FilamentSystemPagesTest extends TestCase
 
         $this->assertSame(0, $user->tokens()->count());
         $this->assertDatabaseHas('personal_access_tokens', ['id' => $theirs->accessToken->id]);
+    }
+
+    public function test_the_health_page_names_every_check(): void
+    {
+        $this->actingAs($this->superAdmin());
+
+        Livewire::test(SystemHealth::class)
+            ->assertOk()
+            ->assertSee(['Database', 'Migrations', 'Schema', 'Cache', 'Queue', 'Storage', 'Scheduler', 'Configuration', 'PHP', 'Extensions']);
+    }
+
+    public function test_the_health_page_never_prints_the_app_key(): void
+    {
+        $this->actingAs($this->superAdmin());
+
+        Livewire::test(SystemHealth::class)->assertDontSee((string) config('app.key'));
+    }
+
+    private function failedJob(string $uuid, string $payload = '{"displayName":"App\\\\Jobs\\\\SendMailJob"}'): int
+    {
+        return DB::table('failed_jobs')->insertGetId([
+            'uuid' => $uuid,
+            'connection' => 'database',
+            'queue' => 'default',
+            'payload' => $payload,
+            'exception' => "RuntimeException: it broke\n#0 /app/secret/path.php(12)",
+            'failed_at' => now()->toDateTimeString(),
+        ]);
+    }
+
+    public function test_the_queue_page_does_not_render_a_job_payload(): void
+    {
+        $this->failedJob('payload-1', json_encode(['secret' => 'CONTAINS_A_SECRET_TOKEN']));
+
+        $this->actingAs($this->superAdmin());
+
+        Livewire::test(SystemQueue::class)
+            ->assertSee('it broke')
+            ->assertDontSee('CONTAINS_A_SECRET_TOKEN')
+            ->assertDontSee('/app/secret/path.php');
+    }
+
+    public function test_a_failed_job_can_be_retried_and_discarded(): void
+    {
+        $this->failedJob('retry-me');
+        $this->failedJob('drop-me');
+
+        $this->actingAs($this->superAdmin());
+
+        Livewire::test(SystemQueue::class)->call('retry', 'retry-me');
+        $this->assertDatabaseMissing('failed_jobs', ['uuid' => 'retry-me']);
+
+        Livewire::test(SystemQueue::class)->call('forget', 'drop-me');
+        $this->assertSame(0, DB::table('failed_jobs')->count());
+    }
+
+    public function test_retry_all_and_discard_all_clear_the_failed_table(): void
+    {
+        $this->failedJob('a');
+        $this->failedJob('b');
+        $this->actingAs($this->superAdmin());
+
+        Livewire::test(SystemQueue::class)->call('retryAll');
+        $this->assertSame(0, DB::table('failed_jobs')->count());
+
+        $this->failedJob('c');
+        Livewire::test(SystemQueue::class)->call('flush');
+        $this->assertSame(0, DB::table('failed_jobs')->count());
+    }
+
+    public function test_the_schedule_page_lists_the_applications_own_events(): void
+    {
+        $this->actingAs($this->superAdmin());
+
+        Livewire::test(SystemSchedule::class)->assertOk()->assertSee('Guarded');
+    }
+
+    public function test_every_system_page_needs_its_own_permission(): void
+    {
+        $this->actingAs($this->adminWithout(['system.health']));
+
+        $this->get('/panel/system/health')->assertOk();
+
+        foreach (['settings', 'queue', 'schedule'] as $page) {
+            $this->get("/panel/system/{$page}")->assertForbidden();
+        }
+
+        $this->get('/panel/feature-flags')->assertForbidden();
+        $this->get('/panel/api-tokens')->assertForbidden();
     }
 }
