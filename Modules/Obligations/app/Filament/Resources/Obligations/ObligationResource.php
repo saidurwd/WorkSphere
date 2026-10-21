@@ -77,11 +77,8 @@ class ObligationResource extends Resource
 
         $user = auth()->user();
 
-        if ($user instanceof User && ! $user->hasPermission('obligation.view') && ! $user->hasRole('super-admin')) {
-            $query->where(function (Builder $inner) use ($user): void {
-                $inner->where('owner_user_id', $user->id)
-                    ->orWhereHas('responsibilities', fn (Builder $r): Builder => $r->where('user_id', $user->id)->where('active', true));
-            });
+        if ($user instanceof User) {
+            $query->visibleTo($user);
         }
 
         return $query;

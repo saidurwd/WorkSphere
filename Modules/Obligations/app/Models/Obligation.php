@@ -6,6 +6,7 @@ use App\Models\Company;
 use App\Models\Department;
 use App\Models\Location;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -58,6 +59,24 @@ class Obligation extends Model
             'updated_at' => 'datetime',
             'deleted_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Narrow to the obligations a user may see: everything for `obligation.view` or
+     * a super-admin, otherwise the ones they own or hold an active responsibility on.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeVisibleTo(Builder $query, User $user): void
+    {
+        if ($user->hasPermission('obligation.view') || $user->hasRole('super-admin')) {
+            return;
+        }
+
+        $query->where(function (Builder $inner) use ($user): void {
+            $inner->where($inner->qualifyColumn('owner_user_id'), $user->id)
+                ->orWhereHas('responsibilities', fn (Builder $r): Builder => $r->where('user_id', $user->id)->where('active', true));
+        });
     }
 
     public function type(): BelongsTo
