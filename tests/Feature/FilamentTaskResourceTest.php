@@ -10,10 +10,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
+use Modules\Projects\Models\Project;
 use Modules\Tasks\Events\TaskAssigned;
 use Modules\Tasks\Events\TaskCompleted;
 use Modules\Tasks\Events\TaskCreated;
 use Modules\Tasks\Events\TaskUpdated;
+use Modules\Tasks\Filament\Pages\TaskOverview;
 use Modules\Tasks\Filament\Resources\Tasks\Pages\CreateTask;
 use Modules\Tasks\Filament\Resources\Tasks\Pages\EditTask;
 use Modules\Tasks\Filament\Resources\Tasks\Pages\ListTasks;
@@ -298,5 +300,43 @@ class FilamentTaskResourceTest extends TestCase
             ->callAction('reparent', ['parent_id' => null]);
 
         $this->assertNull($child->fresh()->parent_id);
+    }
+
+    public function test_the_overview_counts_only_what_the_viewer_may_see(): void
+    {
+        $user = $this->userWithPermissions(['task.create']);
+        Task::factory()->count(2)->create(['user_id' => $user->id, 'responsible_user_id' => $user->id, 'status' => 'pending', 'priority' => 'high', 'due_date' => now()->addDay()]);
+        Task::factory()->create(['user_id' => $user->id, 'responsible_user_id' => $user->id, 'status' => 'completed', 'completed_at' => now(), 'priority' => 'low']);
+        Task::factory()->count(5)->create();
+        $this->actingAs($user);
+
+        Livewire::test(TaskOverview::class)
+            ->assertOk()
+            ->assertViewHas('total', 3)
+            ->assertViewHas('completed', 1)
+            ->assertViewHas('pending', 2);
+    }
+
+    public function test_the_project_breakdown_does_not_leak_projects_the_viewer_has_no_tasks_in(): void
+    {
+        $user = $this->userWithPermissions(['task.create']);
+        $mine = Project::factory()->create(['name' => 'My Project']);
+        $secret = Project::factory()->create(['name' => 'Secret Programme']);
+        Task::factory()->create(['user_id' => $user->id, 'responsible_user_id' => $user->id, 'project_id' => $mine->id]);
+        Task::factory()->create(['project_id' => $secret->id]);
+        $this->actingAs($user);
+
+        Livewire::test(TaskOverview::class)
+            ->assertSee('My Project')
+            ->assertDontSee('Secret Programme');
+    }
+
+    public function test_the_overview_lists_what_is_overdue(): void
+    {
+        $user = $this->userWithPermissions(['task.view']);
+        Task::factory()->create(['title' => 'Long overdue thing', 'status' => 'pending', 'due_date' => now()->subDays(4)]);
+        $this->actingAs($user);
+
+        Livewire::test(TaskOverview::class)->assertSee('Long overdue thing');
     }
 }
