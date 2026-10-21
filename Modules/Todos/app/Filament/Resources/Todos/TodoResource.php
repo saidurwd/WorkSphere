@@ -6,9 +6,12 @@ use App\Enums\Priority;
 use App\Enums\Visibility;
 use App\Enums\WorkItemStatus;
 use App\Models\Department;
+use App\Models\Tag;
 use App\Models\User;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
@@ -19,6 +22,7 @@ use Filament\Forms\Components\TimePicker;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -27,6 +31,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Modules\Todos\Filament\Resources\Todos\Pages\CreateTodo;
@@ -146,12 +151,80 @@ class TodoResource extends Resource
                 Filter::make('overdue')->toggle()->query(fn (Builder $query): Builder => $query->overdue()),
                 Filter::make('recurring')->toggle()->query(fn (Builder $query): Builder => $query->recurring()),
             ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    static::bulkAction('complete', 'Complete', 'complete', fn (Todo $todo, array $data) => app(TodoService::class)->complete(auth()->user(), $todo)),
+                    static::bulkAction('archive', 'Archive', 'archive', fn (Todo $todo, array $data) => app(TodoService::class)->archive(auth()->user(), $todo)),
+                    static::bulkAction(
+                        'reassign',
+                        'Reassign',
+                        'assign',
+                        fn (Todo $todo, array $data) => app(TodoService::class)->assign(auth()->user(), $todo, $data['assignee_id'] ?: null),
+                        [Select::make('assignee_id')
+                            ->label('Assignee')
+                            ->options(fn (): array => User::query()->orderBy('name')->limit(200)->pluck('name', 'id')->all())
+                            ->searchable()],
+                    ),
+                    static::bulkAction(
+                        'tag',
+                        'Add tag',
+                        'update',
+                        fn (Todo $todo, array $data) => $todo->tags()->syncWithoutDetaching([Tag::findOrCreateByName($data['tag'])->id]),
+                        [TextInput::make('tag')->required()->maxLength(100)],
+                    ),
+                ]),
+            ])
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
                 static::lifecycleAction('complete', 'Complete', 'heroicon-o-check', 'success'),
                 static::lifecycleAction('reopen', 'Reopen', 'heroicon-o-arrow-path', 'gray'),
             ]);
+    }
+
+    /**
+     * A bulk action authorised PER ITEM, not once for the batch: holding a
+     * permission over one To-Do must not grant it over the other forty selected.
+     * Items the actor may not act on are skipped and reported, never silently
+     * applied, and a refused transition counts as skipped rather than aborting the
+     * rest.
+     *
+     * @param  callable(Todo, array<string, mixed>): mixed  $apply
+     * @param  list<Component>  $schema
+     */
+    public static function bulkAction(string $name, string $label, string $ability, callable $apply, array $schema = []): BulkAction
+    {
+        return BulkAction::make($name)
+            ->label($label)
+            ->schema($schema)
+            ->requiresConfirmation()
+            ->deselectRecordsAfterCompletion()
+            ->action(function (Collection $records, array $data) use ($ability, $apply): void {
+                $applied = 0;
+
+                foreach ($records as $todo) {
+                    if (Gate::denies($ability, $todo)) {
+                        continue;
+                    }
+
+                    try {
+                        $apply($todo, $data);
+                        $applied++;
+                    } catch (ValidationException) {
+                        // The transition graph refused this one; carry on with the rest.
+                    }
+                }
+
+                $skipped = $records->count() - $applied;
+
+                $title = trans_choice('{1} :count To-Do updated.|[0,*] :count To-Dos updated.', $applied, ['count' => $applied]);
+
+                if ($skipped > 0) {
+                    $title .= ' '.trans_choice('{1} :count skipped.|[2,*] :count skipped.', $skipped, ['count' => $skipped]);
+                }
+
+                Notification::make()->title($title)->status($applied > 0 ? 'success' : 'danger')->send();
+            });
     }
 
     /**

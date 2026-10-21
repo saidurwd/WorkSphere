@@ -10,11 +10,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
+use Modules\Obligations\Models\NotificationLog;
 use Modules\Tasks\Models\Task;
 use Modules\Todos\Events\TodoCommented;
 use Modules\Todos\Events\TodoMentioned;
 use Modules\Todos\Filament\Pages\TodoCalendar;
 use Modules\Todos\Filament\Pages\TodoReports;
+use Modules\Todos\Filament\Resources\NotificationLogs\Pages\ListTodoNotificationLogs;
 use Modules\Todos\Filament\Resources\Todos\Pages\CreateTodo;
 use Modules\Todos\Filament\Resources\Todos\Pages\EditTodo;
 use Modules\Todos\Filament\Resources\Todos\Pages\ListTodos;
@@ -436,5 +438,99 @@ class FilamentTodoResourceTest extends TestCase
         $this->actingAs($this->userWithPermissions(['todos.create']));
 
         $this->get('/workspace/todo-reports')->assertForbidden();
+    }
+
+    public function test_bulk_actions_are_authorised_per_item_and_report_what_was_skipped(): void
+    {
+        $user = $this->userWithPermissions(['todos.create', 'todos.view_all']);
+        $mine = Todo::factory()->count(2)->create([
+            'creator_id' => $user->id, 'assignee_id' => $user->id, 'status' => WorkItemStatus::InProgress,
+        ]);
+        // Visible to this user through view_all, but not theirs to change.
+        $theirs = Todo::factory()->create(['status' => WorkItemStatus::InProgress]);
+        $this->actingAs($user);
+
+        Livewire::test(ListTodos::class)
+            ->callTableBulkAction('complete', $mine->push($theirs))
+            ->assertNotified();
+
+        foreach ($mine->take(2) as $todo) {
+            $this->assertSame(WorkItemStatus::Completed, $todo->fresh()->status);
+        }
+        $this->assertSame(WorkItemStatus::InProgress, $theirs->fresh()->status);
+    }
+
+    public function test_a_bulk_move_the_graph_refuses_is_skipped_not_fatal(): void
+    {
+        $user = $this->userWithPermissions(['todos.create']);
+        $base = ['creator_id' => $user->id, 'assignee_id' => $user->id];
+        $ready = Todo::factory()->create($base + ['status' => WorkItemStatus::InProgress]);
+        $notReady = Todo::factory()->create($base + ['status' => WorkItemStatus::Inbox]);
+        $this->actingAs($user);
+
+        Livewire::test(ListTodos::class)->callTableBulkAction('complete', [$ready, $notReady]);
+
+        $this->assertSame(WorkItemStatus::Completed, $ready->fresh()->status);
+        $this->assertSame(WorkItemStatus::Inbox, $notReady->fresh()->status);
+    }
+
+    public function test_bulk_tagging_attaches_the_tag(): void
+    {
+        $user = $this->userWithPermissions(['todos.create']);
+        $todo = Todo::factory()->create(['creator_id' => $user->id, 'assignee_id' => $user->id]);
+        $this->actingAs($user);
+
+        Livewire::test(ListTodos::class)->callTableBulkAction('tag', [$todo], ['tag' => 'urgent-review']);
+
+        $this->assertTrue($todo->tags()->where('name', 'urgent-review')->exists());
+    }
+
+    private function todoLog(int $todoId): NotificationLog
+    {
+        // The model's $fillable predates the polymorphic subject columns, and the
+        // real writers insert through the query builder.
+        $log = (new NotificationLog)->forceFill([
+            'channel' => 'mail',
+            'notification_type' => 'todo.assigned',
+            'status' => 'sent',
+            'subject' => 'You were assigned a To-Do',
+            'subject_type' => Todo::class,
+            'subject_id' => $todoId,
+        ]);
+        $log->save();
+
+        return $log;
+    }
+
+    public function test_the_notification_log_lists_only_todo_rows_for_those_who_may_view_all(): void
+    {
+        $todo = Todo::factory()->create();
+        $mine = $this->todoLog($todo->id);
+        $other = (new NotificationLog)->forceFill([
+            'channel' => 'mail', 'notification_type' => 'x', 'status' => 'sent',
+            'subject' => 'An obligation reminder', 'subject_type' => 'Modules\\Obligations\\Models\\Obligation', 'subject_id' => 1,
+        ]);
+        $other->save();
+        $this->actingAs($this->userWithPermissions(['todos.view_all']));
+
+        Livewire::test(ListTodoNotificationLogs::class)
+            ->assertCanSeeTableRecords([$mine])
+            ->assertCanNotSeeTableRecords([$other]);
+
+        $this->actingAs($this->userWithPermissions(['todos.create']));
+        $this->get('/workspace/todo-notification-logs')->assertForbidden();
+    }
+
+    public function test_only_a_super_admin_can_delete_a_notification_log(): void
+    {
+        $log = $this->todoLog(Todo::factory()->create()->id);
+
+        $this->actingAs($this->userWithPermissions(['todos.view_all']));
+        Livewire::test(ListTodoNotificationLogs::class)->assertTableActionHidden('remove', $log);
+        $this->assertModelExists($log);
+
+        $this->actingAs($this->superAdmin(['todos.view_all']));
+        Livewire::test(ListTodoNotificationLogs::class)->callTableAction('remove', $log);
+        $this->assertModelMissing($log);
     }
 }
