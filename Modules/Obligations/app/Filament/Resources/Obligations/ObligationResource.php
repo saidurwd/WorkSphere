@@ -30,6 +30,9 @@ use Modules\Obligations\Filament\Resources\Obligations\Pages\CreateObligation;
 use Modules\Obligations\Filament\Resources\Obligations\Pages\EditObligation;
 use Modules\Obligations\Filament\Resources\Obligations\Pages\ListObligations;
 use Modules\Obligations\Filament\Resources\Obligations\Pages\ViewObligation;
+use Modules\Obligations\Filament\Resources\Obligations\RelationManagers\ActivityLogsRelationManager;
+use Modules\Obligations\Filament\Resources\Obligations\RelationManagers\DocumentsRelationManager;
+use Modules\Obligations\Filament\Resources\Obligations\RelationManagers\RenewalsRelationManager;
 use Modules\Obligations\Models\Obligation;
 use Modules\Obligations\Models\ObligationCategory;
 use Modules\Obligations\Models\ObligationType;
@@ -224,6 +227,15 @@ class ObligationResource extends Resource
                 EditAction::make(),
                 DeleteAction::make(),
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            RenewalsRelationManager::class,
+            DocumentsRelationManager::class,
+            ActivityLogsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

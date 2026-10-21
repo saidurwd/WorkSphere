@@ -5,14 +5,21 @@ namespace Tests\Feature;
 use App\Models\Company;
 use App\Models\Department;
 use Database\Factories\ObligationFactory;
+use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Modules\Obligations\Filament\Resources\Obligations\Pages\CreateObligation;
 use Modules\Obligations\Filament\Resources\Obligations\Pages\EditObligation;
 use Modules\Obligations\Filament\Resources\Obligations\Pages\ListObligations;
+use Modules\Obligations\Filament\Resources\Obligations\Pages\ViewObligation;
+use Modules\Obligations\Filament\Resources\Obligations\RelationManagers\DocumentsRelationManager;
 use Modules\Obligations\Models\Obligation;
 use Modules\Obligations\Models\ObligationCategory;
+use Modules\Obligations\Models\ObligationDocument;
+use Modules\Obligations\Models\ObligationRenewal;
 use Modules\Obligations\Models\ObligationResponsibility;
 use Modules\Obligations\Models\ObligationType;
 use Tests\InteractsWithRoles;
@@ -170,5 +177,95 @@ class FilamentObligationResourceTest extends TestCase
 
         Livewire::test(ListObligations::class)->callTableAction('delete', $obligation);
         $this->assertModelMissing($obligation);
+    }
+
+    public function test_the_owner_can_upload_and_delete_a_document_with_an_audit_trail(): void
+    {
+        Storage::fake('public');
+
+        $owner = $this->userWithPermissions(['obligation.create']);
+        $obligation = ObligationFactory::new()->create(['owner_user_id' => $owner->id]);
+        $this->actingAs($owner);
+
+        Livewire::test(DocumentsRelationManager::class, ['ownerRecord' => $obligation, 'pageClass' => ViewObligation::class])
+            ->callAction(TestAction::make('create')->table(), [
+                'document_type' => 'LICENCE',
+                'file' => UploadedFile::fake()->create('licence.pdf', 20, 'application/pdf'),
+            ]);
+
+        $document = ObligationDocument::query()->where('obligation_id', $obligation->id)->firstOrFail();
+        $this->assertSame('LICENCE', $document->document_type);
+        $this->assertSame($owner->id, $document->uploaded_by);
+        $this->assertTrue(Storage::disk('public')->exists($document->file_path));
+        $this->assertDatabaseHas('obligation_activity_logs', ['obligation_id' => $obligation->id, 'action' => 'DOCUMENT_UPLOADED']);
+
+        Livewire::test(DocumentsRelationManager::class, ['ownerRecord' => $obligation, 'pageClass' => ViewObligation::class])
+            ->callAction(TestAction::make('delete')->table($document));
+
+        $this->assertModelMissing($document);
+        $this->assertDatabaseHas('obligation_activity_logs', ['obligation_id' => $obligation->id, 'action' => 'DOCUMENT_DELETED']);
+    }
+
+    public function test_someone_without_document_rights_cannot_upload(): void
+    {
+        $viewer = $this->userWithPermissions(['obligation.view']);
+        $obligation = ObligationFactory::new()->create();
+        $this->actingAs($viewer);
+
+        Livewire::test(DocumentsRelationManager::class, ['ownerRecord' => $obligation, 'pageClass' => ViewObligation::class])
+            ->assertActionHidden(TestAction::make('create')->table());
+    }
+
+    public function test_renewing_moves_the_dates_resets_status_and_risk_and_records_it(): void
+    {
+        $owner = $this->userWithPermissions(['obligation.create']);
+        $obligation = ObligationFactory::new()->create([
+            'owner_user_id' => $owner->id,
+            'status' => 'expired',
+            'risk_level' => 'critical',
+            'start_date' => now()->subYear(),
+            'expiry_date' => now()->subDay(),
+        ]);
+        $previousExpiry = $obligation->expiry_date->toDateString();
+        $this->actingAs($owner);
+
+        Livewire::test(ViewObligation::class, ['record' => $obligation->getKey()])
+            ->callAction('renew', [
+                'new_start_date' => now()->toDateString(),
+                'new_expiry_date' => now()->addYear()->toDateString(),
+                'cost' => 2500,
+            ])
+            ->assertHasNoActionErrors();
+
+        $obligation->refresh();
+        $this->assertSame('active', $obligation->status);
+        $this->assertSame('low', $obligation->risk_level);
+        $this->assertSame(now()->addYear()->toDateString(), $obligation->expiry_date->toDateString());
+
+        $renewal = ObligationRenewal::query()->where('obligation_id', $obligation->id)->firstOrFail();
+        $this->assertSame($previousExpiry, $renewal->previous_expiry_date->toDateString());
+        $this->assertSame($owner->id, $renewal->renewed_by);
+        $this->assertDatabaseHas('obligation_activity_logs', ['obligation_id' => $obligation->id, 'action' => 'RENEWED']);
+    }
+
+    public function test_a_renewal_must_expire_after_it_starts(): void
+    {
+        $owner = $this->userWithPermissions(['obligation.create']);
+        $obligation = ObligationFactory::new()->create(['owner_user_id' => $owner->id, 'start_date' => now()->subYear()]);
+        $this->actingAs($owner);
+
+        Livewire::test(ViewObligation::class, ['record' => $obligation->getKey()])
+            ->callAction('renew', ['new_start_date' => now()->toDateString(), 'new_expiry_date' => now()->subDay()->toDateString()])
+            ->assertHasActionErrors(['new_expiry_date']);
+
+        $this->assertDatabaseCount('obligation_renewals', 0);
+    }
+
+    public function test_renewing_is_for_the_owner_or_obligation_renew(): void
+    {
+        $obligation = ObligationFactory::new()->create();
+        $this->actingAs($this->userWithPermissions(['obligation.view']));
+
+        Livewire::test(ViewObligation::class, ['record' => $obligation->getKey()])->assertActionHidden('renew');
     }
 }
