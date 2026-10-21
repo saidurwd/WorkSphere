@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\WorkItemStatus;
+use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -10,7 +11,9 @@ use Modules\Todos\Filament\Resources\Todos\Pages\CreateTodo;
 use Modules\Todos\Filament\Resources\Todos\Pages\EditTodo;
 use Modules\Todos\Filament\Resources\Todos\Pages\ListTodos;
 use Modules\Todos\Filament\Resources\Todos\Pages\ViewTodo;
+use Modules\Todos\Filament\Resources\Todos\RelationManagers\ChecklistItemsRelationManager;
 use Modules\Todos\Models\Todo;
+use Modules\Todos\Models\TodoChecklistItem;
 use Tests\InteractsWithRoles;
 use Tests\TestCase;
 
@@ -127,5 +130,44 @@ class FilamentTodoResourceTest extends TestCase
             ->assertNotified();
 
         $this->assertSame(WorkItemStatus::Inbox, $todo->fresh()->status);
+    }
+
+    public function test_checklist_items_can_be_added_ticked_and_removed_by_someone_who_may_update(): void
+    {
+        $user = $this->userWithPermissions(['todos.create']);
+        $todo = Todo::factory()->create(['creator_id' => $user->id, 'assignee_id' => $user->id]);
+        $this->actingAs($user);
+
+        $manager = fn () => Livewire::test(ChecklistItemsRelationManager::class, [
+            'ownerRecord' => $todo,
+            'pageClass' => ViewTodo::class,
+        ]);
+
+        $manager()->callAction(TestAction::make('create')->table(), ['title' => 'Draft outline']);
+
+        $item = TodoChecklistItem::query()->where('title', 'Draft outline')->firstOrFail();
+        $this->assertFalse($item->is_completed);
+
+        $manager()->callAction(TestAction::make('toggle')->table($item));
+        $this->assertTrue($item->fresh()->is_completed);
+        $this->assertNotNull($item->fresh()->completed_by);
+
+        $manager()->callAction(TestAction::make('delete')->table($item));
+        $this->assertModelMissing($item);
+
+        $this->assertDatabaseHas('activity_logs', ['action' => 'checklist_item_added']);
+        $this->assertDatabaseHas('activity_logs', ['action' => 'checklist_item_removed']);
+    }
+
+    public function test_a_viewer_who_may_not_update_cannot_change_the_checklist(): void
+    {
+        $viewer = $this->userWithPermissions(['todos.view_all']);
+        $todo = Todo::factory()->create();
+        $this->actingAs($viewer);
+
+        Livewire::test(ChecklistItemsRelationManager::class, [
+            'ownerRecord' => $todo,
+            'pageClass' => ViewTodo::class,
+        ])->assertActionHidden(TestAction::make('create')->table());
     }
 }

@@ -32,6 +32,7 @@ use Modules\Todos\Filament\Resources\Todos\Pages\CreateTodo;
 use Modules\Todos\Filament\Resources\Todos\Pages\EditTodo;
 use Modules\Todos\Filament\Resources\Todos\Pages\ListTodos;
 use Modules\Todos\Filament\Resources\Todos\Pages\ViewTodo;
+use Modules\Todos\Filament\Resources\Todos\RelationManagers\ChecklistItemsRelationManager;
 use Modules\Todos\Models\Todo;
 use Modules\Todos\Policies\TodoPolicy;
 use Modules\Todos\Services\TodoService;
@@ -159,6 +160,13 @@ class TodoResource extends Resource
 
                 Notification::make()->title("To-Do {$ability}d")->success()->send();
             });
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            ChecklistItemsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
