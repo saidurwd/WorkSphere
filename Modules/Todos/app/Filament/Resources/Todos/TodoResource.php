@@ -34,6 +34,7 @@ use Modules\Todos\Filament\Resources\Todos\Pages\ListTodos;
 use Modules\Todos\Filament\Resources\Todos\Pages\ViewTodo;
 use Modules\Todos\Filament\Resources\Todos\RelationManagers\ChecklistItemsRelationManager;
 use Modules\Todos\Filament\Resources\Todos\RelationManagers\CommentsRelationManager;
+use Modules\Todos\Filament\Resources\Todos\RelationManagers\LinksRelationManager;
 use Modules\Todos\Filament\Resources\Todos\RelationManagers\WatchersRelationManager;
 use Modules\Todos\Models\Todo;
 use Modules\Todos\Policies\TodoPolicy;
@@ -170,6 +171,7 @@ class TodoResource extends Resource
             ChecklistItemsRelationManager::class,
             CommentsRelationManager::class,
             WatchersRelationManager::class,
+            LinksRelationManager::class,
         ];
     }
 

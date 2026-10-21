@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
+use Modules\Tasks\Models\Task;
 use Modules\Todos\Events\TodoCommented;
 use Modules\Todos\Events\TodoMentioned;
 use Modules\Todos\Filament\Resources\Todos\Pages\CreateTodo;
@@ -18,9 +19,11 @@ use Modules\Todos\Filament\Resources\Todos\Pages\ListTodos;
 use Modules\Todos\Filament\Resources\Todos\Pages\ViewTodo;
 use Modules\Todos\Filament\Resources\Todos\RelationManagers\ChecklistItemsRelationManager;
 use Modules\Todos\Filament\Resources\Todos\RelationManagers\CommentsRelationManager;
+use Modules\Todos\Filament\Resources\Todos\RelationManagers\LinksRelationManager;
 use Modules\Todos\Filament\Resources\Todos\RelationManagers\WatchersRelationManager;
 use Modules\Todos\Models\Todo;
 use Modules\Todos\Models\TodoChecklistItem;
+use Modules\Todos\Models\TodoLink;
 use Tests\InteractsWithRoles;
 use Tests\TestCase;
 
@@ -243,5 +246,55 @@ class FilamentTodoResourceTest extends TestCase
 
         $this->manager(WatchersRelationManager::class, Todo::factory()->create())
             ->assertActionHidden(TestAction::make('create')->table());
+    }
+
+    public function test_a_link_can_be_attached_and_detached(): void
+    {
+        $user = $this->userWithPermissions(['todos.create', 'task.view']);
+        $todo = Todo::factory()->create(['creator_id' => $user->id, 'assignee_id' => $user->id]);
+        $other = Todo::factory()->create(['creator_id' => $user->id, 'assignee_id' => $user->id]);
+        $this->actingAs($user);
+
+        $this->manager(LinksRelationManager::class, $todo)
+            ->callAction(TestAction::make('create')->table(), [
+                'linkable_type' => 'todo',
+                'linkable_id' => $other->id,
+                'link_type' => 'blocks',
+            ]);
+
+        $this->assertDatabaseHas('todo_links', ['todo_id' => $todo->id, 'linkable_id' => $other->id, 'link_type' => 'blocks']);
+        $this->assertDatabaseHas('activity_logs', ['action' => 'link_attached']);
+    }
+
+    public function test_a_link_to_a_missing_record_is_reported_not_created(): void
+    {
+        $user = $this->userWithPermissions(['todos.create']);
+        $todo = Todo::factory()->create(['creator_id' => $user->id, 'assignee_id' => $user->id]);
+        $this->actingAs($user);
+
+        $this->manager(LinksRelationManager::class, $todo)
+            ->callAction(TestAction::make('create')->table(), ['linkable_type' => 'todo', 'linkable_id' => 999999, 'link_type' => 'related'])
+            ->assertNotified();
+
+        $this->assertDatabaseCount('todo_links', 0);
+    }
+
+    public function test_a_link_to_a_module_the_viewer_cannot_read_is_hidden(): void
+    {
+        $user = $this->userWithPermissions(['todos.create']);
+        $todo = Todo::factory()->create(['creator_id' => $user->id, 'assignee_id' => $user->id]);
+        $task = Task::factory()->create();
+        $link = TodoLink::query()->create([
+            'todo_id' => $todo->id,
+            'linkable_type' => Task::class,
+            'linkable_id' => $task->id,
+            'link_type' => 'related',
+        ]);
+        $this->actingAs($user);
+
+        $this->manager(LinksRelationManager::class, $todo)->assertCanNotSeeTableRecords([$link]);
+
+        $this->actingAs($this->userWithPermissions(['todos.create', 'task.view'], attachTo: $user));
+        $this->manager(LinksRelationManager::class, $todo)->assertCanSeeTableRecords([$link]);
     }
 }
