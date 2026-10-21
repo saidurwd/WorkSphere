@@ -77,7 +77,7 @@
                         <td>{{ ucwords(str_replace('_', ' ', $item->status)) }}</td>
                         <td>
                             @if($item->task)
-                            <a href="{{ route('tasks.show', $item->task) }}">{{ $item->task->task_no ?? 'Task #'.$item->task->id }}</a>
+                            <a href="{{ route('filament.workspace.resources.tasks.view', $item->task) }}">{{ $item->task->task_no ?? 'Task #'.$item->task->id }}</a>
                             @else
                             <span style="color: var(--muted-foreground);">Not linked</span>
                             @endif

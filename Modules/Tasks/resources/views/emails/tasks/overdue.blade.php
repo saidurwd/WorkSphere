@@ -21,7 +21,7 @@ The following task is now overdue:
 
 Please review the task and update its status as soon as possible.
 
-<x-mail::button :url="route('tasks.show', $task)">
+<x-mail::button :url="route('filament.workspace.resources.tasks.view', $task)">
 View Task
 </x-mail::button>
 

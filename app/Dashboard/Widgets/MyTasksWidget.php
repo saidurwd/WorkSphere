@@ -66,7 +66,7 @@ class MyTasksWidget implements DashboardWidget
             'status_variant' => StatusBadge::variant($task->status),
             'priority' => StatusBadge::label($task->priority),
             'priority_variant' => StatusBadge::priorityVariant($task->priority),
-            'url' => route('tasks.show', $task->id),
+            'url' => route('filament.workspace.resources.tasks.view', $task->id),
         ]);
     }
 

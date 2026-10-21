@@ -60,7 +60,7 @@ class ObligationCalendarController extends Controller
                 'id' => 'task-'.$t->id,
                 'title' => $t->title,
                 'start' => $t->due_date->format('Y-m-d'),
-                'url' => route('tasks.show', $t),
+                'url' => route('filament.workspace.resources.tasks.view', $t),
                 'color' => match ($t->status) {
                     'completed' => '#10b981',
                     'in_progress' => '#3b82f6',

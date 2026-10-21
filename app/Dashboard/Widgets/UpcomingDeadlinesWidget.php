@@ -62,7 +62,7 @@ class UpcomingDeadlinesWidget implements DashboardWidget
         if ($user->hasPermission('task.view')) {
             foreach ($this->visibleTasks($user)->active()
                 ->dueBetween($from, $to)->orderBy('due_date')->limit(self::LIMIT)->get(['id', 'title', 'due_date']) as $row) {
-                $items[] = $this->present('Task', $row->title, $row->due_date, route('tasks.show', $row->id));
+                $items[] = $this->present('Task', $row->title, $row->due_date, route('filament.workspace.resources.tasks.view', $row->id));
             }
         }
 

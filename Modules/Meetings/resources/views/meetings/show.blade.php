@@ -389,7 +389,7 @@
                             <td>
                                 @if($item->task)
                                     <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                                        <a href="{{ route('tasks.show', $item->task) }}" style="font-weight: 500; text-decoration: none;">
+                                        <a href="{{ route('filament.workspace.resources.tasks.view', $item->task) }}" style="font-weight: 500; text-decoration: none;">
                                             {{ $item->task->task_no ?? ('Task #'.$item->task->id) }}
                                         </a>
                                         {{-- `Task::$status` is cast to `WorkItemStatus`, so the old

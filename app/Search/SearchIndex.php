@@ -118,7 +118,7 @@ final class SearchIndex
                 'model' => Task::class,
                 'fields' => ['title', 'description'],
                 'permission' => 'task.view',
-                'route' => 'tasks.show',
+                'route' => 'filament.workspace.resources.tasks.view',
                 'label' => 'Tasks',
                 'titleColumn' => 'title',
                 'statusColumn' => 'status',

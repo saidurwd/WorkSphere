@@ -37,7 +37,7 @@ A new task has been assigned to you by **{{ $assigner->name }}**.
 
 Please review the task and update its status as you make progress.
 
-<x-mail::button :url="route('tasks.show', $task)">
+<x-mail::button :url="route('filament.workspace.resources.tasks.view', $task)">
 View Task
 </x-mail::button>
 

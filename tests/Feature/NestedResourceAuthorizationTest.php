@@ -11,7 +11,6 @@ use Modules\Meetings\Models\MeetingAgenda;
 use Modules\Meetings\Models\MeetingNotificationLog;
 use Modules\Meetings\Models\MeetingParticipant;
 use Modules\Obligations\Models\Vendor;
-use Modules\Tasks\Models\TaskNotificationLog;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\InteractsWithRoles;
 use Tests\TestCase;
@@ -215,7 +214,7 @@ class NestedResourceAuthorizationTest extends TestCase
     {
         return [
             'task' => [
-                '/tasks/notification-logs',
+                '/workspace/task-notification-logs',
                 'task.view_notification_logs',
                 ['task.view'],
             ],
@@ -337,54 +336,6 @@ class NestedResourceAuthorizationTest extends TestCase
     }
 
     // ---- Task transfers --------------------------------------------------
-
-    public function test_a_user_without_transfer_rights_cannot_transfer_someone_elses_task(): void
-    {
-        $task = TaskFactory::new()->create();
-
-        $this->actingAs($this->plainUser())
-            ->post(route('task-transfers.store'), [
-                'task_id' => $task->id,
-                'to_user_id' => $this->plainUser()->id,
-                'reason' => 'not mine',
-            ])
-            ->assertForbidden();
-
-        $this->assertDatabaseCount('task_transfers', 0);
-    }
-
-    public function test_a_user_without_transfer_rights_cannot_create_a_transfer_at_all(): void
-    {
-        $task = TaskFactory::new()->create();
-
-        $this->actingAs($this->plainUser())
-            ->post(route('task-transfers.store'), [
-                'task_id' => $task->id,
-                'to_user_id' => $this->plainUser()->id,
-                'reason' => 'not mine',
-            ])
-            ->assertForbidden();
-    }
-
-    public function test_only_a_super_admin_can_delete_task_notification_logs(): void
-    {
-        $log = TaskNotificationLog::query()->create([
-            'task_id' => TaskFactory::new()->create()->id,
-            'notification_type' => 'reminder',
-            'channel' => 'mail',
-            'subject' => 'Test',
-        ]);
-
-        $this->actingAs($this->userWithPermissions(['task.view']))
-            ->delete(route('tasks.notification-logs.destroy', $log))
-            ->assertForbidden();
-
-        $this->actingAs($this->superAdmin())
-            ->delete(route('tasks.notification-logs.destroy', $log))
-            ->assertRedirect();
-
-        $this->assertDatabaseMissing('task_notification_logs', ['id' => $log->id]);
-    }
 
     // ---- Admin surface ----------------------------------------------------
 

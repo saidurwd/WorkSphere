@@ -20,7 +20,7 @@ The following task has been marked as completed:
 | **Completed At** | {{ $task->completed_at ? $task->completed_at->format('F j, Y g:i A') : 'N/A' }} |
 </x-mail::table>
 
-<x-mail::button :url="route('tasks.show', $task)">
+<x-mail::button :url="route('filament.workspace.resources.tasks.view', $task)">
 View Task
 </x-mail::button>
 

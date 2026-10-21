@@ -46,7 +46,7 @@
                         @foreach($tasks as $task)
                         <tr>
                             <td>
-                                <a href="{{ route('tasks.edit', $task) }}" style="text-decoration: none; color: inherit; font-weight: 500;">
+                                <a href="{{ route('filament.workspace.resources.tasks.edit', $task) }}" style="text-decoration: none; color: inherit; font-weight: 500;">
                                     {{ $task->title }}
                                 </a>
                             </td>
@@ -70,7 +70,7 @@
                             <td>{{ $task->due_date->format('M d, Y') }}</td>
                             <td>
                                 <div class="d-flex align-items-center gap-1" style="justify-content: flex-end;">
-                                    <a href="{{ route('tasks.edit', $task) }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center justify-content-center" aria-label="Edit" title="Edit">
+                                    <a href="{{ route('filament.workspace.resources.tasks.edit', $task) }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center justify-content-center" aria-label="Edit" title="Edit">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
@@ -90,7 +90,7 @@
             @endif
         @else
             <x-empty-state title="No tasks in this project" description="Create a task and assign it to this project.">
-    <a href="{{ route('tasks.create') }}" class="btn btn-primary">
+    <a href="{{ route('filament.workspace.resources.tasks.create') }}" class="btn btn-primary">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>

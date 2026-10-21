@@ -7,7 +7,7 @@
         <p class="text-body-secondary mb-0">{{ now()->format('l, F j, Y') }}</p>
 
         <div class="btn-group btn-group-sm" role="group" aria-label="Module dashboards">
-            <x-btn :href="route('tasks.dashboard')" variant="outline-secondary" size="sm" icon="check2-square">Tasks</x-btn>
+            <x-btn :href="route('filament.workspace.pages.task-overview')" variant="outline-secondary" size="sm" icon="check2-square">Tasks</x-btn>
             <x-btn :href="route('meetings.dashboard')" variant="outline-secondary" size="sm" icon="journal-text">Meetings</x-btn>
             <x-btn :href="route('obligations.dashboard')" variant="outline-secondary" size="sm" icon="file-earmark-text">Obligations</x-btn>
         </div>
@@ -15,16 +15,16 @@
 
     <div class="row">
         <div class="col-12 col-sm-6 col-xl-3">
-            <x-small-box title="Total Tasks" :value="$taskTotal" icon="list-task" variant="primary" :href="route('tasks.index')" />
+            <x-small-box title="Total Tasks" :value="$taskTotal" icon="list-task" variant="primary" :href="route('filament.workspace.resources.tasks.index')" />
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
-            <x-small-box title="Completed Tasks" :value="$taskCompleted" icon="check2-all" variant="success" :href="route('tasks.index', ['status' => 'completed'])" />
+            <x-small-box title="Completed Tasks" :value="$taskCompleted" icon="check2-all" variant="success" :href="route('filament.workspace.resources.tasks.index', ['tableFilters' => ['status' => ['value' => 'completed']]])" />
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
-            <x-small-box title="Pending Tasks" :value="$taskPending" icon="hourglass-split" variant="warning" :href="route('tasks.index', ['status' => 'pending'])" />
+            <x-small-box title="Pending Tasks" :value="$taskPending" icon="hourglass-split" variant="warning" :href="route('filament.workspace.resources.tasks.index', ['tableFilters' => ['status' => ['value' => 'pending']]])" />
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
-            <x-small-box title="Overdue Tasks" :value="$taskOverdue" icon="exclamation-triangle" variant="danger" :href="route('tasks.index')" />
+            <x-small-box title="Overdue Tasks" :value="$taskOverdue" icon="exclamation-triangle" variant="danger" :href="route('filament.workspace.resources.tasks.index')" />
         </div>
     </div>
 
@@ -107,7 +107,7 @@
                 icon="calendar-week"
                 :items="$upcomingTasks"
                 empty-message="No upcoming tasks."
-                :view-all-route="route('tasks.index')"
+                :view-all-route="route('filament.workspace.resources.tasks.index')"
                 view-all-label="View all"
                 class="h-100"
             />

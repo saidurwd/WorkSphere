@@ -60,7 +60,8 @@ class TaskResource extends Resource
 
         $user = auth()->user();
 
-        if ($user instanceof User && ! $user->hasPermission('task.view')) {
+        // A super-admin can act on any task, so the lookup must not hide one from them.
+        if ($user instanceof User && ! $user->hasPermission('task.view') && ! $user->hasRole('super-admin')) {
             $query->forUser($user);
         }
 

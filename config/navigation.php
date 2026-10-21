@@ -116,12 +116,12 @@ return [
         [
             'label' => 'Tasks',
             'icon' => 'check2-square',
-            'active' => ['tasks.*', 'task-transfers.*'],
+            'active' => ['filament.workspace.resources.tasks.*', 'filament.workspace.pages.task-overview', 'filament.workspace.resources.task-transfers.*'],
             'permission' => 'task.view',
             'children' => [
-                ['label' => 'Overview', 'icon' => 'speedometer2', 'route' => 'tasks.dashboard'],
-                ['label' => 'All Tasks', 'icon' => 'list-task', 'route' => 'tasks.index', 'active' => ['tasks.index', 'tasks.show', 'tasks.create', 'tasks.edit']],
-                ['label' => 'Transfers', 'icon' => 'arrow-left-right', 'route' => 'task-transfers.index', 'permission' => 'task.transfer'],
+                ['label' => 'Overview', 'icon' => 'speedometer2', 'route' => 'filament.workspace.pages.task-overview'],
+                ['label' => 'All Tasks', 'icon' => 'list-task', 'route' => 'filament.workspace.resources.tasks.index', 'active' => ['filament.workspace.resources.tasks.index', 'filament.workspace.resources.tasks.view', 'filament.workspace.resources.tasks.create', 'filament.workspace.resources.tasks.edit']],
+                ['label' => 'Transfers', 'icon' => 'arrow-left-right', 'route' => 'filament.workspace.resources.task-transfers.index', 'permission' => 'task.transfer'],
                 // No permission on the branch: the two children disagree about
                 // what they need. Completion is a personal summary (`report.view`)
                 // and Workload reports on other people (`task.view_all`). A gate
@@ -249,7 +249,7 @@ return [
             'admin' => true,
             'children' => [
                 ['label' => 'To-Do Notifications', 'icon' => 'check2-square', 'route' => 'filament.workspace.resources.todo-notification-logs.index', 'active' => ['filament.workspace.resources.todo-notification-logs.*'], 'permission' => 'todos.view_all'],
-                ['label' => 'Task Notifications', 'icon' => 'list-task', 'route' => 'tasks.notification-logs.index', 'active' => ['tasks.notification-logs.*'], 'permission' => 'task.view_notification_logs'],
+                ['label' => 'Task Notifications', 'icon' => 'list-task', 'route' => 'filament.workspace.resources.task-notification-logs.index', 'active' => ['filament.workspace.resources.task-notification-logs.*'], 'permission' => 'task.view_notification_logs'],
                 ['label' => 'Meeting Notifications', 'icon' => 'journal-text', 'route' => 'meetings.notification-logs.index', 'active' => ['meetings.notification-logs.*'], 'permission' => 'meeting.view_notification_logs'],
                 ['label' => 'Obligation Notifications', 'icon' => 'file-earmark-text', 'route' => 'obligations.notifications', 'active' => ['obligations.notifications*'], 'permission' => 'obligation.view_notification_logs'],
             ],

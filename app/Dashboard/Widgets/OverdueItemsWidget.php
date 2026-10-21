@@ -72,7 +72,7 @@ class OverdueItemsWidget implements DashboardWidget
             foreach ($this->visibleTasks($user)->active()
                 ->whereNotNull('due_date')->whereDate('due_date', '<', $today)
                 ->orderBy('due_date')->limit(self::LIMIT)->get(['id', 'title', 'due_date']) as $row) {
-                $items[] = $this->present('Task', $row->title, $row->due_date, route('tasks.show', $row->id));
+                $items[] = $this->present('Task', $row->title, $row->due_date, route('filament.workspace.resources.tasks.view', $row->id));
             }
         }
 

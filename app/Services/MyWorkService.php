@@ -141,7 +141,7 @@ class MyWorkService
     {
         return match ($row->source_type) {
             'todo' => route('filament.workspace.resources.todos.view', $row->source_id),
-            'task' => route('tasks.show', $row->source_id),
+            'task' => route('filament.workspace.resources.tasks.view', $row->source_id),
             'meeting_action_item' => route('meetings.show', MeetingActionItem::query()->find($row->source_id)?->meeting_id),
             default => null,
         };

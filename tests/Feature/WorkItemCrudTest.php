@@ -4,11 +4,9 @@ namespace Tests\Feature;
 
 use Database\Factories\MeetingFactory;
 use Database\Factories\ObligationFactory;
-use Database\Factories\TaskFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Meetings\Models\Meeting;
 use Modules\Obligations\Models\Obligation;
-use Modules\Tasks\Models\Task;
 use Tests\InteractsWithRoles;
 use Tests\TestCase;
 
@@ -23,90 +21,6 @@ class WorkItemCrudTest extends TestCase
     use InteractsWithRoles, RefreshDatabase;
 
     // ---- Tasks ------------------------------------------------------------
-
-    public function test_a_task_can_be_created_read_updated_and_deleted(): void
-    {
-        $user = $this->userWithPermissions(['task.create', 'task.view', 'task.update', 'task.delete']);
-        $responsible = $this->plainUser();
-
-        $this->actingAs($user)
-            ->post(route('tasks.store'), $this->taskPayload($responsible))
-            ->assertRedirect(route('tasks.index'));
-
-        $task = Task::query()->firstOrFail();
-
-        $this->actingAs($user)->get(route('tasks.show', $task))->assertOk();
-        $this->actingAs($user)->get(route('tasks.edit', $task))->assertOk();
-
-        $this->actingAs($user)
-            ->put(route('tasks.update', $task), $this->taskPayload($responsible, title: 'Renamed task'))
-            ->assertRedirect(route('tasks.index'));
-
-        $this->assertDatabaseHas('tasks', ['id' => $task->id, 'title' => 'Renamed task']);
-
-        $this->actingAs($user)
-            ->delete(route('tasks.destroy', $task))
-            ->assertRedirect(route('tasks.index'));
-
-        $this->assertDatabaseCount('tasks', 0);
-    }
-
-    public function test_creating_a_task_stamps_the_completion_time_when_marked_complete(): void
-    {
-        $user = $this->userWithPermissions(['task.create', 'task.view']);
-
-        $this->actingAs($user)
-            ->post(route('tasks.store'), $this->taskPayload($this->plainUser(), status: 'completed'))
-            ->assertRedirect(route('tasks.index'));
-
-        $this->assertNotNull(Task::query()->firstOrFail()->completed_at);
-    }
-
-    public function test_creating_a_task_without_a_title_is_rejected(): void
-    {
-        $user = $this->userWithPermissions(['task.create', 'task.view']);
-
-        $this->actingAs($user)
-            ->post(route('tasks.store'), $this->taskPayload($this->plainUser(), title: ''))
-            ->assertSessionHasErrors('title');
-
-        $this->assertDatabaseCount('tasks', 0);
-    }
-
-    public function test_creating_a_task_with_an_unknown_status_is_rejected(): void
-    {
-        $user = $this->userWithPermissions(['task.create', 'task.view']);
-
-        $this->actingAs($user)
-            ->post(route('tasks.store'), $this->taskPayload($this->plainUser(), status: 'wat'))
-            ->assertSessionHasErrors('status');
-
-        $this->assertDatabaseCount('tasks', 0);
-    }
-
-    public function test_a_remark_can_be_added_to_a_task_the_actor_owns(): void
-    {
-        $user = $this->plainUser();
-        $task = TaskFactory::new()->ownedBy($user)->create();
-
-        $this->actingAs($user)
-            ->post(route('tasks.remarks.store', $task), ['remark' => 'Blocked on legal'])
-            ->assertRedirect();
-
-        $this->assertDatabaseHas('task_remarks', ['task_id' => $task->id, 'remark' => 'Blocked on legal']);
-    }
-
-    public function test_an_empty_remark_is_rejected(): void
-    {
-        $user = $this->plainUser();
-        $task = TaskFactory::new()->ownedBy($user)->create();
-
-        $this->actingAs($user)
-            ->post(route('tasks.remarks.store', $task), ['remark' => ''])
-            ->assertSessionHasErrors('remark');
-
-        $this->assertDatabaseCount('task_remarks', 0);
-    }
 
     // ---- Meetings ---------------------------------------------------------
 

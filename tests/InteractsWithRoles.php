@@ -90,7 +90,10 @@ trait InteractsWithRoles
      */
     protected function plainUser(): User
     {
-        return User::factory()->create();
+        // Re-read, so the column defaults the database applies (`status`) are on the
+        // instance. A bare factory model has no `status`, which the panel's
+        // `canAccessPanel()` reads — so it would be refused for the wrong reason.
+        return User::factory()->create()->fresh();
     }
 
     /**

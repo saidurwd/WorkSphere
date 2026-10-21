@@ -88,7 +88,7 @@
                                 </td>
                                 <td>
                                     @if($item->task)
-                                        <a href="{{ route('tasks.show', $item->task) }}" class="text-decoration-none">{{ $item->task->task_no ?? 'Task #'.$item->task->id }}</a>
+                                        <a href="{{ route('filament.workspace.resources.tasks.view', $item->task) }}" class="text-decoration-none">{{ $item->task->task_no ?? 'Task #'.$item->task->id }}</a>
                                     @else
                                         <span class="text-body-secondary">Not linked</span>
                                     @endif
