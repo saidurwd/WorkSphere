@@ -496,6 +496,14 @@ class RouteParityTest extends TestCase
                 continue;
             }
 
+            // Filament and Livewire register their own framework routes. They are
+            // not part of the hand-maintained application route map.
+            if (str_starts_with((string) $route->getName(), 'filament.')
+                || str_contains((string) $route->getName(), 'livewire')
+                || str_starts_with($route->uri(), 'livewire-')) {
+                continue;
+            }
+
             $entries[] = implode('|', [
                 $route->methods()[0] ?? '',
                 $route->uri(),

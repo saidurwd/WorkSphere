@@ -221,6 +221,11 @@ class NavigationStructureTest extends TestCase
                 continue;
             }
 
+            // Filament builds its own navigation from its resources.
+            if (str_starts_with($name, 'filament.')) {
+                continue;
+            }
+
             // The API has its own OpenAPI document and is not part of a sidebar.
             if (str_starts_with($name, 'api.')) {
                 continue;

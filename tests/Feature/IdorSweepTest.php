@@ -186,7 +186,12 @@ class IdorSweepTest extends TestCase
      */
     private function mutatingRoutes(): Collection
     {
+        // Filament and Livewire endpoints are framework-owned: a Filament resource
+        // authorizes through its model policy on every action, which is covered by
+        // the Filament resource tests, not by a per-route authorize() call.
         return collect(Router::getRoutes())
+            ->reject(static fn (Route $route): bool => str_starts_with((string) $route->getName(), 'filament.')
+                || str_contains((string) $route->getName(), 'livewire'))
             ->filter(static fn (Route $route): bool => array_intersect(
                 $route->methods(),
                 ['POST', 'PUT', 'PATCH', 'DELETE'],

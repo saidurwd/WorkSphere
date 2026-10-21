@@ -203,14 +203,3 @@ Route::middleware(['web', 'auth', 'admin'])
         Route::get('security-events', [SecurityEventController::class, 'index'])->name('security-events.index');
         Route::get('security-events/{securityEvent}', [SecurityEventController::class, 'show'])->name('security-events.show');
     });
-
-/* TEMP DEBUG ROUTE - remove after inspection. */
-Route::get('/__preview', function () {
-    if (! app()->environment('local')) {
-        abort(404);
-    }
-
-    Auth::loginUsingId(User::first()->id);
-
-    return redirect('/dashboard');
-});
