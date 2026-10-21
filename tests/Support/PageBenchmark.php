@@ -70,7 +70,7 @@ class PageBenchmark
             ['label' => 'meetings action items', 'uri' => '/meetings/action-items', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'obligations index', 'uri' => '/obligations', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'obligations my tasks', 'uri' => '/obligations/my-tasks', 'kind' => 'web', 'budget' => 20, 'needs' => []],
-            ['label' => 'projects index', 'uri' => '/projects', 'kind' => 'web', 'budget' => 20, 'needs' => []],
+            ['label' => 'projects index', 'uri' => '/workspace/projects', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'my work', 'uri' => '/my-work', 'kind' => 'web', 'budget' => 30, 'needs' => []],
             ['label' => 'task transfers', 'uri' => '/workspace/task-transfers', 'kind' => 'web', 'budget' => 20, 'needs' => []],
 
@@ -96,7 +96,7 @@ class PageBenchmark
             ['label' => 'obligation show', 'uri' => '/obligations/{obligation}', 'kind' => 'web', 'budget' => 30, 'needs' => ['obligation']],
             ['label' => 'obligation renewals', 'uri' => '/obligations/renewals', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'obligation vendors', 'uri' => '/obligations/vendors', 'kind' => 'web', 'budget' => 20, 'needs' => []],
-            ['label' => 'project show', 'uri' => '/projects/{project}', 'kind' => 'web', 'budget' => 20, 'needs' => ['project']],
+            ['label' => 'project show', 'uri' => '/workspace/projects/{project}', 'kind' => 'web', 'budget' => 20, 'needs' => ['project']],
 
             // API.
             ['label' => 'api todos', 'uri' => '/api/v1/todos', 'kind' => 'api', 'budget' => 12, 'needs' => []],

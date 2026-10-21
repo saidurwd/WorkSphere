@@ -20,7 +20,6 @@
     "DELETE|obligations/vendors/{vendor}|obligations.vendors.destroy|auth,web",
     "DELETE|obligations/{obligation}/documents/{document}|obligations.documents.destroy|auth,web",
     "DELETE|obligations/{obligation}|obligations.destroy|auth,web",
-    "DELETE|projects/{project}|projects.destroy|auth,web",
     "GET|/||web",
     "GET|api/tokens|api.tokens.index|api,auth:sanctum,throttle:api",
     "GET|api/user|api.user|api,auth:sanctum",
@@ -101,10 +100,6 @@
     "GET|obligations/{obligation}/renew|obligations.renew.create|auth,web",
     "GET|obligations/{obligation}|obligations.show|auth,web",
     "GET|obligations|obligations.index|auth,web",
-    "GET|projects/create|projects.create|auth,web",
-    "GET|projects/{project}/edit|projects.edit|auth,web",
-    "GET|projects/{project}|projects.show|auth,web",
-    "GET|projects|projects.index|auth,web",
     "GET|readyz|readyz|web",
     "GET|reports/task-distribution/export|reports.distribution.export|auth,throttle:export,web",
     "GET|reports/task-workload/export|reports.workload.export|auth,throttle:export,web",
@@ -157,7 +152,6 @@
     "POST|obligations/{obligation}/documents|obligations.documents.store|auth,web",
     "POST|obligations/{obligation}/renew|obligations.renew.store|auth,web",
     "POST|obligations|obligations.store|auth,web",
-    "POST|projects|projects.store|auth,web",
     "POST|reset-password|password.update|guest,web",
     "POST|todos/links/from/action-item/{actionItem}|todos.links.from.action-item|auth,web",
     "POST|todos/links/from/obligation/{obligation}|todos.links.from.obligation|auth,web",
@@ -172,6 +166,5 @@
     "PUT|meetings/{meeting}|meetings.update|auth,web",
     "PUT|obligations/vendors/{vendor}|obligations.vendors.update|auth,web",
     "PUT|obligations/{obligation}|obligations.update|auth,web",
-    "PUT|projects/{project}|projects.update|auth,web",
     "PUT|storage/{path}|storage.local.upload|"
 ]

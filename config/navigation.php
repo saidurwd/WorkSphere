@@ -90,8 +90,8 @@ return [
         [
             'label' => 'Projects',
             'icon' => 'folder2-open',
-            'route' => 'projects.index',
-            'active' => ['projects.*'],
+            'route' => 'filament.workspace.resources.projects.index',
+            'active' => ['filament.workspace.resources.projects.*'],
             'permission' => 'project.view',
         ],
 

@@ -151,7 +151,7 @@ final class SearchIndex
                 'model' => Project::class,
                 'fields' => ['name', 'description'],
                 'permission' => 'project.view',
-                'route' => 'projects.show',
+                'route' => 'filament.workspace.resources.projects.view',
                 'label' => 'Projects',
                 'titleColumn' => 'name',
                 // A project has no status or owner column, so it offers no facet

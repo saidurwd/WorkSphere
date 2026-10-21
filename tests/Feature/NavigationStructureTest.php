@@ -572,7 +572,7 @@ class NavigationStructureTest extends TestCase
         ]);
 
         foreach ([
-            '/dashboard', '/workspace/todos', '/workspace/tasks', '/meetings', '/obligations', '/projects',
+            '/dashboard', '/workspace/todos', '/workspace/tasks', '/meetings', '/obligations', '/workspace/projects',
             '/my-work', '/admin/users', '/admin/employees', '/reports/tasks',
         ] as $uri) {
             $this->actingAs($user)->get($uri)->assertOk();
