@@ -2,6 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\ActivityLog;
+use App\Models\AuditLog;
+use App\Models\Company;
+use App\Models\Department;
+use App\Models\FeatureFlag;
+use App\Models\Location;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\RolePermission;
@@ -44,7 +50,12 @@ class AdminPagesRenderTest extends TestCase
 
         $fixtures = $this->fixtures();
 
-        foreach ($this->screens($fixtures) as $label => $route) {
+        $screens = $this->screens($fixtures);
+
+        // Guard against a vacuous pass if the route table stops matching.
+        $this->assertGreaterThan(20, count($screens));
+
+        foreach ($screens as $label => $route) {
             $url = is_array($route) ? route($route[0], $route[1]) : route($route);
 
             $this->actingAs($admin)
@@ -70,7 +81,12 @@ class AdminPagesRenderTest extends TestCase
         foreach (Route::getRoutes() as $route) {
             $name = $route->getName();
 
-            if ($name === null || ! str_starts_with($name, 'admin.')) {
+            if ($name === null || ! str_starts_with($name, 'filament.admin.')) {
+                continue;
+            }
+
+            // Authentication screens are not administration screens.
+            if (str_contains($name, '.auth.')) {
                 continue;
             }
 
@@ -110,10 +126,19 @@ class AdminPagesRenderTest extends TestCase
         $bound = [];
 
         foreach ($route->parameterNames() as $parameter) {
-            $key = match ($parameter) {
-                'user' => 'userWithEmployee',
-                'role' => 'role',
-                'securityEvent' => 'loginLog',
+            $key = match (true) {
+                $parameter !== 'record' => null,
+                str_contains($name, '.resources.users.') => 'userWithEmployee',
+                str_contains($name, '.resources.roles.') => 'role',
+                str_contains($name, '.resources.login-logs.'),
+                str_contains($name, '.resources.security-events.') => 'loginLog',
+                str_contains($name, '.resources.audit-logs.') => 'auditLog',
+                str_contains($name, '.resources.activity-logs.') => 'activityLog',
+                str_contains($name, '.resources.employees.') => 'employee',
+                str_contains($name, '.resources.departments.') => 'department',
+                str_contains($name, '.resources.locations.') => 'location',
+                str_contains($name, '.resources.companies.') => 'company',
+                str_contains($name, '.resources.feature-flags.') => 'featureFlag',
                 default => null,
             };
 
@@ -155,6 +180,13 @@ class AdminPagesRenderTest extends TestCase
             'role' => $role,
             'userWithEmployee' => $userWithEmployee,
             'loginLog' => LoginLogFactory::new()->create(),
+            'auditLog' => AuditLog::factory()->create(),
+            'activityLog' => ActivityLog::factory()->create(),
+            'employee' => EmployeeFactory::new()->create(),
+            'department' => Department::factory()->create(),
+            'location' => Location::factory()->create(),
+            'company' => Company::factory()->create(),
+            'featureFlag' => FeatureFlag::factory()->create(),
         ];
     }
 
@@ -189,58 +221,13 @@ class AdminPagesRenderTest extends TestCase
         );
     }
 
-    public function test_a_role_with_no_users_renders_an_empty_state(): void
+    public function test_a_role_with_no_users_renders(): void
     {
         $admin = $this->superAdmin(['role.manage']);
         $role = Role::factory()->create();
 
         $this->actingAs($admin)
-            ->get(route('admin.roles.show', $role))
-            ->assertOk()
-            ->assertSee('No users assigned to this role');
-    }
-
-    public function test_the_user_detail_page_links_to_a_route_that_exists(): void
-    {
-        $admin = $this->superAdmin(['user.manage']);
-
-        $user = User::factory()->create();
-        $user->update(['employee_id' => EmployeeFactory::new()->create()->id]);
-
-        $this->actingAs($admin)
-            ->get(route('admin.users.show', $user))
-            ->assertOk()
-            ->assertSee('View Employee Profile');
-
-        // The button has to lead somewhere. It used to call `route('employees.show')`,
-        // which does not exist, and `route()` throws while rendering — so the page
-        // failed for every user who has an employee record.
-        $this->get(
-            route('admin.reference.index', ['resource' => 'employees', 'search' => $user->employee->employee_code]),
-        )->assertOk();
-    }
-
-    /**
-     * The employee link is guarded by `@if ($user->employee)`, and that guard
-     * cannot be exercised: `users.employee_id` is NOT NULL as of Phase 8 and the
-     * foreign key refuses to point at a missing row.
-     *
-     * This asserts the reachable half — the link is rendered when an employee
-     * exists, and its target resolves — which is the half that was broken.
-     */
-    public function test_the_employee_link_is_rendered_when_an_employee_exists(): void
-    {
-        $admin = $this->superAdmin(['user.manage']);
-
-        $user = User::factory()->create();
-        $user->update(['employee_id' => EmployeeFactory::new()->create()->id]);
-
-        $this->actingAs($admin)
-            ->get(route('admin.users.show', $user))
-            ->assertOk()
-            ->assertSee(route('admin.reference.index', [
-                'resource' => 'employees',
-                'search' => $user->employee->employee_code,
-            ]), false);
+            ->get(route('filament.admin.resources.roles.view', $role))
+            ->assertOk();
     }
 }

@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Admin\System;
 use App\Http\Controllers\Controller;
 use App\Services\HealthCheck;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
 
 /**
  * The public health endpoints, and the screen that shows them.
@@ -30,32 +28,6 @@ class HealthController extends Controller
     public function __construct(private readonly HealthCheck $health) {}
 
     /**
-     * The administration screen.
-     */
-    public function index(Request $request): View
-    {
-        $this->authorize('system.health');
-
-        $report = $this->health->full();
-
-        return view('admin.system.health', [
-            'report' => $report,
-            'ok' => $report['status'] === 'ok',
-            'labels' => $this->labelsFor($report['checks']),
-            'icons' => self::ICONS,
-            'failing' => array_filter(
-                $report['checks'],
-                fn (array $check): bool => $check['status'] === 'fail',
-            ),
-            'warning' => array_filter(
-                $report['checks'],
-                fn (array $check): bool => $check['status'] === 'warn',
-            ),
-            'refresh' => (int) $request->integer('refresh', 30),
-        ]);
-    }
-
-    /**
      * Liveness. 503 when the process itself is unhealthy.
      */
     public function livez(): JsonResponse
@@ -70,46 +42,6 @@ class HealthController extends Controller
     {
         return $this->respond($this->health->readiness());
     }
-
-    /**
-     * Human labels for a set of checks, keyed BY CHECK NAME.
-     *
-     * `array_map()` cannot build this. It preserves the input's keys only when the
-     * callback returns an ARRAY; returning a string re-indexes the result 0..n, so
-     * every lookup missed and every card fell back to the raw name — which is how
-     * nine checks rendered as `php`, `cache`, `queue` on a screen meant for a
-     * person.
-     *
-     * @param  array<string, mixed>  $checks
-     * @return array<string, string>
-     */
-    protected function labelsFor(array $checks): array
-    {
-        $labels = [];
-
-        foreach (array_keys($checks) as $name) {
-            $labels[$name] = self::label($name);
-        }
-
-        return $labels;
-    }
-
-    /**
-     * A glyph per check, so a card is recognisable before its text is read.
-     *
-     * @var array<string, string>
-     */
-    private const ICONS = [
-        'php' => 'filetype-php',
-        'extensions' => 'plug',
-        'configuration' => 'sliders',
-        'database' => 'database',
-        'migrations' => 'diagram-2',
-        'cache' => 'lightning-charge',
-        'storage' => 'hdd-stack',
-        'queue' => 'list-task',
-        'scheduler' => 'calendar-week',
-    ];
 
     /**
      * One sentence explaining what a check's verdict MEANS.

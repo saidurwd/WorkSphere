@@ -451,7 +451,7 @@ class NavigationStructureTest extends TestCase
         $this->assertNotContains('Feature Flags', $labels);
 
         $this->actingAs($this->userWithPermissions(['user.manage'], slug: 'admin-role-2'))
-            ->get(route('admin.system.flags.index'))
+            ->get(route('filament.admin.resources.feature-flags.index'))
             ->assertForbidden();
     }
 
@@ -521,13 +521,13 @@ class NavigationStructureTest extends TestCase
 
     public function test_a_parameterised_route_activates_only_its_own_node(): void
     {
-        // The four identity Reference Data screens are one route with a
-        // `{resource}` parameter. Without parameter matching, visiting Employees
-        // would highlight Companies, Departments and Locations as well.
+        // The four identity Reference Data screens sit side by side in one menu
+        // branch. Visiting Departments must not highlight Employees, Companies or
+        // Locations as well.
         $user = $this->superAdmin(['user.manage']);
 
         $this->actingAs($user);
-        $this->get('/admin/reference/departments')->assertOk();
+        $this->get('/admin/departments')->assertOk();
 
         $menu = app(NavigationMenu::class);
 
@@ -573,7 +573,7 @@ class NavigationStructureTest extends TestCase
 
         foreach ([
             '/dashboard', '/todos', '/tasks', '/meetings', '/obligations', '/projects',
-            '/my-work', '/admin/users', '/admin/reference/employees', '/reports/tasks',
+            '/my-work', '/admin/users', '/admin/employees', '/reports/tasks',
         ] as $uri) {
             $this->actingAs($user)->get($uri)->assertOk();
         }

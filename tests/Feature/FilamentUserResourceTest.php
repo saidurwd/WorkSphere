@@ -34,7 +34,7 @@ class FilamentUserResourceTest extends TestCase
     public function test_a_user_without_the_permission_cannot_open_the_panel_resource(): void
     {
         $this->actingAs($this->plainUser())
-            ->get('/panel/users')
+            ->get('/admin/users')
             ->assertForbidden();
     }
 
@@ -43,7 +43,7 @@ class FilamentUserResourceTest extends TestCase
         $user = $this->superAdmin();
         $user->update(['status' => 'inactive']);
 
-        $this->actingAs($user)->get('/panel')->assertForbidden();
+        $this->actingAs($user)->get('/admin')->assertForbidden();
     }
 
     public function test_a_user_can_be_created_with_roles(): void

@@ -40,9 +40,15 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
+    /**
+     * The panel is the administration area, so it carries the same outer gate the
+     * `admin` middleware did: an active account holding one of the admin roles.
+     * Individual resources then narrow further through their policies.
+     */
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->status === 'active';
+        return $this->status === 'active'
+            && $this->hasAnyRole(config('authorization.admin_roles', ['admin', 'super-admin']));
     }
 
     public function roles(): BelongsToMany

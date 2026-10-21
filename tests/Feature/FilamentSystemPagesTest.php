@@ -57,7 +57,7 @@ class FilamentSystemPagesTest extends TestCase
     {
         $this->actingAs($this->adminWithout(['system.health']));
 
-        $this->get('/panel/system/settings')->assertForbidden();
+        $this->get('/admin/system/settings')->assertForbidden();
     }
 
     public function test_a_new_flag_is_off_until_it_is_toggled_on(): void
@@ -245,13 +245,25 @@ class FilamentSystemPagesTest extends TestCase
     {
         $this->actingAs($this->adminWithout(['system.health']));
 
-        $this->get('/panel/system/health')->assertOk();
+        $this->get('/admin/system/health')->assertOk();
 
         foreach (['settings', 'queue', 'schedule'] as $page) {
-            $this->get("/panel/system/{$page}")->assertForbidden();
+            $this->get("/admin/system/{$page}")->assertForbidden();
         }
 
-        $this->get('/panel/feature-flags')->assertForbidden();
-        $this->get('/panel/api-tokens')->assertForbidden();
+        $this->get('/admin/feature-flags')->assertForbidden();
+        $this->get('/admin/api-tokens')->assertForbidden();
+    }
+
+    public function test_saving_a_setting_records_who_changed_it(): void
+    {
+        $admin = $this->superAdmin();
+        $this->actingAs($admin);
+
+        Livewire::test(SystemSettings::class)
+            ->fillForm([SystemSettings::fieldName('app.timezone') => 'Asia/Dhaka'])
+            ->call('save');
+
+        $this->assertDatabaseHas('settings', ['key' => 'app.timezone', 'updated_by' => $admin->id]);
     }
 }

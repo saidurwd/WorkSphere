@@ -68,7 +68,7 @@ class FilamentLogResourcesTest extends TestCase
     {
         $this->actingAs($this->userWithPermissions(['activity.view']));
 
-        $this->get('/panel/audit-logs')->assertForbidden();
-        $this->get('/panel/login-logs')->assertForbidden();
+        $this->get('/admin/audit-logs')->assertForbidden();
+        $this->get('/admin/login-logs')->assertForbidden();
     }
 }

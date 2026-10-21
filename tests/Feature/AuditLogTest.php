@@ -180,7 +180,7 @@ class AuditLogTest extends TestCase
         Role::query()->create(['name' => 'Auditor', 'slug' => 'auditor']);
 
         $this->actingAs($this->superAdmin())
-            ->get(route('admin.audit-logs.index'))
+            ->get(route('filament.admin.resources.audit-logs.index'))
             ->assertOk()
             ->assertSee('created');
     }

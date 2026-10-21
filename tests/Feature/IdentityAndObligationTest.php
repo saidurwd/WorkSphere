@@ -2,15 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Models\Company;
 use App\Models\Employee;
-use App\Models\Role;
 use App\Models\User;
 use App\Rules\PasswordPolicy;
 use Database\Factories\CompanyFactory;
 use Database\Factories\DepartmentFactory;
 use Database\Factories\EmployeeFactory;
-use Database\Factories\LocationFactory;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -31,147 +28,6 @@ use Tests\TestCase;
 class IdentityAndObligationTest extends TestCase
 {
     use InteractsWithRoles, RefreshDatabase;
-
-    // ---- Reference data CRUD (GAP-041) -------------------------------------
-
-    public static function resourceProvider(): array
-    {
-        return [
-            'employees' => ['employees'],
-            'companies' => ['companies'],
-            'departments' => ['departments'],
-            'locations' => ['locations'],
-        ];
-    }
-
-    #[DataProvider('resourceProvider')]
-    public function test_each_reference_data_screen_renders(string $resource): void
-    {
-        $admin = $this->adminWithUserManage();
-
-        $this->actingAs($admin)->get(route('admin.reference.index', $resource))->assertOk();
-        $this->actingAs($admin)->get(route('admin.reference.create', $resource))->assertOk();
-    }
-
-    public function test_a_record_can_be_created_updated_and_deactivated(): void
-    {
-        $admin = $this->adminWithUserManage();
-
-        $this->actingAs($admin)
-            ->post(route('admin.reference.store', 'companies'), [
-                'company_code' => 'CO-900',
-                'company_name' => 'Northwind Traders',
-                'city' => 'Dhaka',
-                'status' => 'active',
-            ])
-            ->assertRedirect(route('admin.reference.index', 'companies'));
-
-        $company = Company::query()->where('company_code', 'CO-900')->firstOrFail();
-
-        $this->actingAs($admin)
-            ->put(route('admin.reference.update', ['companies', $company->id]), [
-                'company_code' => 'CO-900',
-                'company_name' => 'Northwind Traders Ltd',
-                'status' => 'active',
-            ])
-            ->assertRedirect();
-
-        $this->assertSame('Northwind Traders Ltd', $company->fresh()->company_name);
-
-        // Removal is a status change, not a delete: reference data is referenced
-        // from everywhere and a hard delete would cascade into unrelated records.
-        $this->actingAs($admin)
-            ->delete(route('admin.reference.destroy', ['companies', $company->id]))
-            ->assertRedirect();
-
-        $this->assertSame('inactive', $company->fresh()->status);
-        $this->assertDatabaseHas('companies', ['id' => $company->id]);
-    }
-
-    public function test_an_employee_can_be_created_with_a_department_and_location(): void
-    {
-        $admin = $this->adminWithUserManage();
-        $department = DepartmentFactory::new()->create();
-        $location = LocationFactory::new()->create();
-
-        $this->actingAs($admin)
-            ->post(route('admin.reference.store', 'employees'), [
-                'employee_code' => 'EMP-900',
-                'employee_name' => 'Test Person',
-                'email' => 'test.person@example.com',
-                'department_id' => $department->id,
-                'location_id' => $location->id,
-                'joining_date' => '2026-01-01',
-                'status' => 'active',
-            ])
-            ->assertRedirect();
-
-        $employee = Employee::query()->where('employee_code', 'EMP-900')->firstOrFail();
-
-        $this->assertSame($department->id, $employee->department_id);
-        $this->assertSame($location->id, $employee->location_id);
-    }
-
-    public function test_a_duplicate_code_is_rejected(): void
-    {
-        $admin = $this->adminWithUserManage();
-        DepartmentFactory::new()->create(['department_code' => 'DUP']);
-
-        $this->actingAs($admin)
-            ->post(route('admin.reference.store', 'departments'), [
-                'department_code' => 'DUP',
-                'department_name' => 'Another',
-                'status' => 'active',
-            ])
-            ->assertSessionHasErrors('department_code');
-    }
-
-    public function test_editing_a_record_does_not_fail_against_its_own_unique_value(): void
-    {
-        $admin = $this->adminWithUserManage();
-        $department = DepartmentFactory::new()->create(['department_code' => 'SAME']);
-
-        // The unique rule must ignore the row being edited, or saving without
-        // changing the code fails against itself.
-        $this->actingAs($admin)
-            ->put(route('admin.reference.update', ['departments', $department->id]), [
-                'department_code' => 'SAME',
-                'department_name' => 'Renamed',
-                'status' => 'active',
-            ])
-            ->assertRedirect();
-
-        $this->assertSame('Renamed', $department->fresh()->department_name);
-    }
-
-    public function test_a_user_without_user_manage_cannot_reach_reference_data(): void
-    {
-        $stranger = $this->userWithPermissions(['task.view']);
-
-        $this->actingAs($stranger)
-            ->get(route('admin.reference.index', 'employees'))
-            ->assertForbidden();
-
-        $this->actingAs($stranger)
-            ->post(route('admin.reference.store', 'companies'), [
-                'company_code' => 'X',
-                'company_name' => 'X',
-                'status' => 'active',
-            ])
-            ->assertForbidden();
-    }
-
-    public function test_an_unknown_resource_is_404(): void
-    {
-        $this->actingAs($this->adminWithUserManage())
-            ->get(route('admin.reference.index', 'unicorns'))
-            ->assertNotFound();
-    }
-
-    public function test_reference_data_routes_require_authentication(): void
-    {
-        $this->get(route('admin.reference.index', 'employees'))->assertRedirect(route('login'));
-    }
 
     // ---- Password policy (GAP-041) -----------------------------------------
 
@@ -477,23 +333,5 @@ class IdentityAndObligationTest extends TestCase
         Schema::table('users', function (Blueprint $table): void {
             $table->unsignedBigInteger('employee_id')->nullable()->change();
         });
-    }
-
-    /**
-     * A user holding `user.manage` and sitting in the `admin` role, which the
-     * `admin` middleware requires.
-     */
-    private function adminWithUserManage(): User
-    {
-        $user = $this->userWithPermissions(['user.manage']);
-
-        $adminRole = Role::query()->firstOrCreate(
-            ['slug' => 'admin'],
-            ['name' => 'Administrator'],
-        );
-
-        $user->roles()->attach($adminRole->id);
-
-        return $user->fresh();
     }
 }

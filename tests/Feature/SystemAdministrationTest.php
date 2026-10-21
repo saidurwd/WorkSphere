@@ -40,12 +40,12 @@ class SystemAdministrationTest extends TestCase
         // health of the system must not thereby be handed the ability to change how
         // it behaves.
         $screens = [
-            'admin.system.health.index' => 'system.health',
-            'admin.system.settings.index' => 'system.settings',
-            'admin.system.queue.index' => 'system.queue',
-            'admin.system.schedule.index' => 'system.schedule',
-            'admin.system.flags.index' => 'system.flags',
-            'admin.system.tokens.index' => 'system.tokens',
+            'filament.admin.pages.system.health' => 'system.health',
+            'filament.admin.pages.system.settings' => 'system.settings',
+            'filament.admin.pages.system.queue' => 'system.queue',
+            'filament.admin.pages.system.schedule' => 'system.schedule',
+            'filament.admin.resources.feature-flags.index' => 'system.flags',
+            'filament.admin.resources.api-tokens.index' => 'system.tokens',
         ];
 
         foreach ($screens as $route => $permission) {
@@ -70,7 +70,7 @@ class SystemAdministrationTest extends TestCase
             'system.health', 'system.settings', 'system.queue',
             'system.schedule', 'system.flags', 'system.tokens',
         ]))
-            ->get(route('admin.system.health.index'))
+            ->get(route('filament.admin.pages.system.health'))
             ->assertForbidden();
     }
 
@@ -142,70 +142,10 @@ class SystemAdministrationTest extends TestCase
         app(Settings::class)->set('not.a.real.setting', 1);
     }
 
-    public function test_saving_a_setting_records_who_changed_it(): void
-    {
-        $admin = $this->superAdmin(['system.settings']);
-
-        $this->actingAs($admin)
-            ->post(route('admin.system.settings.update'), [
-                'settings' => [
-                    'app.timezone' => 'Europe/London',
-                    'security.max_failed_attempts' => '8',
-                ],
-            ])
-            ->assertRedirect();
-
-        $this->assertSame('Europe/London', app(Settings::class)->get('app.timezone'));
-        $this->assertSame(8, app(Settings::class)->get('security.max_failed_attempts'));
-
-        $this->assertDatabaseHas('settings', [
-            'key' => 'app.timezone',
-            'updated_by' => $admin->id,
-        ]);
-    }
-
-    public function test_an_unknown_setting_key_is_rejected_rather_than_ignored(): void
-    {
-        $this->actingAs($this->superAdmin(['system.settings']))
-            ->post(route('admin.system.settings.update'), [
-                'settings' => ['not.a.real.setting' => 'x'],
-            ])
-            ->assertRedirect();
-
-        // Silently dropping it produces a form that appears to save and does not.
-        $this->assertDatabaseMissing('settings', ['key' => 'not.a.real.setting']);
-    }
-
-    public function test_a_setting_of_the_wrong_type_is_refused(): void
-    {
-        $this->actingAs($this->superAdmin(['system.settings']))
-            ->from(route('admin.system.settings.index'))
-            ->post(route('admin.system.settings.update'), [
-                'settings' => ['security.max_failed_attempts' => 'not a number'],
-            ])
-            ->assertRedirect(route('admin.system.settings.index'))
-            ->assertSessionHas('error');
-
-        $this->assertDatabaseMissing('settings', ['key' => 'security.max_failed_attempts']);
-    }
-
-    public function test_a_boolean_setting_can_be_switched_off(): void
-    {
-        $this->actingAs($this->superAdmin(['system.settings']))
-            ->post(route('admin.system.settings.update'), [
-                'settings' => ['app.week_starts_on' => '0'],
-            ]);
-
-        // A checkbox submits NOTHING when unticked, so the form carries an explicit
-        // false. The test proves the value can actually become 0 rather than only
-        // ever being set.
-        $this->assertSame(0, app(Settings::class)->get('app.week_starts_on'));
-    }
-
     public function test_the_settings_screen_groups_by_purpose(): void
     {
         $this->actingAs($this->superAdmin(['system.settings']))
-            ->get(route('admin.system.settings.index'))
+            ->get(route('filament.admin.pages.system.settings'))
             ->assertOk()
             ->assertSee('Localisation')
             ->assertSee('Security')
@@ -399,77 +339,6 @@ class SystemAdministrationTest extends TestCase
         $this->assertIsInt($value);
     }
 
-    public function test_creating_a_flag_rejects_an_identifier_shaped_key(): void
-    {
-        // A flag key becomes an attribute on the flag object and appears in cache
-        // keys, so it is held to an identifier shape rather than free text.
-        $this->actingAs($this->superAdmin(['system.flags']))
-            ->post(route('admin.system.flags.store'), [
-                'key' => 'Not A Key!',
-                'type' => 'boolean',
-                'rollout_percentage' => 100,
-            ])
-            ->assertSessionHasErrors('key');
-
-        $this->assertDatabaseCount('feature_flags', 0);
-    }
-
-    public function test_toggling_a_flag_flips_it(): void
-    {
-        $admin = $this->superAdmin(['system.flags']);
-
-        $this->actingAs($admin)->post(route('admin.system.flags.store'), [
-            'key' => 'new-thing', 'name' => 'New thing', 'type' => 'boolean', 'rollout_percentage' => 100,
-        ])->assertRedirect();
-
-        $this->assertFalse(app(FeatureFlags::class)->enabled('new-thing'));
-
-        $this->actingAs($admin)
-            ->post(route('admin.system.flags.toggle', 'new-thing'))
-            ->assertRedirect();
-
-        $this->assertTrue(app(FeatureFlags::class)->enabled('new-thing'));
-
-        $this->actingAs($admin)
-            ->post(route('admin.system.flags.toggle', 'new-thing'))
-            ->assertRedirect();
-
-        $this->assertFalse(app(FeatureFlags::class)->enabled('new-thing'));
-    }
-
-    public function test_clearing_the_targeting_field_means_everyone_not_nobody(): void
-    {
-        $admin = $this->superAdmin(['system.flags']);
-
-        $this->actingAs($admin)->post(route('admin.system.flags.store'), [
-            'key' => 'scoped', 'name' => 'Scoped', 'type' => 'boolean', 'rollout_percentage' => 100,
-            'target_roles_raw' => 'admin, manager',
-        ]);
-
-        $this->assertSame(['admin', 'manager'], app(FeatureFlags::class)->definitions()['scoped']['target_roles']);
-
-        // `store` deliberately creates a flag OFF, so switch it on before testing
-        // that clearing the targeting re-opens it to everyone.
-        $this->actingAs($admin)->post(route('admin.system.flags.toggle', 'scoped'));
-
-        $this->assertFalse(
-            app(FeatureFlags::class)->enabled('scoped', $this->plainUser()),
-            'A flag aimed at roles should not reach an unrelated user.',
-        );
-
-        $this->actingAs($admin)->put(route('admin.system.flags.update', 'scoped'), [
-            'name' => 'Scoped', 'type' => 'boolean', 'rollout_percentage' => 100, 'target_roles_raw' => '',
-        ]);
-
-        // NULL means "everyone"; an empty array would mean "nobody" and would
-        // silently disable the flag the moment somebody cleared the field.
-        $this->assertNull(app(FeatureFlags::class)->definitions()['scoped']['target_roles']);
-        $this->assertTrue(
-            app(FeatureFlags::class)->enabled('scoped', $this->plainUser()),
-            'Clearing the targeting field made the flag unreachable for everyone.',
-        );
-    }
-
     // ---- Health -------------------------------------------------------------
 
     public function test_the_probes_answer_a_machine(): void
@@ -550,7 +419,7 @@ class SystemAdministrationTest extends TestCase
     public function test_the_health_screen_names_every_check(): void
     {
         $this->actingAs($this->superAdmin(['system.health']))
-            ->get(route('admin.system.health.index'))
+            ->get(route('filament.admin.pages.system.health'))
             ->assertOk()
             ->assertSee('Database')
             ->assertSee('Cache')
@@ -579,7 +448,7 @@ class SystemAdministrationTest extends TestCase
         // One request: `adminWith()` creates a role with a unique slug, so calling
         // it twice collides on the index.
         $html = $this->actingAs($this->adminWith(['system.health']))
-            ->get(route('admin.system.health.index'))
+            ->get(route('filament.admin.pages.system.health'))
             ->assertOk()
             ->getContent();
 
@@ -655,7 +524,7 @@ class SystemAdministrationTest extends TestCase
         $health = app(HealthCheck::class)->full()['checks']['scheduler'];
 
         $html = $this->actingAs($this->adminWith(['system.schedule']))
-            ->get(route('admin.system.schedule.index'))
+            ->get(route('filament.admin.pages.system.schedule'))
             ->assertOk()
             ->getContent();
 
@@ -682,7 +551,7 @@ class SystemAdministrationTest extends TestCase
         ]);
 
         $html = $this->actingAs($this->superAdmin(['system.queue']))
-            ->get(route('admin.system.queue.index'))
+            ->get(route('filament.admin.pages.system.queue'))
             ->assertOk()
             ->getContent();
 
@@ -708,50 +577,10 @@ class SystemAdministrationTest extends TestCase
         ]);
 
         $this->actingAs($this->superAdmin(['system.queue']))
-            ->get(route('admin.system.queue.index'))
+            ->get(route('filament.admin.pages.system.queue'))
             ->assertOk()
             ->assertSee('default')
-            ->assertSee('Pending by queue');
-    }
-
-    public function test_retrying_a_failed_job_goes_through_artisan(): void
-    {
-        DB::table('failed_jobs')->insert([
-            'uuid' => 'retry-me',
-            'connection' => 'database',
-            'queue' => 'default',
-            'payload' => json_encode(['displayName' => 'App\\Jobs\\SendMailJob']),
-            'exception' => 'RuntimeException: boom',
-            'failed_at' => now()->toDateTimeString(),
-        ]);
-
-        $this->actingAs($this->superAdmin(['system.queue']))
-            ->post(route('admin.system.queue.retry'), ['id' => 'retry-me'])
-            ->assertRedirect()
-            ->assertSessionHas('success');
-
-        // The job is requeued rather than deleted, which is what `queue:retry`
-        // does. Reimplementing it over the table would re-implement payload
-        // decoding, backoff and the lock release.
-        $this->assertSame(0, DB::table('failed_jobs')->count());
-    }
-
-    public function test_discarding_a_failed_job_removes_it(): void
-    {
-        DB::table('failed_jobs')->insert([
-            'uuid' => 'drop-me',
-            'connection' => 'database',
-            'queue' => 'default',
-            'payload' => json_encode(['displayName' => 'x']),
-            'exception' => 'boom',
-            'failed_at' => now()->toDateTimeString(),
-        ]);
-
-        $this->actingAs($this->superAdmin(['system.queue']))
-            ->post(route('admin.system.queue.forget'), ['id' => 'drop-me'])
-            ->assertRedirect();
-
-        $this->assertSame(0, DB::table('failed_jobs')->count());
+            ->assertSee('Queues');
     }
 
     // ---- Schedule -----------------------------------------------------------
@@ -759,7 +588,7 @@ class SystemAdministrationTest extends TestCase
     public function test_the_schedule_screen_reads_the_applications_own_schedule(): void
     {
         $this->actingAs($this->superAdmin(['system.schedule']))
-            ->get(route('admin.system.schedule.index'))
+            ->get(route('filament.admin.pages.system.schedule'))
             ->assertOk()
             ->assertSee('reminders:dispatch')
             ->assertSee('todos:overdue');
@@ -768,7 +597,7 @@ class SystemAdministrationTest extends TestCase
     public function test_every_scheduled_entry_carries_its_guards(): void
     {
         $this->actingAs($this->superAdmin(['system.schedule']))
-            ->get(route('admin.system.schedule.index'))
+            ->get(route('filament.admin.pages.system.schedule'))
             ->assertOk()
             ->assertDontSee('Missing:');
 
@@ -779,7 +608,7 @@ class SystemAdministrationTest extends TestCase
     public function test_the_schedule_is_evaluated_in_the_business_timezone(): void
     {
         $this->actingAs($this->superAdmin(['system.schedule']))
-            ->get(route('admin.system.schedule.index'))
+            ->get(route('filament.admin.pages.system.schedule'))
             ->assertOk()
             ->assertSee((string) config('app.timezone'));
     }
@@ -793,7 +622,7 @@ class SystemAdministrationTest extends TestCase
         $token = $user->createToken('nightly', ['read']);
 
         $html = $this->actingAs($user)
-            ->get(route('admin.system.tokens.index'))
+            ->get(route('filament.admin.resources.api-tokens.index'))
             ->assertOk()
             ->getContent();
 
@@ -801,58 +630,6 @@ class SystemAdministrationTest extends TestCase
 
         // Sanctum stores only a hash, so a "token" column here would be a lie.
         $this->assertStringNotContainsString($token->plainTextToken, $html);
-    }
-
-    public function test_revoking_a_token_requires_it_to_be_your_own(): void
-    {
-        $mine = $this->superAdmin(['system.tokens']);
-        $theirs = $this->superAdmin(['system.tokens']);
-
-        $theirsToken = $theirs->createToken('theirs', ['read']);
-
-        $this->actingAs($mine)
-            ->delete(route('admin.system.tokens.destroy', $theirsToken->accessToken->id))
-            ->assertRedirect()
-            ->assertSessionHas('error');
-
-        // The screen shows ids and an id is guessable, so the delete is scoped by
-        // tokenable rather than trusted.
-        $this->assertDatabaseHas('personal_access_tokens', ['id' => $theirsToken->accessToken->id]);
-    }
-
-    public function test_revoking_others_clears_every_token_on_the_account(): void
-    {
-        $user = $this->superAdmin(['system.tokens']);
-
-        $user->createToken('one', ['read']);
-        $user->createToken('two', ['read']);
-        $user->createToken('three', ['read']);
-
-        $this->assertSame(3, $user->tokens()->count());
-
-        $this->actingAs($user)
-            ->post(route('admin.system.tokens.destroy-others'))
-            ->assertRedirect()
-            ->assertSessionHas('success');
-
-        $this->assertSame(0, $user->tokens()->count());
-    }
-
-    public function test_revoking_others_does_not_log_the_operator_out(): void
-    {
-        $user = $this->superAdmin(['system.tokens']);
-        $user->createToken('integration', ['read']);
-
-        $this->actingAs($user)
-            ->post(route('admin.system.tokens.destroy-others'))
-            ->assertRedirect();
-
-        // The operator is on a SESSION, not a token, so clearing the account's
-        // tokens cannot end the session they are standing in. This is the whole
-        // reason the exclusion exists.
-        $this->actingAs($user)
-            ->get(route('admin.system.tokens.index'))
-            ->assertOk();
     }
 
     // ---- Interactions between the features ---------------------------------

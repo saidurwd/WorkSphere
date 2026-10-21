@@ -217,14 +217,14 @@ return [
             'icon' => 'gear-wide-connected',
             'section' => 'System',
             'admin' => true,
-            'active' => ['admin.system.*'],
+            'active' => ['filament.admin.pages.system.*', 'filament.admin.resources.feature-flags.*', 'filament.admin.resources.api-tokens.*'],
             'children' => [
-                ['label' => 'System Health', 'icon' => 'heart-pulse', 'route' => 'admin.system.health.index', 'permission' => 'system.health'],
-                ['label' => 'Settings', 'icon' => 'sliders', 'route' => 'admin.system.settings.index', 'permission' => 'system.settings'],
-                ['label' => 'Queue & Jobs', 'icon' => 'list-task', 'route' => 'admin.system.queue.index', 'permission' => 'system.queue'],
-                ['label' => 'Scheduled Tasks', 'icon' => 'calendar-week', 'route' => 'admin.system.schedule.index', 'permission' => 'system.schedule'],
-                ['label' => 'Feature Flags', 'icon' => 'toggle2-on', 'route' => 'admin.system.flags.index', 'permission' => 'system.flags'],
-                ['label' => 'API Tokens', 'icon' => 'key', 'route' => 'admin.system.tokens.index', 'permission' => 'system.tokens'],
+                ['label' => 'System Health', 'icon' => 'heart-pulse', 'route' => 'filament.admin.pages.system.health', 'permission' => 'system.health'],
+                ['label' => 'Settings', 'icon' => 'sliders', 'route' => 'filament.admin.pages.system.settings', 'permission' => 'system.settings'],
+                ['label' => 'Queue & Jobs', 'icon' => 'list-task', 'route' => 'filament.admin.pages.system.queue', 'permission' => 'system.queue'],
+                ['label' => 'Scheduled Tasks', 'icon' => 'calendar-week', 'route' => 'filament.admin.pages.system.schedule', 'permission' => 'system.schedule'],
+                ['label' => 'Feature Flags', 'icon' => 'toggle2-on', 'route' => 'filament.admin.resources.feature-flags.index', 'permission' => 'system.flags'],
+                ['label' => 'API Tokens', 'icon' => 'key', 'route' => 'filament.admin.resources.api-tokens.index', 'permission' => 'system.tokens'],
             ],
         ],
 
@@ -268,21 +268,21 @@ return [
             'icon' => 'shield-lock',
             'section' => 'Administration',
             'admin' => true,
-            'active' => ['admin.*', 'dashboard.database-backups.*'],
+            'active' => ['filament.admin.resources.*', 'dashboard.database-backups.*'],
             'children' => [
                 [
                     'label' => 'People',
                     'icon' => 'people',
                     'children' => [
-                        ['label' => 'Users', 'icon' => 'person', 'route' => 'admin.users.index', 'active' => ['admin.users.*'], 'permission' => 'user.manage'],
-                        ['label' => 'Roles', 'icon' => 'person-badge', 'route' => 'admin.roles.index', 'active' => ['admin.roles.*'], 'permission' => 'role.manage'],
+                        ['label' => 'Users', 'icon' => 'person', 'route' => 'filament.admin.resources.users.index', 'active' => ['filament.admin.resources.users.*'], 'permission' => 'user.manage'],
+                        ['label' => 'Roles', 'icon' => 'person-badge', 'route' => 'filament.admin.resources.roles.index', 'active' => ['filament.admin.resources.roles.*'], 'permission' => 'role.manage'],
                         // Employees, Companies, Departments and Locations are one
                         // controller behind a `{resource}` parameter, so each needs
                         // its own node — they are four screens, not one.
-                        ['label' => 'Employees', 'icon' => 'person-vcard', 'route' => 'admin.reference.index', 'active' => ['admin.reference.*'], 'permission' => 'user.manage', 'params' => ['resource' => 'employees']],
-                        ['label' => 'Companies', 'icon' => 'building', 'route' => 'admin.reference.index', 'active' => ['admin.reference.*'], 'permission' => 'user.manage', 'params' => ['resource' => 'companies']],
-                        ['label' => 'Departments', 'icon' => 'diagram-3', 'route' => 'admin.reference.index', 'active' => ['admin.reference.*'], 'permission' => 'user.manage', 'params' => ['resource' => 'departments']],
-                        ['label' => 'Locations', 'icon' => 'geo-alt', 'route' => 'admin.reference.index', 'active' => ['admin.reference.*'], 'permission' => 'user.manage', 'params' => ['resource' => 'locations']],
+                        ['label' => 'Employees', 'icon' => 'person-vcard', 'route' => 'filament.admin.resources.employees.index', 'active' => ['filament.admin.resources.employees.*'], 'permission' => 'user.manage'],
+                        ['label' => 'Companies', 'icon' => 'building', 'route' => 'filament.admin.resources.companies.index', 'active' => ['filament.admin.resources.companies.*'], 'permission' => 'user.manage'],
+                        ['label' => 'Departments', 'icon' => 'diagram-3', 'route' => 'filament.admin.resources.departments.index', 'active' => ['filament.admin.resources.departments.*'], 'permission' => 'user.manage'],
+                        ['label' => 'Locations', 'icon' => 'geo-alt', 'route' => 'filament.admin.resources.locations.index', 'active' => ['filament.admin.resources.locations.*'], 'permission' => 'user.manage'],
                     ],
                 ],
 
@@ -290,10 +290,10 @@ return [
                     'label' => 'Logs',
                     'icon' => 'journal-text',
                     'children' => [
-                        ['label' => 'Activity Logs', 'icon' => 'list-check', 'route' => 'admin.activity-logs.index', 'active' => ['admin.activity-logs.*'], 'permission' => 'activity.view'],
-                        ['label' => 'Audit Logs', 'icon' => 'shield-check', 'route' => 'admin.audit-logs.index', 'active' => ['admin.audit-logs.*']],
-                        ['label' => 'Login History', 'icon' => 'clock-history', 'route' => 'admin.login-logs.index', 'active' => ['admin.login-logs.*']],
-                        ['label' => 'Security Events', 'icon' => 'shield-exclamation', 'route' => 'admin.security-events.index', 'active' => ['admin.security-events.*']],
+                        ['label' => 'Activity Logs', 'icon' => 'list-check', 'route' => 'filament.admin.resources.activity-logs.index', 'active' => ['filament.admin.resources.activity-logs.*'], 'permission' => 'activity.view'],
+                        ['label' => 'Audit Logs', 'icon' => 'shield-check', 'route' => 'filament.admin.resources.audit-logs.index', 'active' => ['filament.admin.resources.audit-logs.*']],
+                        ['label' => 'Login History', 'icon' => 'clock-history', 'route' => 'filament.admin.resources.login-logs.index', 'active' => ['filament.admin.resources.login-logs.*']],
+                        ['label' => 'Security Events', 'icon' => 'shield-exclamation', 'route' => 'filament.admin.resources.security-events.index', 'active' => ['filament.admin.resources.security-events.*']],
                     ],
                 ],
 

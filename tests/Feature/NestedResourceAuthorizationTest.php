@@ -392,7 +392,7 @@ class NestedResourceAuthorizationTest extends TestCase
     {
         // The `admin` middleware is the outer gate.
         $this->actingAs($this->userWithPermissions(['task.view', 'user.manage', 'role.manage']))
-            ->get(route('admin.users.index'))
+            ->get(route('filament.admin.resources.users.index'))
             ->assertForbidden();
     }
 
@@ -402,46 +402,46 @@ class NestedResourceAuthorizationTest extends TestCase
         // proves the policy actually bites rather than merely decorating the
         // controller.
         $this->actingAs($this->adminWithout())
-            ->get(route('admin.users.index'))
+            ->get(route('filament.admin.resources.users.index'))
             ->assertForbidden();
     }
 
     public function test_an_admin_role_holding_only_task_view_cannot_reach_user_administration(): void
     {
         $this->actingAs($this->adminWithout(['task.view']))
-            ->get(route('admin.users.index'))
+            ->get(route('filament.admin.resources.users.index'))
             ->assertForbidden();
     }
 
     public function test_an_admin_role_holding_only_task_view_cannot_reach_role_administration(): void
     {
         $this->actingAs($this->adminWithout(['task.view']))
-            ->get(route('admin.roles.index'))
+            ->get(route('filament.admin.resources.roles.index'))
             ->assertForbidden();
     }
 
     public function test_an_admin_role_holding_user_manage_reaches_user_administration(): void
     {
         $this->actingAs($this->adminWithout(['user.manage']))
-            ->get(route('admin.users.index'))
+            ->get(route('filament.admin.resources.users.index'))
             ->assertOk();
     }
 
     public function test_an_admin_role_holding_role_manage_reaches_role_administration(): void
     {
         $this->actingAs($this->adminWithout(['role.manage']))
-            ->get(route('admin.roles.index'))
+            ->get(route('filament.admin.resources.roles.index'))
             ->assertOk();
     }
 
     public function test_a_super_admin_reaches_both_administration_screens(): void
     {
         $this->actingAs($this->superAdmin())
-            ->get(route('admin.users.index'))
+            ->get(route('filament.admin.resources.users.index'))
             ->assertOk();
 
         $this->actingAs($this->superAdmin())
-            ->get(route('admin.roles.index'))
+            ->get(route('filament.admin.resources.roles.index'))
             ->assertOk();
     }
 

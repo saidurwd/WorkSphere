@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Filament\Http\Middleware\Authenticate;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
@@ -133,47 +134,31 @@ class RouteParityTest extends TestCase
     }
 
     /**
-     * Phase 10 added the shared reports layer. Pinned like every other addition.
+     * The four reference-data tables are managed in the Filament panel.
      */
-    /**
-     * Phase 8 GAP-041 gave the four reference-data tables their first routes.
-     */
-    public function test_the_reference_data_routes_are_exactly_what_phase_eight_declared(): void
+    public function test_the_reference_data_screens_live_in_the_panel(): void
     {
-        $expected = [
-            'admin.reference.index',
-            'admin.reference.create',
-            'admin.reference.store',
-            'admin.reference.edit',
-            'admin.reference.update',
-            'admin.reference.destroy',
-        ];
-
-        $actual = [];
-
-        foreach (Route::getRoutes() as $route) {
-            if (str_starts_with((string) $route->getName(), 'admin.reference.')) {
-                $actual[] = $route->getName();
-            }
+        foreach (['employees', 'companies', 'departments', 'locations'] as $resource) {
+            $this->assertTrue(
+                Route::has("filament.admin.resources.{$resource}.index"),
+                "The {$resource} reference-data screen is missing from the panel.",
+            );
         }
-
-        sort($expected);
-        sort($actual);
-
-        $this->assertSame($expected, $actual);
     }
 
-    public function test_every_reference_data_route_requires_the_admin_middleware(): void
+    public function test_every_panel_route_is_behind_filament_authentication(): void
     {
         foreach (Route::getRoutes() as $route) {
-            if (! str_starts_with((string) $route->getName(), 'admin.reference.')) {
+            $name = (string) $route->getName();
+
+            if (! str_starts_with($name, 'filament.admin.') || str_contains($name, '.auth.login')) {
                 continue;
             }
 
             $this->assertContains(
-                'admin',
+                Authenticate::class,
                 $route->gatherMiddleware(),
-                "{$route->getName()} is not behind the admin middleware.",
+                "{$name} is not behind the panel's authentication.",
             );
         }
     }
