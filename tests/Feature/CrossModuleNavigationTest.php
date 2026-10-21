@@ -7,12 +7,16 @@ use App\Models\User;
 use Database\Factories\MeetingFactory;
 use Database\Factories\ObligationFactory;
 use Database\Factories\TaskFactory;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Livewire\Livewire;
 use Modules\Meetings\Models\MeetingActionItem;
 use Modules\Obligations\Models\Obligation;
 use Modules\Tasks\Models\Task;
+use Modules\Todos\Filament\Resources\Todos\Pages\ViewTodo;
+use Modules\Todos\Filament\Resources\Todos\RelationManagers\LinksRelationManager;
 use Modules\Todos\Models\Todo;
 use Modules\Todos\Models\TodoLink;
 use Modules\Todos\Models\TodoWatcher;
@@ -233,10 +237,11 @@ class CrossModuleNavigationTest extends TestCase
 
         $this->actingAs($viewer);
 
-        $response = $this->get(route('todos.show', $todo));
+        Filament::setCurrentPanel('workspace');
 
-        $response->assertOk();
-        $response->assertDontSee('Confidential task title');
+        Livewire::test(LinksRelationManager::class, ['ownerRecord' => $todo, 'pageClass' => ViewTodo::class])
+            ->assertOk()
+            ->assertDontSee('Confidential task title');
     }
 
     public function test_a_link_to_an_obligation_the_viewer_cannot_see_renders_nothing(): void
@@ -261,8 +266,10 @@ class CrossModuleNavigationTest extends TestCase
             'user_id' => $viewer->id,
         ]);
 
-        $this->actingAs($viewer)
-            ->get(route('todos.show', $todo))
+        $this->actingAs($viewer);
+        Filament::setCurrentPanel('workspace');
+
+        Livewire::test(LinksRelationManager::class, ['ownerRecord' => $todo, 'pageClass' => ViewTodo::class])
             ->assertOk()
             ->assertDontSee('Secret obligation title');
     }

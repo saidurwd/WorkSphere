@@ -313,28 +313,6 @@ class AccessibilityConventionsTest extends TestCase
         );
     }
 
-    public function test_live_regions_sit_on_content_that_actually_changes(): void
-    {
-        // The To-Do summary row carried aria-live but is server-rendered and
-        // never changes without a navigation, so it was an inert live region —
-        // while the bulk-action counter, which does change, had none.
-        $view = $this->code(
-            base_path('Modules/Todos/resources/views/todos/index.blade.php')
-        );
-
-        $this->assertMatchesRegularExpression(
-            '/<span data-selected-count role="status">/',
-            $view,
-            'The bulk-selection counter must be a live region; it changes on every selection.',
-        );
-
-        $this->assertStringNotContainsString(
-            'row g-3 mb-4" aria-live',
-            $view,
-            'The static summary row must not be a live region; it never changes without a navigation.',
-        );
-    }
-
     public function test_tables_that_can_scroll_horizontally_are_wrapped(): void
     {
         // WCAG 1.4.10. `.table-responsive` is what stops a wide table pushing

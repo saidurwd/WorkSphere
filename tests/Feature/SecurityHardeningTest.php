@@ -84,10 +84,10 @@ class SecurityHardeningTest extends TestCase
 
     public function test_a_real_authenticated_page_still_renders_with_the_headers_applied(): void
     {
-        $user = $this->plainUser();
+        $user = $this->userWithPermissions(['todos.view']);
         Todo::factory()->createdBy($user)->create(['title' => 'Still visible']);
 
-        $response = $this->actingAs($user)->get(route('todos.index'));
+        $response = $this->actingAs($user)->get('/workspace/todos');
 
         $response->assertOk();
         $response->assertSee('Still visible');

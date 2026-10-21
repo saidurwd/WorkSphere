@@ -101,16 +101,15 @@ return [
             'label' => 'To-Dos',
             'icon' => 'check-square',
             'section' => 'Work tracking',
-            'active' => ['todos.*'],
+            'active' => ['filament.workspace.resources.todos.*', 'filament.workspace.pages.todo-*', 'filament.workspace.resources.todo-notification-logs.*'],
             'permission' => 'todos.view',
             'children' => [
-                ['label' => 'My To-Dos', 'icon' => 'inbox', 'route' => 'todos.index', 'active' => ['todos.index', 'todos.show', 'todos.create', 'todos.edit']],
-                ['label' => 'Inbox', 'icon' => 'download', 'route' => 'todos.inbox'],
-                ['label' => 'Calendar', 'icon' => 'calendar3', 'route' => 'todos.calendar'],
+                ['label' => 'My To-Dos', 'icon' => 'inbox', 'route' => 'filament.workspace.resources.todos.index', 'active' => ['filament.workspace.resources.todos.*']],
+                ['label' => 'Calendar', 'icon' => 'calendar3', 'route' => 'filament.workspace.pages.todo-calendar'],
                 // `todos.view_all`, NOT `report.view`: this screen reports on
                 // every user's To-Dos, which is the `view_all` question, and
                 // `report.view` is the permission for one's own completion summary.
-                ['label' => 'Reports', 'icon' => 'bar-chart-line', 'route' => 'todos.reports', 'permission' => 'todos.view_all'],
+                ['label' => 'Reports', 'icon' => 'bar-chart-line', 'route' => 'filament.workspace.pages.todo-reports', 'permission' => 'todos.view_all'],
             ],
         ],
 
@@ -249,7 +248,7 @@ return [
             'section' => 'Diagnostics',
             'admin' => true,
             'children' => [
-                ['label' => 'To-Do Notifications', 'icon' => 'check2-square', 'route' => 'todos.notification-logs.index', 'active' => ['todos.notification-logs.*'], 'permission' => 'todos.view_all'],
+                ['label' => 'To-Do Notifications', 'icon' => 'check2-square', 'route' => 'filament.workspace.resources.todo-notification-logs.index', 'active' => ['filament.workspace.resources.todo-notification-logs.*'], 'permission' => 'todos.view_all'],
                 ['label' => 'Task Notifications', 'icon' => 'list-task', 'route' => 'tasks.notification-logs.index', 'active' => ['tasks.notification-logs.*'], 'permission' => 'task.view_notification_logs'],
                 ['label' => 'Meeting Notifications', 'icon' => 'journal-text', 'route' => 'meetings.notification-logs.index', 'active' => ['meetings.notification-logs.*'], 'permission' => 'meeting.view_notification_logs'],
                 ['label' => 'Obligation Notifications', 'icon' => 'file-earmark-text', 'route' => 'obligations.notifications', 'active' => ['obligations.notifications*'], 'permission' => 'obligation.view_notification_logs'],

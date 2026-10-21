@@ -3,7 +3,13 @@
 namespace App\Search;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Modules\Meetings\Models\Meeting;
+use Modules\Obligations\Models\Obligation;
+use Modules\Projects\Models\Project;
+use Modules\Tasks\Models\Task;
+use Modules\Todos\Models\Todo;
 
 /**
  * The registry of searchable entities — GAP-035.
@@ -24,7 +30,7 @@ final class SearchIndex
     private static array $entities = [];
 
     /**
-     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $model
+     * @param  class-string<Model>  $model
      * @param  list<string>  $fields
      */
     public static function register(
@@ -98,10 +104,10 @@ final class SearchIndex
     {
         return [
             'todo' => [
-                'model' => \Modules\Todos\Models\Todo::class,
+                'model' => Todo::class,
                 'fields' => ['title', 'description'],
                 'permission' => 'todos.view',
-                'route' => 'todos.show',
+                'route' => 'filament.workspace.resources.todos.view',
                 'label' => 'To-Dos',
                 'titleColumn' => 'title',
                 'statusColumn' => 'status',
@@ -109,7 +115,7 @@ final class SearchIndex
                 'dateColumn' => 'due_date',
             ],
             'task' => [
-                'model' => \Modules\Tasks\Models\Task::class,
+                'model' => Task::class,
                 'fields' => ['title', 'description'],
                 'permission' => 'task.view',
                 'route' => 'tasks.show',
@@ -120,7 +126,7 @@ final class SearchIndex
                 'dateColumn' => 'due_date',
             ],
             'meeting' => [
-                'model' => \Modules\Meetings\Models\Meeting::class,
+                'model' => Meeting::class,
                 'fields' => ['title', 'description'],
                 'permission' => 'meeting.view',
                 'route' => 'meetings.show',
@@ -131,7 +137,7 @@ final class SearchIndex
                 'dateColumn' => 'meeting_date',
             ],
             'obligation' => [
-                'model' => \Modules\Obligations\Models\Obligation::class,
+                'model' => Obligation::class,
                 'fields' => ['title', 'description'],
                 'permission' => 'obligation.view',
                 'route' => 'obligations.show',
@@ -142,7 +148,7 @@ final class SearchIndex
                 'dateColumn' => 'expiry_date',
             ],
             'project' => [
-                'model' => \Modules\Projects\Models\Project::class,
+                'model' => Project::class,
                 'fields' => ['name', 'description'],
                 'permission' => 'project.view',
                 'route' => 'projects.show',

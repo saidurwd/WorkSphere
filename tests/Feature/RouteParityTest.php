@@ -233,20 +233,11 @@ class RouteParityTest extends TestCase
         $this->assertSame($expected, $actual);
     }
 
-    public function test_the_todo_surface_is_exactly_what_was_declared(): void
+    public function test_the_todo_surface_is_only_the_cross_module_links(): void
     {
+        // The Blade To-Do screens are gone; what remains under `todos.` is the
+        // cross-module surface the other modules' pages still post to.
         $expected = [
-            'todos.index', 'todos.inbox', 'todos.calendar', 'todos.create', 'todos.store',
-            'todos.show', 'todos.edit', 'todos.update', 'todos.destroy', 'todos.bulk',
-            'todos.complete', 'todos.reopen', 'todos.archive', 'todos.restore', 'todos.assign',
-            'todos.status', 'todos.reports', 'todos.reports.export',
-            'todos.notification-logs.index', 'todos.notification-logs.destroy',
-            'todos.checklist.store', 'todos.checklist.update', 'todos.checklist.destroy',
-            'todos.comments.store',
-            'todos.watchers.store', 'todos.watchers.destroy',
-            'todos.links.store', 'todos.links.destroy',
-            // Phase 7: one-click To-Do creation from another module, and the
-            // reverse navigation that answers "which To-Dos point at this record".
             'todos.links.from.action-item', 'todos.links.from.obligation',
             'todos.links.from.task', 'todos.links.reverse',
         ];

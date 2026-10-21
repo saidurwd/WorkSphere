@@ -11,13 +11,17 @@ use App\Models\Reminder;
 use App\Models\User;
 use App\Services\ReminderScheduler;
 use Carbon\CarbonImmutable;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
+use Livewire\Livewire;
 use Modules\Todos\Events\TodoAssigned;
 use Modules\Todos\Events\TodoReminderFired;
+use Modules\Todos\Filament\Resources\Todos\Pages\CreateTodo;
+use Modules\Todos\Filament\Resources\Todos\Pages\ViewTodo;
 use Modules\Todos\Jobs\SendTodoDueSoonJob;
 use Modules\Todos\Jobs\SendTodoNotificationJob;
 use Modules\Todos\Jobs\SendTodoOverdueJob;
@@ -416,9 +420,13 @@ class TodoRuntimeTest extends TestCase
 
         $user = $this->userWithPermissions(['todos.create', 'todos.create_for_others']);
 
-        $this->actingAs($user)
-            ->post(route('todos.store'), ['title' => 'Assigned straight away', 'assignee_id' => $this->plainUser()->id])
-            ->assertRedirect();
+        $this->actingAs($user);
+        Filament::setCurrentPanel('workspace');
+
+        Livewire::test(CreateTodo::class)
+            ->fillForm(['title' => 'Assigned straight away', 'assignee_id' => $this->plainUser()->id])
+            ->call('create')
+            ->assertHasNoFormErrors();
 
         Mail::assertNothingSent();
         Event::assertDispatched(TodoAssigned::class);
@@ -432,7 +440,14 @@ class TodoRuntimeTest extends TestCase
         $user = $this->plainUser();
         $todo = Todo::factory()->createdBy($user)->create(['status' => WorkItemStatus::InProgress]);
 
-        $this->actingAs($user)->post(route('todos.complete', $todo))->assertRedirect();
+        $this->actingAs($user);
+        Filament::setCurrentPanel('workspace');
+
+        Livewire::test(ViewTodo::class, ['record' => $todo->getKey()])
+            ->mountAction('complete')
+            ->callMountedAction();
+
+        $this->assertSame(WorkItemStatus::Completed, $todo->fresh()->status);
 
         Mail::assertNothingSent();
     }

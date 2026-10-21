@@ -24,7 +24,7 @@
             <div class="card-body">
                 <x-empty-state icon="inbox" title="Nothing waiting on you"
                                description="Work you are assigned to, watching, or that you created appears here.">
-                    <a href="{{ route('todos.index') }}" class="btn btn-sm btn-outline-secondary">Go to To-Dos</a>
+                    <a href="{{ route('filament.workspace.resources.todos.index') }}" class="btn btn-sm btn-outline-secondary">Go to To-Dos</a>
                 </x-empty-state>
             </div>
         @else

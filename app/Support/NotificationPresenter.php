@@ -51,7 +51,7 @@ final class NotificationPresenter
             // attacker-controllable and would turn the bell into an open redirect.
             'url' => $todoId === null || ! self::hasTodoRoute()
                 ? route('dashboard.index')
-                : route('todos.show', $todoId),
+                : route('filament.workspace.resources.todos.view', $todoId),
             'icon' => self::iconFor($type),
             'background' => self::backgroundFor($type),
             'timeAgo' => $notification->created_at?->diffForHumans() ?? '',
@@ -87,6 +87,6 @@ final class NotificationPresenter
      */
     protected static function hasTodoRoute(): bool
     {
-        return Route::has('todos.show');
+        return Route::has('filament.workspace.resources.todos.view');
     }
 }

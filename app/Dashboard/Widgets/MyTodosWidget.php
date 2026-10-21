@@ -68,7 +68,7 @@ class MyTodosWidget implements DashboardWidget
             'status_variant' => StatusBadge::variant($todo->status),
             'priority' => StatusBadge::label($todo->priority),
             'priority_variant' => StatusBadge::priorityVariant($todo->priority),
-            'url' => route('todos.show', $todo->id),
+            'url' => route('filament.workspace.resources.todos.view', $todo->id),
         ]);
     }
 

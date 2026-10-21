@@ -82,7 +82,7 @@ class TodoNotification extends Notification
             $mail->line('From: '.$this->actorName);
         }
 
-        return $mail->action('Open To-Do', route('todos.show', $this->todoId));
+        return $mail->action('Open To-Do', route('filament.workspace.resources.todos.view', $this->todoId));
     }
 
     /**

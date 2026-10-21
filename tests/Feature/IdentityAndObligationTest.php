@@ -87,7 +87,7 @@ class IdentityAndObligationTest extends TestCase
         $user->update(['status' => 'inactive']);
 
         $this->actingAs($user)
-            ->get(route('todos.index'))
+            ->get(route('dashboard.index'))
             ->assertRedirect(route('login'));
 
         $this->assertGuest();
@@ -97,7 +97,7 @@ class IdentityAndObligationTest extends TestCase
     {
         $user = User::factory()->create(['status' => 'active']);
 
-        $this->actingAs($user)->get(route('todos.index'))->assertOk();
+        $this->actingAs($user)->get(route('dashboard.index'))->assertOk();
     }
 
     public function test_a_new_user_defaults_to_an_unblocked_status(): void
@@ -111,7 +111,7 @@ class IdentityAndObligationTest extends TestCase
             ['inactive', 'suspended', 'disabled'],
         );
 
-        $this->actingAs($user)->get(route('todos.index'))->assertOk();
+        $this->actingAs($user)->get(route('dashboard.index'))->assertOk();
     }
 
     public function test_each_blocked_status_is_refused(): void
@@ -121,7 +121,7 @@ class IdentityAndObligationTest extends TestCase
             $user->update(['status' => $status]);
 
             $this->actingAs($user)
-                ->get(route('todos.index'))
+                ->get(route('dashboard.index'))
                 ->assertRedirect(route('login'), "Status '{$status}' was allowed through.");
         }
     }

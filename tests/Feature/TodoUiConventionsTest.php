@@ -208,7 +208,7 @@ class TodoUiConventionsTest extends TestCase
             },
         );
 
-        foreach (['todos.index', 'todos.inbox', 'todos.calendar', 'todos.reports'] as $route) {
+        foreach (['filament.workspace.resources.todos.index', 'filament.workspace.pages.todo-calendar', 'filament.workspace.pages.todo-reports'] as $route) {
             $this->assertContains($route, $flat, "{$route} is missing from the navigation tree.");
         }
     }

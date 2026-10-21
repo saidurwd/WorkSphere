@@ -135,7 +135,7 @@ class CrossModuleLinkController extends Controller
                 ->map(fn (Todo $todo): array => [
                     'id' => $todo->id,
                     'title' => $todo->title,
-                    'url' => route('todos.show', $todo),
+                    'url' => route('filament.workspace.resources.todos.view', $todo),
                 ])
                 ->all(),
         ]);

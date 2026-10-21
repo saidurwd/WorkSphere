@@ -165,7 +165,7 @@ class NavbarSearchBoxTest extends TestCase
         $this->actingAs($user)
             ->getJson(route('search.suggest', ['q' => 'quokka']))
             ->assertOk()
-            ->assertJsonPath('groups.0.results.0.url', route('todos.show', $todo));
+            ->assertJsonPath('groups.0.results.0.url', route('filament.workspace.resources.todos.view', $todo));
     }
 
     public function test_the_suggest_endpoint_hides_modules_the_user_cannot_see(): void

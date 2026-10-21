@@ -63,9 +63,8 @@ class PageBenchmark
             ['label' => 'obligations dashboard', 'uri' => '/obligations/dashboard', 'kind' => 'web', 'budget' => 30, 'needs' => []],
 
             // Index pages.
-            ['label' => 'todos index', 'uri' => '/todos', 'kind' => 'web', 'budget' => 20, 'needs' => []],
-            ['label' => 'todos inbox', 'uri' => '/todos/inbox', 'kind' => 'web', 'budget' => 20, 'needs' => []],
-            ['label' => 'todos calendar', 'uri' => '/todos/calendar', 'kind' => 'web', 'budget' => 20, 'needs' => []],
+            ['label' => 'todos index', 'uri' => '/workspace/todos', 'kind' => 'web', 'budget' => 20, 'needs' => []],
+            ['label' => 'todos calendar', 'uri' => '/workspace/todo-calendar', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'tasks index', 'uri' => '/tasks', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'meetings index', 'uri' => '/meetings', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'meetings action items', 'uri' => '/meetings/action-items', 'kind' => 'web', 'budget' => 20, 'needs' => []],
@@ -79,14 +78,14 @@ class PageBenchmark
             ['label' => 'tasks report', 'uri' => '/reports/tasks', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'task workload report', 'uri' => '/reports/task-workload', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'meetings overdue report', 'uri' => '/meetings/reports/overdue', 'kind' => 'web', 'budget' => 20, 'needs' => []],
-            ['label' => 'todos report', 'uri' => '/todos/reports', 'kind' => 'web', 'budget' => 20, 'needs' => []],
+            ['label' => 'todos report', 'uri' => '/workspace/todo-reports', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'meetings report', 'uri' => '/meetings/reports', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'obligations report', 'uri' => '/obligations/reports', 'kind' => 'web', 'budget' => 20, 'needs' => []],
 
             // Detail pages — the N+1 risk, since one parent renders a collection.
-            ['label' => 'todo show', 'uri' => '/todos/{todo}', 'kind' => 'web', 'budget' => 25, 'needs' => ['todo']],
+            ['label' => 'todo show', 'uri' => '/workspace/todos/{todo}', 'kind' => 'web', 'budget' => 25, 'needs' => ['todo']],
             ['label' => 'task show', 'uri' => '/tasks/{task}', 'kind' => 'web', 'budget' => 25, 'needs' => ['task']],
-            ['label' => 'todos notification log', 'uri' => '/todos/notification-logs', 'kind' => 'web', 'budget' => 20, 'needs' => []],
+            ['label' => 'todos notification log', 'uri' => '/workspace/todo-notification-logs', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'tasks notification log', 'uri' => '/tasks/notification-logs', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'meeting show', 'uri' => '/meetings/{meeting}', 'kind' => 'web', 'budget' => 30, 'needs' => ['meeting']],
             ['label' => 'meeting participants', 'uri' => '/meetings/{meeting}/participants', 'kind' => 'web', 'budget' => 20, 'needs' => ['meeting']],
