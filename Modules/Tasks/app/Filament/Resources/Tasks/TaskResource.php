@@ -28,6 +28,11 @@ use Modules\Tasks\Filament\Resources\Tasks\Pages\CreateTask;
 use Modules\Tasks\Filament\Resources\Tasks\Pages\EditTask;
 use Modules\Tasks\Filament\Resources\Tasks\Pages\ListTasks;
 use Modules\Tasks\Filament\Resources\Tasks\Pages\ViewTask;
+use Modules\Tasks\Filament\Resources\Tasks\RelationManagers\RemarksRelationManager;
+use Modules\Tasks\Filament\Resources\Tasks\RelationManagers\SubtasksRelationManager;
+use Modules\Tasks\Filament\Resources\Tasks\RelationManagers\TagsRelationManager;
+use Modules\Tasks\Filament\Resources\Tasks\RelationManagers\TimeEntriesRelationManager;
+use Modules\Tasks\Filament\Resources\Tasks\RelationManagers\WatchersRelationManager;
 use Modules\Tasks\Models\Task;
 
 /**
@@ -162,6 +167,17 @@ class TaskResource extends Resource
                 EditAction::make(),
                 DeleteAction::make(),
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            SubtasksRelationManager::class,
+            RemarksRelationManager::class,
+            TimeEntriesRelationManager::class,
+            WatchersRelationManager::class,
+            TagsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

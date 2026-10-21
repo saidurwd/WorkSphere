@@ -3,9 +3,12 @@
 namespace Tests\Feature;
 
 use App\Enums\WorkItemStatus;
+use App\Models\User;
+use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use Modules\Tasks\Events\TaskAssigned;
 use Modules\Tasks\Events\TaskCompleted;
@@ -14,6 +17,12 @@ use Modules\Tasks\Events\TaskUpdated;
 use Modules\Tasks\Filament\Resources\Tasks\Pages\CreateTask;
 use Modules\Tasks\Filament\Resources\Tasks\Pages\EditTask;
 use Modules\Tasks\Filament\Resources\Tasks\Pages\ListTasks;
+use Modules\Tasks\Filament\Resources\Tasks\Pages\ViewTask;
+use Modules\Tasks\Filament\Resources\Tasks\RelationManagers\RemarksRelationManager;
+use Modules\Tasks\Filament\Resources\Tasks\RelationManagers\SubtasksRelationManager;
+use Modules\Tasks\Filament\Resources\Tasks\RelationManagers\TagsRelationManager;
+use Modules\Tasks\Filament\Resources\Tasks\RelationManagers\TimeEntriesRelationManager;
+use Modules\Tasks\Filament\Resources\Tasks\RelationManagers\WatchersRelationManager;
 use Modules\Tasks\Models\Task;
 use Tests\InteractsWithRoles;
 use Tests\TestCase;
@@ -160,5 +169,134 @@ class FilamentTaskResourceTest extends TestCase
         $this->actingAs($this->userWithPermissions(['task.view', 'task.delete']));
         Livewire::test(ListTasks::class)->callTableAction('delete', $task);
         $this->assertModelMissing($task);
+    }
+
+    private function manager(string $class, Task $task): Testable
+    {
+        return Livewire::test($class, ['ownerRecord' => $task, 'pageClass' => ViewTask::class]);
+    }
+
+    private function ownedTask(User $user): Task
+    {
+        return Task::factory()->create(['user_id' => $user->id, 'responsible_user_id' => $user->id, 'priority' => 'medium']);
+    }
+
+    public function test_a_remark_is_added_and_mirrored_into_the_comment_thread(): void
+    {
+        $user = $this->userWithPermissions(['task.create']);
+        $task = $this->ownedTask($user);
+        $this->actingAs($user);
+
+        $this->manager(RemarksRelationManager::class, $task)
+            ->callAction(TestAction::make('create')->table(), ['remark' => 'Waiting on legal']);
+
+        $this->assertDatabaseHas('task_remarks', ['task_id' => $task->id, 'remark' => 'Waiting on legal', 'user_id' => $user->id]);
+        $this->assertSame('Waiting on legal', $task->sharedComments()->value('body'));
+    }
+
+    public function test_a_stranger_cannot_add_a_remark(): void
+    {
+        $this->actingAs($this->plainUser());
+        $task = Task::factory()->create();
+
+        $this->manager(RemarksRelationManager::class, $task)
+            ->assertActionHidden(TestAction::make('create')->table());
+    }
+
+    public function test_a_subtask_is_created_under_the_parent(): void
+    {
+        $user = $this->userWithPermissions(['task.create']);
+        $task = $this->ownedTask($user);
+        $this->actingAs($user);
+
+        $this->manager(SubtasksRelationManager::class, $task)
+            ->callAction(TestAction::make('create')->table(), ['title' => 'Child step']);
+
+        $child = Task::query()->where('title', 'Child step')->firstOrFail();
+        $this->assertSame($task->id, $child->parent_id);
+        $this->assertSame('pending', $child->status->value);
+        $this->assertSame($user->id, $child->responsible_user_id);
+    }
+
+    public function test_time_is_logged_and_the_actual_minutes_follow(): void
+    {
+        $user = $this->userWithPermissions(['task.create']);
+        $task = $this->ownedTask($user);
+        $this->actingAs($user);
+
+        $this->manager(TimeEntriesRelationManager::class, $task)
+            ->callAction(TestAction::make('create')->table(), ['minutes' => 90, 'logged_on' => now()->toDateString()]);
+
+        $this->assertSame(90, $task->fresh()->actual_minutes);
+        $entry = $task->timeEntries()->firstOrFail();
+
+        $this->manager(TimeEntriesRelationManager::class, $task)
+            ->callAction(TestAction::make('delete')->table($entry));
+
+        $this->assertSame(0, (int) $task->fresh()->actual_minutes);
+        $this->assertDatabaseHas('activity_logs', ['action' => 'time_removed']);
+    }
+
+    public function test_a_watcher_cannot_log_time_for_the_task(): void
+    {
+        $watcher = $this->userWithPermissions(['task.view']);
+        $task = Task::factory()->create(['priority' => 'medium']);
+        $task->watchers()->create(['user_id' => $watcher->id]);
+        $this->actingAs($watcher);
+
+        $this->manager(TimeEntriesRelationManager::class, $task)
+            ->assertActionHidden(TestAction::make('create')->table());
+    }
+
+    public function test_watchers_can_be_added_and_removed_by_someone_who_manages_them(): void
+    {
+        $user = $this->userWithPermissions(['task.create']);
+        $other = $this->plainUser();
+        $task = $this->ownedTask($user);
+        $this->actingAs($user);
+
+        $this->manager(WatchersRelationManager::class, $task)
+            ->callAction(TestAction::make('create')->table(), ['user_id' => $other->id]);
+        $this->assertTrue($task->watchers()->where('user_id', $other->id)->exists());
+
+        $this->manager(WatchersRelationManager::class, $task)
+            ->callAction(TestAction::make('delete')->table($task->watchers()->firstOrFail()));
+        $this->assertFalse($task->watchers()->where('user_id', $other->id)->exists());
+    }
+
+    public function test_tags_are_attached_by_name_and_detached(): void
+    {
+        $user = $this->userWithPermissions(['task.create']);
+        $task = $this->ownedTask($user);
+        $this->actingAs($user);
+
+        $this->manager(TagsRelationManager::class, $task)
+            ->callAction(TestAction::make('create')->table(), ['tag' => 'finance']);
+
+        $tag = $task->tags()->where('name', 'finance')->firstOrFail();
+
+        $this->manager(TagsRelationManager::class, $task)
+            ->callAction(TestAction::make('detach')->table($tag));
+
+        $this->assertFalse($task->tags()->where('name', 'finance')->exists());
+    }
+
+    public function test_a_move_that_would_create_a_cycle_is_refused(): void
+    {
+        $user = $this->userWithPermissions(['task.create']);
+        $parent = $this->ownedTask($user);
+        $child = Task::factory()->create(['user_id' => $user->id, 'responsible_user_id' => $user->id, 'parent_id' => $parent->id, 'priority' => 'medium']);
+        $this->actingAs($user);
+
+        Livewire::test(ViewTask::class, ['record' => $parent->getKey()])
+            ->callAction('reparent', ['parent_id' => $child->id])
+            ->assertNotified();
+
+        $this->assertNull($parent->fresh()->parent_id);
+
+        Livewire::test(ViewTask::class, ['record' => $child->getKey()])
+            ->callAction('reparent', ['parent_id' => null]);
+
+        $this->assertNull($child->fresh()->parent_id);
     }
 }
