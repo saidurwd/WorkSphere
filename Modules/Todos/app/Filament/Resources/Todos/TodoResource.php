@@ -22,6 +22,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -64,7 +65,9 @@ class TodoResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['assignee:id,name', 'department:id,department_name']);
+        return parent::getEloquentQuery()
+            ->with(['assignee:id,name', 'department:id,department_name'])
+            ->withCount(['comments', 'checklistItems']);
     }
 
     public static function form(Schema $schema): Schema
@@ -121,12 +124,27 @@ class TodoResource extends Resource
                 TextColumn::make('priority')->badge()->formatStateUsing(fn (Priority $state): string => $state->label()),
                 TextColumn::make('assignee.name')->label('Assignee')->placeholder('-')->toggleable(),
                 TextColumn::make('due_date')->date()->sortable()->placeholder('-'),
+                TextColumn::make('checklist_items_count')->label('Checklist')->counts('checklistItems')->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('comments_count')->label('Comments')->counts('comments')->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('due_date')
+            // Dated work first, newest due date first, undated last — the order the
+            // Blade list used.
+            ->defaultSort(fn (Builder $query): Builder => $query->orderByRaw('due_date IS NULL, due_date DESC')->orderByDesc('id'))
             ->filters([
                 SelectFilter::make('status')->options(collect(WorkItemStatus::cases())->mapWithKeys(fn (WorkItemStatus $s): array => [$s->value => $s->label()])->all()),
                 SelectFilter::make('priority')->options(collect(Priority::cases())->mapWithKeys(fn (Priority $p): array => [$p->value => $p->label()])->all()),
-                SelectFilter::make('assignee_id')->label('Assignee')->relationship('assignee', 'name')->searchable()->preload(),
+                SelectFilter::make('visibility')->options(collect(Visibility::cases())->mapWithKeys(fn (Visibility $v): array => [$v->value => $v->label()])->all()),
+                SelectFilter::make('assignee_id')
+                    ->label('Assignee')
+                    ->options(fn (): array => ['none' => 'Unassigned'] + User::query()->orderBy('name')->limit(200)->pluck('name', 'id')->all())
+                    ->searchable()
+                    ->query(fn (Builder $query, array $data): Builder => match ($data['value'] ?? null) {
+                        null, '' => $query,
+                        'none' => $query->whereNull('assignee_id'),
+                        default => $query->where('assignee_id', $data['value']),
+                    }),
+                Filter::make('overdue')->toggle()->query(fn (Builder $query): Builder => $query->overdue()),
+                Filter::make('recurring')->toggle()->query(fn (Builder $query): Builder => $query->recurring()),
             ])
             ->recordActions([
                 ViewAction::make(),

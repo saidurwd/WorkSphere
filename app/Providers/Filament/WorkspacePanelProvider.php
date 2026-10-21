@@ -34,6 +34,7 @@ class WorkspacePanelProvider extends PanelProvider
             ])
             ->discoverResources(in: base_path('Modules/Todos/app/Filament/Resources'), for: 'Modules\Todos\Filament\Resources')
 
+            ->discoverPages(in: base_path('Modules/Todos/app/Filament/Pages'), for: 'Modules\\Todos\\Filament\\Pages')
             ->pages([
                 Dashboard::class,
             ])

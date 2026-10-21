@@ -13,6 +13,7 @@ use Livewire\Livewire;
 use Modules\Tasks\Models\Task;
 use Modules\Todos\Events\TodoCommented;
 use Modules\Todos\Events\TodoMentioned;
+use Modules\Todos\Filament\Pages\TodoCalendar;
 use Modules\Todos\Filament\Resources\Todos\Pages\CreateTodo;
 use Modules\Todos\Filament\Resources\Todos\Pages\EditTodo;
 use Modules\Todos\Filament\Resources\Todos\Pages\ListTodos;
@@ -343,5 +344,64 @@ class FilamentTodoResourceTest extends TestCase
         $this->actingAs($user);
 
         Livewire::test(ViewTodo::class, ['record' => $todo->getKey()])->assertActionHidden('recurrence');
+    }
+
+    public function test_the_inbox_tab_and_filters_narrow_the_list(): void
+    {
+        $user = $this->userWithPermissions(['todos.create']);
+        $base = ['creator_id' => $user->id, 'assignee_id' => $user->id];
+        $inbox = Todo::factory()->create($base + ['status' => WorkItemStatus::Inbox]);
+        $late = Todo::factory()->create($base + ['status' => WorkItemStatus::InProgress, 'due_date' => now()->subDays(3)]);
+        $onTime = Todo::factory()->create($base + ['status' => WorkItemStatus::InProgress, 'due_date' => now()->addDays(3)]);
+        $this->actingAs($user);
+
+        Livewire::test(ListTodos::class)
+            ->set('activeTab', 'inbox')
+            ->assertCanSeeTableRecords([$inbox])
+            ->assertCanNotSeeTableRecords([$late, $onTime]);
+
+        Livewire::test(ListTodos::class)
+            ->filterTable('overdue')
+            ->assertCanSeeTableRecords([$late])
+            ->assertCanNotSeeTableRecords([$onTime, $inbox]);
+    }
+
+    public function test_the_assignee_filter_can_find_unassigned_todos(): void
+    {
+        $user = $this->userWithPermissions(['todos.create']);
+        $unassigned = Todo::factory()->create(['creator_id' => $user->id, 'assignee_id' => null]);
+        $mine = Todo::factory()->create(['creator_id' => $user->id, 'assignee_id' => $user->id]);
+        $this->actingAs($user);
+
+        Livewire::test(ListTodos::class)
+            ->filterTable('assignee_id', 'none')
+            ->assertCanSeeTableRecords([$unassigned])
+            ->assertCanNotSeeTableRecords([$mine]);
+    }
+
+    public function test_the_calendar_shows_visible_open_todos_on_their_due_date(): void
+    {
+        $user = $this->userWithPermissions(['todos.create']);
+        $date = now()->startOfMonth()->addDays(9);
+        $mine = Todo::factory()->create([
+            'title' => 'Ship the release', 'creator_id' => $user->id, 'assignee_id' => $user->id,
+            'status' => WorkItemStatus::InProgress, 'due_date' => $date,
+        ]);
+        $done = Todo::factory()->create([
+            'title' => 'Already finished', 'creator_id' => $user->id, 'assignee_id' => $user->id,
+            'status' => WorkItemStatus::Completed, 'due_date' => $date,
+        ]);
+        Todo::factory()->create(['title' => 'Strangers secret', 'status' => WorkItemStatus::InProgress, 'due_date' => $date]);
+        $this->actingAs($user);
+
+        Livewire::test(TodoCalendar::class)
+            ->assertSee('Ship the release')
+            ->assertDontSee($done->title)
+            ->assertDontSee('Strangers secret')
+            ->call('shift', 1)
+            ->assertDontSee('Ship the release')
+            ->call('today')
+            ->call('setMode', 'week')
+            ->assertSet('mode', 'week');
     }
 }
