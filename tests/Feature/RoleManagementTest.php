@@ -2,12 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\Roles\Pages\CreateRole;
+use App\Filament\Resources\Roles\Pages\EditRole;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\RolePermission;
 use App\Models\User;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\InteractsWithRoles;
 use Tests\TestCase;
 
@@ -37,31 +40,34 @@ class RoleManagementTest extends TestCase
 
     public function test_a_role_can_be_created_with_permissions(): void
     {
-        $admin = $this->administrator();
+        $this->actingAs($this->administrator());
 
         $permissions = Permission::factory()->count(3)->create();
 
-        $response = $this->actingAs($admin)->post(route('admin.roles.store'), [
-            'name' => 'Auditor',
-            'slug' => 'auditor',
-            'description' => 'Read-only across the platform.',
-            'permissions' => $permissions->pluck('id')->all(),
-        ]);
-
-        $response->assertRedirect(route('admin.roles.index'))->assertSessionHas('success');
+        Livewire::test(CreateRole::class)
+            ->fillForm([
+                'name' => 'Auditor',
+                'slug' => 'auditor',
+                'description' => 'Read-only across the platform.',
+                'permissions' => $permissions->pluck('id')->map(strval(...))->all(),
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
 
         $role = Role::query()->where('slug', 'auditor')->firstOrFail();
 
         // The point of the fix: no exception, AND the grants actually exist.
-        $this->assertTrue($role->exists);
         $this->assertCount(3, $role->permissions);
     }
 
     public function test_a_role_can_be_created_without_permissions(): void
     {
-        $this->actingAs($this->administrator())
-            ->post(route('admin.roles.store'), ['name' => 'Empty', 'slug' => 'empty-role'])
-            ->assertRedirect(route('admin.roles.index'));
+        $this->actingAs($this->administrator());
+
+        Livewire::test(CreateRole::class)
+            ->fillForm(['name' => 'Empty', 'slug' => 'empty-role'])
+            ->call('create')
+            ->assertHasNoFormErrors();
 
         $role = Role::query()->where('slug', 'empty-role')->firstOrFail();
 
@@ -71,16 +77,18 @@ class RoleManagementTest extends TestCase
 
     public function test_a_role_can_be_saved_with_permissions(): void
     {
-        $admin = $this->administrator();
+        $this->actingAs($this->administrator());
 
         $role = Role::factory()->create(['name' => 'Before', 'slug' => 'editable']);
         $permissions = Permission::factory()->count(2)->create();
 
-        $this->actingAs($admin)->put(route('admin.roles.update', $role), [
-            'name' => 'After',
-            'slug' => 'editable',
-            'permissions' => $permissions->pluck('id')->all(),
-        ])->assertRedirect(route('admin.roles.index'))->assertSessionHas('success');
+        Livewire::test(EditRole::class, ['record' => $role->getKey()])
+            ->fillForm([
+                'name' => 'After',
+                'permissions' => $permissions->pluck('id')->map(strval(...))->all(),
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
 
         $role->refresh();
 
@@ -90,7 +98,7 @@ class RoleManagementTest extends TestCase
 
     public function test_saving_replaces_the_permission_set_rather_than_adding_to_it(): void
     {
-        $admin = $this->administrator();
+        $this->actingAs($this->administrator());
 
         $role = Role::factory()->create();
         $permissions = Permission::factory()->count(4)->create();
@@ -98,11 +106,10 @@ class RoleManagementTest extends TestCase
         $role->syncPermissions($permissions->take(3)->pluck('id')->all());
         $this->assertCount(3, $role->permissions);
 
-        $this->actingAs($admin)->put(route('admin.roles.update', $role), [
-            'name' => $role->name,
-            'slug' => $role->slug,
-            'permissions' => $permissions->take(1)->pluck('id')->all(),
-        ])->assertRedirect();
+        Livewire::test(EditRole::class, ['record' => $role->getKey()])
+            ->fillForm(['permissions' => $permissions->take(1)->pluck('id')->map(strval(...))->all()])
+            ->call('save')
+            ->assertHasNoFormErrors();
 
         // Additive syncing would make it impossible to REMOVE a grant, which is
         // how a demotion silently fails to take effect.
@@ -111,36 +118,35 @@ class RoleManagementTest extends TestCase
 
     public function test_unticking_every_permission_removes_them_all(): void
     {
-        $admin = $this->administrator();
+        $this->actingAs($this->administrator());
 
         $role = Role::factory()->create();
         $role->syncPermissions(Permission::factory()->count(2)->create()->pluck('id')->all());
 
-        $this->actingAs($admin)->put(route('admin.roles.update', $role), [
-            'name' => $role->name,
-            'slug' => $role->slug,
-            'permissions' => [],
-        ])->assertRedirect();
+        Livewire::test(EditRole::class, ['record' => $role->getKey()])
+            ->fillForm(['permissions' => []])
+            ->call('save')
+            ->assertHasNoFormErrors();
 
         // An empty array means "this role has no permissions", which is a
         // legitimate thing to do. Ignoring it would make the form look broken.
         $this->assertCount(0, $role->fresh()->permissions);
     }
 
-    public function test_an_update_that_omits_permissions_leaves_them_alone(): void
+    public function test_editing_other_fields_keeps_the_existing_permissions(): void
     {
-        $admin = $this->administrator();
+        $this->actingAs($this->administrator());
 
         $role = Role::factory()->create();
-        $permissions = Permission::factory()->count(2)->create();
-        $role->syncPermissions($permissions->pluck('id')->all());
+        $role->syncPermissions(Permission::factory()->count(2)->create()->pluck('id')->all());
 
-        $this->actingAs($admin)->put(route('admin.roles.update', $role), [
-            'name' => 'Renamed',
-            'slug' => $role->slug,
-        ])->assertRedirect();
+        // The edit form is pre-filled with the current grants, so a rename alone
+        // must not revoke them.
+        Livewire::test(EditRole::class, ['record' => $role->getKey()])
+            ->fillForm(['name' => 'Renamed'])
+            ->call('save')
+            ->assertHasNoFormErrors();
 
-        // A partial edit from another screen must not silently revoke grants.
         $this->assertSame('Renamed', $role->fresh()->name);
         $this->assertCount(2, $role->fresh()->permissions);
     }
@@ -174,30 +180,35 @@ class RoleManagementTest extends TestCase
 
     public function test_a_role_name_and_slug_are_required(): void
     {
-        $this->actingAs($this->administrator())
-            ->post(route('admin.roles.store'), [])
-            ->assertSessionHasErrors(['name', 'slug']);
+        $this->actingAs($this->administrator());
+
+        Livewire::test(CreateRole::class)
+            ->fillForm(['name' => null, 'slug' => null])
+            ->call('create')
+            ->assertHasFormErrors(['name' => 'required', 'slug' => 'required']);
     }
 
     public function test_a_duplicate_slug_is_refused(): void
     {
         Role::factory()->create(['slug' => 'taken']);
 
-        $this->actingAs($this->administrator())
-            ->post(route('admin.roles.store'), ['name' => 'Another', 'slug' => 'taken'])
-            ->assertSessionHasErrors('slug');
+        $this->actingAs($this->administrator());
+
+        Livewire::test(CreateRole::class)
+            ->fillForm(['name' => 'Another', 'slug' => 'taken'])
+            ->call('create')
+            ->assertHasFormErrors(['slug' => 'unique']);
     }
 
     public function test_system_roles_cannot_be_deleted(): void
     {
-        $admin = $this->administrator();
+        $this->actingAs($this->administrator());
 
         // The super-admin role already exists — this test's own helper created one.
         $role = Role::query()->where('slug', 'super-admin')->firstOrFail();
 
-        $this->actingAs($admin)
-            ->delete(route('admin.roles.destroy', $role))
-            ->assertSessionHas('error');
+        Livewire::test(EditRole::class, ['record' => $role->getKey()])
+            ->assertActionHidden('delete');
 
         $this->assertDatabaseHas('roles', ['id' => $role->id]);
     }
