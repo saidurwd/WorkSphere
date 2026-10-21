@@ -14,6 +14,7 @@ use Modules\Tasks\Models\Task;
 use Modules\Todos\Events\TodoCommented;
 use Modules\Todos\Events\TodoMentioned;
 use Modules\Todos\Filament\Pages\TodoCalendar;
+use Modules\Todos\Filament\Pages\TodoReports;
 use Modules\Todos\Filament\Resources\Todos\Pages\CreateTodo;
 use Modules\Todos\Filament\Resources\Todos\Pages\EditTodo;
 use Modules\Todos\Filament\Resources\Todos\Pages\ListTodos;
@@ -403,5 +404,37 @@ class FilamentTodoResourceTest extends TestCase
             ->call('today')
             ->call('setMode', 'week')
             ->assertSet('mode', 'week');
+    }
+
+    public function test_reports_aggregate_across_people_for_those_who_may_view_all(): void
+    {
+        $viewer = $this->userWithPermissions(['todos.view_all']);
+        $worker = User::factory()->create(['name' => 'Report Worker']);
+        Todo::factory()->create([
+            'creator_id' => $worker->id, 'assignee_id' => $worker->id,
+            'status' => WorkItemStatus::Completed, 'completed_at' => now(),
+        ]);
+        $this->actingAs($viewer);
+
+        Livewire::test(TodoReports::class)
+            ->assertOk()
+            ->assertSee('Completion by person')
+            ->assertSee('Report Worker');
+    }
+
+    public function test_the_completion_export_is_a_csv_download(): void
+    {
+        $this->actingAs($this->userWithPermissions(['todos.view_all']));
+
+        Livewire::test(TodoReports::class)
+            ->call('exportCompletion')
+            ->assertFileDownloaded('todo-completion-'.now()->startOfMonth()->toDateString().'-'.now()->endOfMonth()->toDateString().'.csv');
+    }
+
+    public function test_reports_are_closed_without_view_all(): void
+    {
+        $this->actingAs($this->userWithPermissions(['todos.create']));
+
+        $this->get('/workspace/todo-reports')->assertForbidden();
     }
 }
