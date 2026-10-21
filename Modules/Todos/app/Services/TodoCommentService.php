@@ -66,6 +66,33 @@ class TodoCommentService
     }
 
     /**
+     * The users a comment body names with `@name` or `@email`.
+     *
+     * Parsed server-side from the body, never taken from the client: accepting an
+     * id list would let a client post a comment that names nobody, or mention
+     * someone the text does not.
+     *
+     * @return list<int>
+     */
+    public static function mentionedUserIds(string $body): array
+    {
+        preg_match_all('/@([A-Za-z0-9._-]+)/', $body, $matches);
+
+        $handles = array_unique($matches[1] ?? []);
+
+        if ($handles === []) {
+            return [];
+        }
+
+        return User::query()
+            ->whereIn('name', $handles)
+            ->orWhereIn('email', $handles)
+            ->pluck('id')
+            ->map(fn (mixed $id): int => (int) $id)
+            ->all();
+    }
+
+    /**
      * @return Collection<int, Comment>
      */
     public function thread(Todo $todo): Collection

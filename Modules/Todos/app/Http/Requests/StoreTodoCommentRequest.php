@@ -2,9 +2,9 @@
 
 namespace Modules\Todos\Http\Requests;
 
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Modules\Todos\Services\TodoCommentService;
 
 /**
  * Comment on a To-Do.
@@ -58,19 +58,6 @@ class StoreTodoCommentRequest extends FormRequest
      */
     public function mentionedUserIds(): array
     {
-        preg_match_all('/@([A-Za-z0-9._-]+)/', (string) $this->input('body'), $matches);
-
-        $handles = array_unique($matches[1] ?? []);
-
-        if ($handles === []) {
-            return [];
-        }
-
-        return User::query()
-            ->whereIn('name', $handles)
-            ->orWhereIn('email', $handles)
-            ->pluck('id')
-            ->map(fn (mixed $id): int => (int) $id)
-            ->all();
+        return TodoCommentService::mentionedUserIds((string) $this->input('body'));
     }
 }
