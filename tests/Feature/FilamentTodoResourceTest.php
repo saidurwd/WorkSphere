@@ -297,4 +297,51 @@ class FilamentTodoResourceTest extends TestCase
         $this->actingAs($this->userWithPermissions(['todos.create', 'task.view'], attachTo: $user));
         $this->manager(LinksRelationManager::class, $todo)->assertCanSeeTableRecords([$link]);
     }
+
+    public function test_a_repeat_rule_can_be_set_and_cleared_with_the_permission(): void
+    {
+        $user = $this->userWithPermissions(['todos.create', 'todos.manage_recurrence']);
+        $todo = Todo::factory()->create(['creator_id' => $user->id, 'assignee_id' => $user->id]);
+        $this->actingAs($user);
+
+        Livewire::test(ViewTodo::class, ['record' => $todo->getKey()])
+            ->callAction('recurrence', [
+                'frequency' => 'weekly',
+                'interval' => 1,
+                'by_weekday' => [1, 3],
+                'start_date' => '2026-11-01',
+                'max_occurrences' => 5,
+            ]);
+
+        $rule = $todo->fresh()->recurrence_rule;
+        $this->assertSame('weekly', $rule['frequency']);
+        $this->assertSame([1, 3], $rule['by_weekday']);
+
+        Livewire::test(ViewTodo::class, ['record' => $todo->getKey()])
+            ->callAction('recurrence', ['frequency' => 'weekly', 'start_date' => '2026-11-01'], ['clear' => true]);
+
+        $this->assertNull($todo->fresh()->recurrence_rule);
+    }
+
+    public function test_a_repeat_rule_without_an_end_is_refused(): void
+    {
+        $user = $this->userWithPermissions(['todos.create', 'todos.manage_recurrence']);
+        $todo = Todo::factory()->create(['creator_id' => $user->id, 'assignee_id' => $user->id]);
+        $this->actingAs($user);
+
+        Livewire::test(ViewTodo::class, ['record' => $todo->getKey()])
+            ->callAction('recurrence', ['frequency' => 'daily', 'start_date' => '2026-11-01'])
+            ->assertNotified();
+
+        $this->assertNull($todo->fresh()->recurrence_rule);
+    }
+
+    public function test_repeating_needs_the_manage_recurrence_permission(): void
+    {
+        $user = $this->userWithPermissions(['todos.create']);
+        $todo = Todo::factory()->create(['creator_id' => $user->id, 'assignee_id' => $user->id]);
+        $this->actingAs($user);
+
+        Livewire::test(ViewTodo::class, ['record' => $todo->getKey()])->assertActionHidden('recurrence');
+    }
 }
