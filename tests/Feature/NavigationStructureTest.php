@@ -547,7 +547,7 @@ class NavigationStructureTest extends TestCase
         $user = $this->superAdmin(['obligation.view', 'obligation.view_reports']);
 
         $this->actingAs($user);
-        $this->get('/obligations/renewals')->assertOk();
+        $this->get('/workspace/obligation-renewals')->assertOk();
 
         $menu = app(NavigationMenu::class);
 
@@ -572,7 +572,7 @@ class NavigationStructureTest extends TestCase
         ]);
 
         foreach ([
-            '/dashboard', '/workspace/todos', '/workspace/tasks', '/meetings', '/obligations', '/workspace/projects',
+            '/dashboard', '/workspace/todos', '/workspace/tasks', '/meetings', '/workspace/obligations', '/workspace/projects',
             '/my-work', '/admin/users', '/admin/employees', '/reports/tasks',
         ] as $uri) {
             $this->actingAs($user)->get($uri)->assertOk();
@@ -581,9 +581,11 @@ class NavigationStructureTest extends TestCase
 
     public function test_the_menu_marks_its_expanded_state_for_assistive_technology(): void
     {
-        $user = $this->superAdmin(['obligation.view']);
+        // A page that renders the application layout (and so this menu) from inside
+        // a branch. The Filament panel draws its own navigation.
+        $user = $this->superAdmin(['task.view', 'report.view']);
 
-        $html = $this->actingAs($user)->get('/obligations')->assertOk()->getContent();
+        $html = $this->actingAs($user)->get('/reports/tasks')->assertOk()->getContent();
 
         // Without it a screen reader cannot distinguish an expanded group from a
         // collapsed one, and the previous tree had no state attribute at all.

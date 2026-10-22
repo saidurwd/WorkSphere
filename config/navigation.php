@@ -186,20 +186,20 @@ return [
         [
             'label' => 'Obligations',
             'icon' => 'file-earmark-text',
-            'active' => ['obligations.*'],
+            'active' => ['filament.workspace.resources.obligations.*', 'filament.workspace.resources.obligation-*', 'filament.workspace.resources.vendors.*', 'filament.workspace.pages.obligation-*', 'filament.workspace.pages.my-obligation-tasks'],
             'permission' => 'obligation.view',
             'children' => [
-                ['label' => 'Overview', 'icon' => 'speedometer2', 'route' => 'obligations.dashboard'],
-                ['label' => 'Register', 'icon' => 'journal-check', 'route' => 'obligations.index', 'active' => ['obligations.index', 'obligations.show', 'obligations.create', 'obligations.edit', 'obligations.renew.*']],
-                ['label' => 'My Tasks', 'icon' => 'list-task', 'route' => 'obligations.my-tasks'],
-                ['label' => 'Calendar', 'icon' => 'calendar3', 'route' => 'obligations.calendar'],
-                ['label' => 'Renewals', 'icon' => 'arrow-repeat', 'route' => 'obligations.renewals'],
-                ['label' => 'Vendors', 'icon' => 'building', 'route' => 'obligations.vendors'],
-                ['label' => 'Documents', 'icon' => 'folder', 'route' => 'obligations.documents', 'permission' => 'obligation.manage_documents'],
+                ['label' => 'Overview', 'icon' => 'speedometer2', 'route' => 'filament.workspace.pages.obligation-overview'],
+                ['label' => 'Register', 'icon' => 'journal-check', 'route' => 'filament.workspace.resources.obligations.index', 'active' => ['filament.workspace.resources.obligations.*']],
+                ['label' => 'My Tasks', 'icon' => 'list-task', 'route' => 'filament.workspace.pages.my-obligation-tasks'],
+                ['label' => 'Calendar', 'icon' => 'calendar3', 'route' => 'filament.workspace.pages.obligation-calendar'],
+                ['label' => 'Renewals', 'icon' => 'arrow-repeat', 'route' => 'filament.workspace.resources.obligation-renewals.index'],
+                ['label' => 'Vendors', 'icon' => 'building', 'route' => 'filament.workspace.resources.vendors.index'],
+                ['label' => 'Documents', 'icon' => 'folder', 'route' => 'filament.workspace.resources.obligation-documents.index', 'permission' => 'obligation.manage_documents'],
                 // The only report this module has, so a leaf rather than a branch
                 // — but the label matches the other modules' "Reports" so the word
                 // means the same thing wherever it appears.
-                ['label' => 'Reports', 'icon' => 'bar-chart-line', 'route' => 'obligations.reports', 'permission' => 'obligation.view_reports'],
+                ['label' => 'Reports', 'icon' => 'bar-chart-line', 'route' => 'filament.workspace.pages.obligation-reports', 'permission' => 'obligation.view_reports'],
             ],
         ],
 
@@ -251,7 +251,7 @@ return [
                 ['label' => 'To-Do Notifications', 'icon' => 'check2-square', 'route' => 'filament.workspace.resources.todo-notification-logs.index', 'active' => ['filament.workspace.resources.todo-notification-logs.*'], 'permission' => 'todos.view_all'],
                 ['label' => 'Task Notifications', 'icon' => 'list-task', 'route' => 'filament.workspace.resources.task-notification-logs.index', 'active' => ['filament.workspace.resources.task-notification-logs.*'], 'permission' => 'task.view_notification_logs'],
                 ['label' => 'Meeting Notifications', 'icon' => 'journal-text', 'route' => 'meetings.notification-logs.index', 'active' => ['meetings.notification-logs.*'], 'permission' => 'meeting.view_notification_logs'],
-                ['label' => 'Obligation Notifications', 'icon' => 'file-earmark-text', 'route' => 'obligations.notifications', 'active' => ['obligations.notifications*'], 'permission' => 'obligation.view_notification_logs'],
+                ['label' => 'Obligation Notifications', 'icon' => 'file-earmark-text', 'route' => 'filament.workspace.resources.obligation-notifications.index', 'active' => ['filament.workspace.resources.obligation-notifications.*'], 'permission' => 'obligation.view_notification_logs'],
             ],
         ],
 

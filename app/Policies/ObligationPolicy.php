@@ -21,7 +21,10 @@ class ObligationPolicy
 
     public function view(User $user, Obligation $obligation): bool
     {
-        return $this->isVisibleTo($user, $obligation) || $user->hasPermission('obligation.view');
+        // The permission is checked first: it is an in-memory lookup, while
+        // `isVisibleTo()` can query the responsibilities table, and a list that asks
+        // this once per row would otherwise cost a query per row.
+        return $user->hasPermission('obligation.view') || $this->isVisibleTo($user, $obligation);
     }
 
     public function create(User $user): bool

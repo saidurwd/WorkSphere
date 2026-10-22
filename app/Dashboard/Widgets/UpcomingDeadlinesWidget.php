@@ -78,7 +78,7 @@ class UpcomingDeadlinesWidget implements DashboardWidget
                 ->whereBetween('expiry_date', [$from, $to])
                 ->whereNotIn('status', $this->closedObligationStatuses())
                 ->orderBy('expiry_date')->limit(self::LIMIT)->get(['id', 'title', 'expiry_date']) as $row) {
-                $items[] = $this->present('Obligation', $row->title, $row->expiry_date, route('obligations.show', $row->id));
+                $items[] = $this->present('Obligation', $row->title, $row->expiry_date, route('filament.workspace.resources.obligations.view', $row->id));
             }
         }
 

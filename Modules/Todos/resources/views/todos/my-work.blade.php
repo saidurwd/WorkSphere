@@ -68,7 +68,7 @@
                         <x-badge variant="warning">Obligation</x-badge>
                         <div class="flex-grow-1 min-w-0">
                             <p class="mb-0 text-truncate fw-medium">
-                                <a href="{{ route('obligations.show', $obligation) }}" class="text-decoration-none">
+                                <a href="{{ route('filament.workspace.resources.obligations.view', $obligation) }}" class="text-decoration-none">
                                     {{ $obligation->title }}
                                 </a>
                             </p>

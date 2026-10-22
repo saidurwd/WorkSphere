@@ -268,4 +268,53 @@ class FilamentObligationResourceTest extends TestCase
 
         Livewire::test(ViewObligation::class, ['record' => $obligation->getKey()])->assertActionHidden('renew');
     }
+
+    public function test_an_active_responsibility_holder_may_view_but_not_edit_and_a_lapsed_one_may_not_view(): void
+    {
+        $holder = $this->userWithPermissions(['obligation.create']);
+        $lapsed = $this->plainUser();
+        $obligation = ObligationFactory::new()->create();
+        ObligationResponsibility::factory()->create(['obligation_id' => $obligation->id, 'user_id' => $holder->id, 'active' => true]);
+        ObligationResponsibility::factory()->create(['obligation_id' => $obligation->id, 'user_id' => $lapsed->id, 'active' => false]);
+
+        $this->actingAs($holder);
+        $this->get("/workspace/obligations/{$obligation->id}")->assertOk();
+        $this->get("/workspace/obligations/{$obligation->id}/edit")->assertForbidden();
+
+        $this->actingAs($lapsed);
+        $this->get("/workspace/obligations/{$obligation->id}")->assertNotFound();
+    }
+
+    public function test_a_super_admin_may_edit_any_obligation_and_a_stranger_cannot_change_one(): void
+    {
+        $obligation = ObligationFactory::new()->create();
+
+        $this->actingAs($this->superAdmin());
+        Livewire::test(EditObligation::class, ['record' => $obligation->getKey()])
+            ->fillForm(['title' => 'Admin edit'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+        $this->assertSame('Admin edit', $obligation->fresh()->title);
+
+        $this->actingAs($this->userWithPermissions(['obligation.create']));
+        $this->get("/workspace/obligations/{$obligation->id}/edit")->assertNotFound();
+    }
+
+    public function test_obligation_view_alone_does_not_grant_update_or_delete(): void
+    {
+        $obligation = ObligationFactory::new()->create();
+        $this->actingAs($this->userWithPermissions(['obligation.view']));
+
+        $this->get("/workspace/obligations/{$obligation->id}")->assertOk();
+        $this->get("/workspace/obligations/{$obligation->id}/edit")->assertForbidden();
+
+        Livewire::test(ListObligations::class)->assertTableActionHidden('delete', $obligation);
+    }
+
+    public function test_an_anonymous_visitor_is_sent_to_sign_in(): void
+    {
+        $obligation = ObligationFactory::new()->create();
+
+        $this->get("/workspace/obligations/{$obligation->id}")->assertRedirect('/workspace/login');
+    }
 }

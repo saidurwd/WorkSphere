@@ -140,7 +140,7 @@ final class SearchIndex
                 'model' => Obligation::class,
                 'fields' => ['title', 'description'],
                 'permission' => 'obligation.view',
-                'route' => 'obligations.show',
+                'route' => 'filament.workspace.resources.obligations.view',
                 'label' => 'Obligations',
                 'titleColumn' => 'title',
                 'statusColumn' => 'status',

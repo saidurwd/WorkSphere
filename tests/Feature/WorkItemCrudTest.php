@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use Database\Factories\MeetingFactory;
-use Database\Factories\ObligationFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Meetings\Models\Meeting;
 use Modules\Obligations\Models\Obligation;
@@ -90,37 +89,6 @@ class WorkItemCrudTest extends TestCase
     }
 
     // ---- Obligations ------------------------------------------------------
-
-    public function test_an_obligation_can_be_created_read_updated_and_deleted(): void
-    {
-        $owner = $this->plainUser();
-        $obligation = ObligationFactory::new()->create(['owner_user_id' => $owner->id]);
-
-        $this->actingAs($owner)->get(route('obligations.show', $obligation))->assertOk();
-        $this->actingAs($owner)->get(route('obligations.edit', $obligation))->assertOk();
-
-        $this->actingAs($owner)
-            ->put(route('obligations.update', $obligation), $this->obligationPayload($obligation, title: 'Renamed obligation'))
-            ->assertRedirect(route('obligations.show', $obligation));
-
-        $this->assertDatabaseHas('obligations', ['id' => $obligation->id, 'title' => 'Renamed obligation']);
-
-        $this->actingAs($owner)
-            ->delete(route('obligations.destroy', $obligation))
-            ->assertRedirect(route('obligations.index'));
-
-        $this->assertDatabaseCount('obligations', 0);
-    }
-
-    public function test_updating_an_obligation_without_a_title_is_rejected(): void
-    {
-        $owner = $this->plainUser();
-        $obligation = ObligationFactory::new()->create(['owner_user_id' => $owner->id]);
-
-        $this->actingAs($owner)
-            ->put(route('obligations.update', $obligation), $this->obligationPayload($obligation, title: ''))
-            ->assertSessionHasErrors('title');
-    }
 
     /**
      * @return array<string, mixed>

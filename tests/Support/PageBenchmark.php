@@ -60,7 +60,7 @@ class PageBenchmark
             ['label' => 'dashboard', 'uri' => '/dashboard', 'kind' => 'web', 'budget' => 90, 'needs' => []],
             ['label' => 'tasks dashboard', 'uri' => '/workspace/task-overview', 'kind' => 'web', 'budget' => 30, 'needs' => []],
             ['label' => 'meetings dashboard', 'uri' => '/meetings/dashboard', 'kind' => 'web', 'budget' => 30, 'needs' => []],
-            ['label' => 'obligations dashboard', 'uri' => '/obligations/dashboard', 'kind' => 'web', 'budget' => 30, 'needs' => []],
+            ['label' => 'obligations dashboard', 'uri' => '/workspace/obligation-overview', 'kind' => 'web', 'budget' => 30, 'needs' => []],
 
             // Index pages.
             ['label' => 'todos index', 'uri' => '/workspace/todos', 'kind' => 'web', 'budget' => 20, 'needs' => []],
@@ -68,8 +68,8 @@ class PageBenchmark
             ['label' => 'tasks index', 'uri' => '/workspace/tasks', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'meetings index', 'uri' => '/meetings', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'meetings action items', 'uri' => '/meetings/action-items', 'kind' => 'web', 'budget' => 20, 'needs' => []],
-            ['label' => 'obligations index', 'uri' => '/obligations', 'kind' => 'web', 'budget' => 20, 'needs' => []],
-            ['label' => 'obligations my tasks', 'uri' => '/obligations/my-tasks', 'kind' => 'web', 'budget' => 20, 'needs' => []],
+            ['label' => 'obligations index', 'uri' => '/workspace/obligations', 'kind' => 'web', 'budget' => 20, 'needs' => []],
+            ['label' => 'obligations my tasks', 'uri' => '/workspace/my-obligation-tasks', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'projects index', 'uri' => '/workspace/projects', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'my work', 'uri' => '/my-work', 'kind' => 'web', 'budget' => 30, 'needs' => []],
             ['label' => 'task transfers', 'uri' => '/workspace/task-transfers', 'kind' => 'web', 'budget' => 20, 'needs' => []],
@@ -80,7 +80,7 @@ class PageBenchmark
             ['label' => 'meetings overdue report', 'uri' => '/meetings/reports/overdue', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'todos report', 'uri' => '/workspace/todo-reports', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'meetings report', 'uri' => '/meetings/reports', 'kind' => 'web', 'budget' => 20, 'needs' => []],
-            ['label' => 'obligations report', 'uri' => '/obligations/reports', 'kind' => 'web', 'budget' => 20, 'needs' => []],
+            ['label' => 'obligations report', 'uri' => '/workspace/obligation-reports', 'kind' => 'web', 'budget' => 20, 'needs' => []],
 
             // Detail pages — the N+1 risk, since one parent renders a collection.
             ['label' => 'todo show', 'uri' => '/workspace/todos/{todo}', 'kind' => 'web', 'budget' => 25, 'needs' => ['todo']],
@@ -93,9 +93,9 @@ class PageBenchmark
             ['label' => 'meeting decisions', 'uri' => '/meetings/{meeting}/decisions', 'kind' => 'web', 'budget' => 20, 'needs' => ['meeting']],
             ['label' => 'meeting attachments', 'uri' => '/meetings/{meeting}/attachments', 'kind' => 'web', 'budget' => 20, 'needs' => ['meeting']],
             ['label' => 'meeting print', 'uri' => '/meetings/{meeting}/print', 'kind' => 'web', 'budget' => 20, 'needs' => ['meeting']],
-            ['label' => 'obligation show', 'uri' => '/obligations/{obligation}', 'kind' => 'web', 'budget' => 30, 'needs' => ['obligation']],
-            ['label' => 'obligation renewals', 'uri' => '/obligations/renewals', 'kind' => 'web', 'budget' => 20, 'needs' => []],
-            ['label' => 'obligation vendors', 'uri' => '/obligations/vendors', 'kind' => 'web', 'budget' => 20, 'needs' => []],
+            ['label' => 'obligation show', 'uri' => '/workspace/obligations/{obligation}', 'kind' => 'web', 'budget' => 30, 'needs' => ['obligation']],
+            ['label' => 'obligation renewals', 'uri' => '/workspace/obligation-renewals', 'kind' => 'web', 'budget' => 20, 'needs' => []],
+            ['label' => 'obligation vendors', 'uri' => '/workspace/vendors', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'project show', 'uri' => '/workspace/projects/{project}', 'kind' => 'web', 'budget' => 20, 'needs' => ['project']],
 
             // API.

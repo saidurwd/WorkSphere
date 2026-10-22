@@ -69,7 +69,7 @@ class CriticalDeadlinesWidget implements DashboardWidget
                 'days' => $obligation->expiry_date === null
                     ? null
                     : (int) now()->startOfDay()->diffInDays($obligation->expiry_date->startOfDay(), false),
-                'url' => route('obligations.show', $obligation->id),
+                'url' => route('filament.workspace.resources.obligations.view', $obligation->id),
             ]);
     }
 

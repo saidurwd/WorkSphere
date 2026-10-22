@@ -23,8 +23,9 @@
         </div>
 
         <x-filament::section heading="By department">
+            <div class="table-responsive overflow-x-auto">
             <table class="w-full text-sm">
-                <thead><tr class="text-left text-gray-500 dark:text-gray-400"><th class="py-1">Department</th><th>Total</th><th>Expired</th><th>Critical</th></tr></thead>
+                <thead><tr class="text-left text-gray-500 dark:text-gray-400"><th scope="col" class="py-1">Department</th><th scope="col">Total</th><th scope="col">Expired</th><th scope="col">Critical</th></tr></thead>
                 <tbody>
                     @forelse ($departments as $row)
                         <tr><td class="py-1">{{ $row->label }}</td><td>{{ $row->total }}</td><td>{{ (int) $row->expired }}</td><td>{{ (int) $row->critical }}</td></tr>
@@ -33,11 +34,13 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
         </x-filament::section>
 
         <x-filament::section heading="Top vendors">
+            <div class="table-responsive overflow-x-auto">
             <table class="w-full text-sm">
-                <thead><tr class="text-left text-gray-500 dark:text-gray-400"><th class="py-1">Vendor</th><th>Obligations</th><th>Estimated cost</th></tr></thead>
+                <thead><tr class="text-left text-gray-500 dark:text-gray-400"><th scope="col" class="py-1">Vendor</th><th scope="col">Obligations</th><th scope="col">Estimated cost</th></tr></thead>
                 <tbody>
                     @forelse ($vendors as $row)
                         <tr><td class="py-1">{{ $row->label }}</td><td>{{ $row->total }}</td><td>{{ number_format((float) $row->total_cost, 2) }}</td></tr>
@@ -46,11 +49,13 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
         </x-filament::section>
 
         <x-filament::section heading="Risk register">
+            <div class="table-responsive overflow-x-auto">
             <table class="w-full text-sm">
-                <thead><tr class="text-left text-gray-500 dark:text-gray-400"><th class="py-1">Obligation</th><th>Risk</th><th>Status</th><th>Expires</th></tr></thead>
+                <thead><tr class="text-left text-gray-500 dark:text-gray-400"><th scope="col" class="py-1">Obligation</th><th scope="col">Risk</th><th scope="col">Status</th><th scope="col">Expires</th></tr></thead>
                 <tbody>
                     @forelse ($risk as $obligation)
                         <tr>
@@ -64,6 +69,7 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
         </x-filament::section>
     </div>
 </x-filament-panels::page>

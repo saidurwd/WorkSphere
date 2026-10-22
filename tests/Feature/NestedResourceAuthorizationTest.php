@@ -3,14 +3,12 @@
 namespace Tests\Feature;
 
 use Database\Factories\MeetingFactory;
-use Database\Factories\ObligationFactory;
 use Database\Factories\TaskFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Meetings\Models\MeetingActionItem;
 use Modules\Meetings\Models\MeetingAgenda;
 use Modules\Meetings\Models\MeetingNotificationLog;
 use Modules\Meetings\Models\MeetingParticipant;
-use Modules\Obligations\Models\Vendor;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\InteractsWithRoles;
 use Tests\TestCase;
@@ -224,7 +222,7 @@ class NestedResourceAuthorizationTest extends TestCase
                 ['meeting.view'],
             ],
             'obligation' => [
-                '/obligations/notifications',
+                '/workspace/obligation-notifications',
                 'obligation.view_notification_logs',
                 ['obligation.view'],
             ],
@@ -268,72 +266,6 @@ class NestedResourceAuthorizationTest extends TestCase
     }
 
     // ---- Obligation sub-resources ----------------------------------------
-
-    public function test_an_unrelated_user_cannot_renew_an_obligation(): void
-    {
-        $obligation = ObligationFactory::new()->create();
-
-        $this->actingAs($this->plainUser())
-            ->post(route('obligations.renew.store', $obligation), [
-                'new_start_date' => now()->addMonth()->format('Y-m-d'),
-                'new_expiry_date' => now()->addYear()->format('Y-m-d'),
-            ])
-            ->assertForbidden();
-
-        $this->assertDatabaseCount('obligation_renewals', 0);
-    }
-
-    public function test_the_owner_can_renew_an_obligation(): void
-    {
-        $owner = $this->plainUser();
-        $obligation = ObligationFactory::new()->create(['owner_user_id' => $owner->id]);
-
-        $this->actingAs($owner)
-            ->post(route('obligations.renew.store', $obligation), [
-                'new_start_date' => now()->addMonth()->format('Y-m-d'),
-                'new_expiry_date' => now()->addYear()->format('Y-m-d'),
-            ])
-            ->assertSessionHasNoErrors();
-
-        $this->assertDatabaseCount('obligation_renewals', 1);
-    }
-
-    public function test_an_unrelated_user_cannot_manage_vendors(): void
-    {
-        $this->actingAs($this->plainUser())
-            ->post(route('obligations.vendors.store'), [
-                'vendor_name' => 'Acme',
-                'contact_person' => 'Jane',
-                'status' => 'active',
-            ])
-            ->assertForbidden();
-
-        $this->assertDatabaseCount('vendors', 0);
-    }
-
-    public function test_a_user_with_manage_settings_permission_can_manage_vendors(): void
-    {
-        $this->actingAs($this->userWithPermissions(['obligation.manage_settings']))
-            ->post(route('obligations.vendors.store'), [
-                'vendor_name' => 'Acme',
-                'contact_person' => 'Jane',
-                'status' => 'active',
-            ])
-            ->assertSessionHasNoErrors();
-
-        $this->assertDatabaseHas('vendors', ['vendor_name' => 'Acme']);
-    }
-
-    public function test_an_unrelated_user_cannot_delete_a_vendor(): void
-    {
-        $vendor = Vendor::query()->create(['vendor_name' => 'Acme']);
-
-        $this->actingAs($this->plainUser())
-            ->delete(route('obligations.vendors.destroy', $vendor))
-            ->assertForbidden();
-
-        $this->assertDatabaseHas('vendors', ['id' => $vendor->id]);
-    }
 
     // ---- Task transfers --------------------------------------------------
 

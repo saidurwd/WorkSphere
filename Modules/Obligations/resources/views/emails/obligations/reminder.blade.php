@@ -141,7 +141,7 @@
                             <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 0 0 24px 0;">
                                 <tr>
                                     <td align="center">
-                                        <a href="{{ route('obligations.show', $obligation) }}" style="display: inline-block; padding: 14px 32px; background-color: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">View Obligation Details</a>
+                                        <a href="{{ route('filament.workspace.resources.obligations.view', $obligation) }}" style="display: inline-block; padding: 14px 32px; background-color: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">View Obligation Details</a>
                                     </td>
                                 </tr>
                             </table>

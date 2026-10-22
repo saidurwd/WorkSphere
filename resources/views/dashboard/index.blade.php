@@ -9,7 +9,7 @@
         <div class="btn-group btn-group-sm" role="group" aria-label="Module dashboards">
             <x-btn :href="route('filament.workspace.pages.task-overview')" variant="outline-secondary" size="sm" icon="check2-square">Tasks</x-btn>
             <x-btn :href="route('meetings.dashboard')" variant="outline-secondary" size="sm" icon="journal-text">Meetings</x-btn>
-            <x-btn :href="route('obligations.dashboard')" variant="outline-secondary" size="sm" icon="file-earmark-text">Obligations</x-btn>
+            <x-btn :href="route('filament.workspace.pages.obligation-overview')" variant="outline-secondary" size="sm" icon="file-earmark-text">Obligations</x-btn>
         </div>
     </div>
 
@@ -45,16 +45,16 @@
 
     <div class="row">
         <div class="col-12 col-sm-6 col-xl-3">
-            <x-small-box title="Active Obligations" :value="$obligationActive" icon="journal-check" variant="primary" :href="route('obligations.index')" />
+            <x-small-box title="Active Obligations" :value="$obligationActive" icon="journal-check" variant="primary" :href="route('filament.workspace.resources.obligations.index')" />
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
-            <x-small-box title="Due Within 7 Days" :value="$obligationDue7" icon="calendar-week" variant="warning" :href="route('obligations.renewals')" />
+            <x-small-box title="Due Within 7 Days" :value="$obligationDue7" icon="calendar-week" variant="warning" :href="route('filament.workspace.resources.obligations.index', ['tableFilters' => ['expiry' => ['period' => '7_days']]])" />
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
-            <x-small-box title="Expired" :value="$obligationExpired" icon="x-octagon" variant="danger" :href="route('obligations.index')" />
+            <x-small-box title="Expired" :value="$obligationExpired" icon="x-octagon" variant="danger" :href="route('filament.workspace.resources.obligations.index', ['tableFilters' => ['expiry' => ['period' => 'expired']]])" />
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
-            <x-small-box title="Critical Risk" :value="$obligationCritical" icon="shield-exclamation" variant="danger" :href="route('obligations.reports')" />
+            <x-small-box title="Critical Risk" :value="$obligationCritical" icon="shield-exclamation" variant="danger" :href="route('filament.workspace.resources.obligations.index', ['tableFilters' => ['risk_level' => ['value' => 'critical']]])" />
         </div>
     </div>
 
@@ -177,7 +177,7 @@
             <div class="card h-100">
                 <div class="card-header d-flex align-items-center justify-content-between">
                     <h3 class="card-title mb-0">Compliance &amp; Obligations</h3>
-                    <a href="{{ route('obligations.index') }}" class="btn btn-sm btn-outline-secondary">
+                    <a href="{{ route('filament.workspace.resources.obligations.index') }}" class="btn btn-sm btn-outline-secondary">
                         View all
                     </a>
                 </div>
@@ -211,7 +211,7 @@
                 icon="calendar-week"
                 :items="$upcomingObligations"
                 empty-message="No upcoming obligations."
-                :view-all-route="route('obligations.index')"
+                :view-all-route="route('filament.workspace.resources.obligations.index')"
                 view-all-label="View all"
                 class="h-100"
             />
@@ -224,7 +224,7 @@
                 variant="danger"
                 :items="$criticalObligations"
                 empty-message="No critical obligations."
-                :view-all-route="route('obligations.reports')"
+                :view-all-route="route('filament.workspace.pages.obligation-reports')"
                 view-all-label="View report"
                 class="h-100"
             />
@@ -239,7 +239,7 @@
                 variant="danger"
                 :items="$expiredObligations"
                 empty-message="No expired obligations."
-                :view-all-route="route('obligations.index')"
+                :view-all-route="route('filament.workspace.resources.obligations.index')"
                 view-all-label="View all"
             />
         </div>

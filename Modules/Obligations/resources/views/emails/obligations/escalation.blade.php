@@ -123,7 +123,7 @@
                             <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 0 0 24px 0;">
                                 <tr>
                                     <td align="center">
-                                        <a href="{{ route('obligations.show', $obligation) }}" style="display: inline-block; padding: 14px 32px; background-color: #dc2626; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Review Obligation Immediately</a>
+                                        <a href="{{ route('filament.workspace.resources.obligations.view', $obligation) }}" style="display: inline-block; padding: 14px 32px; background-color: #dc2626; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Review Obligation Immediately</a>
                                     </td>
                                 </tr>
                             </table>

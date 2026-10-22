@@ -147,7 +147,7 @@ class CrossModuleNavigationTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->from(route('obligations.show', $obligation))
+            ->from(route('filament.workspace.resources.obligations.view', $obligation))
             ->post(route('todos.links.from.obligation', $obligation))
             ->assertRedirect();
 
