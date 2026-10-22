@@ -67,18 +67,82 @@ class MeetingRecurrenceService
         return $occurrences;
     }
 
-    public function createNextMeeting(Meeting $parentMeeting): ?Meeting
+    /**
+     * Set (or replace) how a meeting repeats. A meeting has one live rule, so any
+     * earlier one is switched off rather than left to produce a second series.
+     *
+     * @param  array{recurrence_type: string, recurrence_interval?: int|null, end_date?: mixed, occurrences?: int|null}  $rule
+     */
+    public function setRecurrence(Meeting $meeting, array $rule): MeetingRecurrence
     {
-        $recurrence = $parentMeeting->recurrence()->where('is_active', true)->first();
+        return DB::transaction(function () use ($meeting, $rule): MeetingRecurrence {
+            $meeting->recurrence()->where('is_active', true)->update(['is_active' => false]);
+
+            $recurrence = $meeting->recurrence()->create([
+                'recurrence_type' => $rule['recurrence_type'],
+                'recurrence_interval' => $rule['recurrence_interval'] ?? 1,
+                'start_date' => $meeting->meeting_date,
+                'end_date' => $rule['end_date'] ?? null,
+                'occurrences' => $rule['occurrences'] ?? null,
+                'is_active' => true,
+            ]);
+
+            return $this->refreshNextOccurrence($recurrence, $meeting);
+        });
+    }
+
+    /**
+     * Stop the series. Meetings already created from it are left alone.
+     */
+    public function stopRecurrence(Meeting $meeting): void
+    {
+        $meeting->recurrence()->where('is_active', true)->update(['is_active' => false, 'next_occurrence' => null]);
+    }
+
+    /**
+     * The date of the next meeting in the series after this one, or null when the
+     * rule has run out.
+     */
+    public function nextDateAfter(Meeting $meeting): ?CarbonImmutable
+    {
+        $recurrence = $meeting->recurrence()->where('is_active', true)->latest('id')->first();
 
         if (! $recurrence) {
             return null;
         }
 
-        $occurrences = $this->generateOccurrences($recurrence);
-        $nextDate = $occurrences[1] ?? null;
+        $after = CarbonImmutable::parse($meeting->meeting_date)->startOfDay();
 
-        if (! $nextDate) {
+        foreach ($this->generateOccurrences($recurrence) as $occurrence) {
+            if ($occurrence->greaterThan($after)) {
+                return $occurrence;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Create the next meeting in the series as a copy of this one: same type,
+     * organiser, participants and agenda, on the next date, with a fresh number and
+     * fresh minutes. Returns null when the series has ended, and refuses to create a
+     * second meeting for a date that already has one of the same title.
+     */
+    public function createNextMeeting(Meeting $parentMeeting): ?Meeting
+    {
+        $nextDate = $this->nextDateAfter($parentMeeting);
+
+        if ($nextDate === null) {
+            return null;
+        }
+
+        $alreadyThere = Meeting::query()
+            ->whereDate('meeting_date', $nextDate)
+            ->where('title', $parentMeeting->title)
+            ->where('meeting_type_id', $parentMeeting->meeting_type_id)
+            ->exists();
+
+        if ($alreadyThere) {
             return null;
         }
 
@@ -86,8 +150,14 @@ class MeetingRecurrenceService
         $newMeeting->meeting_date = $nextDate;
         $newMeeting->status = 'scheduled';
         $newMeeting->minutes_status = 'draft';
-        $newMeeting->meeting_no = null;
+        $newMeeting->minutes_prepared_by = null;
+        $newMeeting->minutes_prepared_at = null;
+        $newMeeting->approved_by = null;
+        $newMeeting->approved_at = null;
+        $newMeeting->published_at = null;
         $newMeeting->created_by = auth()->id();
+        $newMeeting->updated_by = null;
+        $newMeeting->meeting_no = app(MeetingNumberService::class)->generate($newMeeting);
 
         DB::transaction(function () use ($newMeeting, $parentMeeting): void {
             $newMeeting->save();
@@ -103,9 +173,22 @@ class MeetingRecurrenceService
                     'agenda_no', 'title', 'description', 'presented_by', 'estimated_minutes', 'status', 'sort_order',
                 ]));
             }
+
+            // The rule follows the series, so the new meeting can offer the one
+            // after it.
+            $parentMeeting->recurrence()->where('is_active', true)->each(function (MeetingRecurrence $rule) use ($newMeeting): void {
+                $this->refreshNextOccurrence($rule, $newMeeting);
+            });
         });
 
         return $newMeeting->load(['type', 'organizer', 'chairperson', 'participants.user', 'agendas']);
+    }
+
+    protected function refreshNextOccurrence(MeetingRecurrence $recurrence, Meeting $from): MeetingRecurrence
+    {
+        $recurrence->update(['next_occurrence' => $this->nextDateAfter($from)]);
+
+        return $recurrence;
     }
 
     /**

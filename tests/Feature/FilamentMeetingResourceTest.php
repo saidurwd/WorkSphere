@@ -19,6 +19,9 @@ use Modules\Meetings\Events\MeetingCompleted;
 use Modules\Meetings\Events\MeetingCreated;
 use Modules\Meetings\Events\MeetingStarted;
 use Modules\Meetings\Events\MeetingUpdated;
+use Modules\Meetings\Events\MinutesApproved;
+use Modules\Meetings\Events\MinutesReturned;
+use Modules\Meetings\Events\MinutesSubmitted;
 use Modules\Meetings\Filament\Resources\Meetings\Pages\CreateMeeting;
 use Modules\Meetings\Filament\Resources\Meetings\Pages\EditMeeting;
 use Modules\Meetings\Filament\Resources\Meetings\Pages\ListMeetings;
@@ -34,6 +37,8 @@ use Modules\Meetings\Models\MeetingAttachment;
 use Modules\Meetings\Models\MeetingParticipant;
 use Modules\Meetings\Models\MeetingType;
 use Modules\Meetings\Services\MeetingActionTaskService;
+use Modules\Meetings\Services\MeetingApprovalService;
+use Modules\Meetings\Services\MeetingRecurrenceService;
 use Modules\Tasks\Events\TaskCompleted;
 use Modules\Tasks\Events\TaskUpdated;
 use Modules\Tasks\Models\Task;
@@ -412,6 +417,140 @@ class FilamentMeetingResourceTest extends TestCase
             ->callAction('minutes_return', ['comments' => 'Missing the decisions section']);
 
         $this->assertSame('prepared', $meeting->fresh()->minutes_status);
+    }
+
+    public function test_named_approvers_must_all_approve_before_the_minutes_are_approved(): void
+    {
+        Event::fake([MinutesSubmitted::class, MinutesApproved::class]);
+
+        $organizer = $this->userWithPermissions(['meeting.create']);
+        $meeting = MeetingFactory::new()->create(['organizer_id' => $organizer->id, 'minutes_status' => 'prepared']);
+        $first = $this->userWithPermissions(['meeting.view', 'meeting.approve_minutes']);
+        $second = $this->userWithPermissions(['meeting.view', 'meeting.approve_minutes']);
+        $outsider = $this->userWithPermissions(['meeting.view', 'meeting.approve_minutes']);
+
+        $this->actingAs($organizer);
+        Livewire::test(ViewMeeting::class, ['record' => $meeting->getKey()])
+            ->callAction('minutes_submit', ['approvers' => [$first->id, $second->id]]);
+
+        Event::assertDispatched(MinutesSubmitted::class);
+        $this->assertSame(2, $meeting->minutesApprovals()->where('status', 'pending')->count());
+
+        // Someone not named cannot decide.
+        $this->actingAs($outsider);
+        Livewire::test(ViewMeeting::class, ['record' => $meeting->getKey()])
+            ->assertActionHidden('minutes_approve');
+
+        $this->actingAs($first);
+        Livewire::test(ViewMeeting::class, ['record' => $meeting->getKey()])
+            ->callAction('minutes_approve', ['comments' => 'Fine by me']);
+
+        $this->assertSame('under_review', $meeting->fresh()->minutes_status);
+        Event::assertNotDispatched(MinutesApproved::class);
+
+        $this->actingAs($second);
+        Livewire::test(ViewMeeting::class, ['record' => $meeting->getKey()])
+            ->callAction('minutes_approve');
+
+        $this->assertSame('approved', $meeting->fresh()->minutes_status);
+        Event::assertDispatched(MinutesApproved::class);
+    }
+
+    public function test_a_named_approver_returning_the_minutes_keeps_the_reason_and_withdraws_the_others(): void
+    {
+        Event::fake([MinutesReturned::class]);
+
+        $meeting = MeetingFactory::new()->create(['minutes_status' => 'prepared']);
+        $first = $this->userWithPermissions(['meeting.view', 'meeting.approve_minutes', 'meeting.create']);
+        $second = $this->userWithPermissions(['meeting.view', 'meeting.approve_minutes']);
+
+        app(MeetingApprovalService::class)->submitForApproval($meeting, [$first->id, $second->id]);
+
+        $this->actingAs($first);
+        Livewire::test(ViewMeeting::class, ['record' => $meeting->getKey()])
+            ->callAction('minutes_return', ['comments' => 'Decisions are missing']);
+
+        $this->assertSame('prepared', $meeting->fresh()->minutes_status);
+        Event::assertDispatched(MinutesReturned::class, fn ($event) => $event->comments === 'Decisions are missing');
+
+        $returned = $meeting->minutesApprovals()->where('status', 'returned')->first();
+        $this->assertSame('Decisions are missing', $returned->comments);
+        $this->assertSame($first->id, $returned->approver_id);
+        $this->assertSame(0, $meeting->minutesApprovals()->where('status', 'pending')->count());
+    }
+
+    public function test_a_meeting_can_be_set_to_repeat_and_the_next_one_is_created_on_the_next_date(): void
+    {
+        Event::fake([MeetingCreated::class]);
+
+        $organizer = $this->userWithPermissions(['meeting.view', 'meeting.create', 'meeting.update']);
+        $meeting = MeetingFactory::new()->create([
+            'organizer_id' => $organizer->id,
+            'meeting_date' => now()->addDays(2)->toDateString(),
+            'status' => 'scheduled',
+        ]);
+        MeetingParticipant::query()->create(['meeting_id' => $meeting->id, 'user_id' => $organizer->id, 'participant_type' => 'member']);
+
+        $this->actingAs($organizer);
+
+        Livewire::test(ViewMeeting::class, ['record' => $meeting->getKey()])
+            ->assertActionHidden('create_next')
+            ->callAction('repeat', ['recurrence_type' => 'weekly', 'recurrence_interval' => 1]);
+
+        $rule = $meeting->recurrence()->where('is_active', true)->sole();
+        $this->assertSame($meeting->meeting_date->toDateString(), $rule->start_date->toDateString());
+        $this->assertSame($meeting->meeting_date->copy()->addWeek()->toDateString(), $rule->next_occurrence->toDateString());
+
+        Livewire::test(ViewMeeting::class, ['record' => $meeting->getKey()])
+            ->assertActionVisible('create_next')
+            ->callAction('create_next');
+
+        $next = Meeting::query()->where('id', '!=', $meeting->id)->sole();
+        $this->assertSame($meeting->meeting_date->copy()->addWeek()->toDateString(), $next->meeting_date->toDateString());
+        $this->assertNotSame($meeting->meeting_no, $next->meeting_no);
+        $this->assertNotNull($next->meeting_no);
+        $this->assertSame('draft', $next->minutes_status);
+        $this->assertSame(1, $next->participants()->count());
+        Event::assertDispatched(MeetingCreated::class);
+
+        // The same date is never created twice.
+        $this->assertNull(app(MeetingRecurrenceService::class)->createNextMeeting($meeting->fresh()));
+        $this->assertSame(2, Meeting::query()->count());
+    }
+
+    public function test_stopping_the_repetition_or_running_out_of_occurrences_ends_the_series(): void
+    {
+        $organizer = $this->userWithPermissions(['meeting.view', 'meeting.create', 'meeting.update']);
+        $meeting = MeetingFactory::new()->create([
+            'organizer_id' => $organizer->id,
+            'meeting_date' => now()->addDays(2)->toDateString(),
+            'status' => 'scheduled',
+        ]);
+        $service = app(MeetingRecurrenceService::class);
+
+        // A rule capped at two meetings: the original plus one.
+        $service->setRecurrence($meeting, ['recurrence_type' => 'daily', 'occurrences' => 2]);
+        $second = $service->createNextMeeting($meeting->fresh());
+        $this->assertNotNull($second);
+        $this->assertNull($service->createNextMeeting($second->fresh()), 'The series has run out.');
+
+        $this->actingAs($organizer);
+        $service->setRecurrence($meeting, ['recurrence_type' => 'weekly']);
+
+        Livewire::test(ViewMeeting::class, ['record' => $meeting->getKey()])->callAction('stop_repeating');
+
+        $this->assertFalse($meeting->recurrence()->where('is_active', true)->exists());
+        $this->assertNull($service->nextDateAfter($meeting->fresh()));
+    }
+
+    public function test_repeating_needs_permission_to_update_the_meeting(): void
+    {
+        $meeting = MeetingFactory::new()->create(['status' => 'scheduled']);
+        $this->actingAs($this->userWithPermissions(['meeting.view']));
+
+        Livewire::test(ViewMeeting::class, ['record' => $meeting->getKey()])
+            ->assertActionHidden('repeat')
+            ->assertActionHidden('create_next');
     }
 
     public function test_a_participant_may_view_but_not_edit_and_a_super_admin_may_do_both(): void

@@ -33,6 +33,7 @@ use Modules\Meetings\Filament\Resources\Meetings\RelationManagers\ActionItemsRel
 use Modules\Meetings\Filament\Resources\Meetings\RelationManagers\AgendasRelationManager;
 use Modules\Meetings\Filament\Resources\Meetings\RelationManagers\AttachmentsRelationManager;
 use Modules\Meetings\Filament\Resources\Meetings\RelationManagers\DecisionsRelationManager;
+use Modules\Meetings\Filament\Resources\Meetings\RelationManagers\MinutesApprovalsRelationManager;
 use Modules\Meetings\Filament\Resources\Meetings\RelationManagers\ParticipantsRelationManager;
 use Modules\Meetings\Models\Meeting;
 use Modules\Meetings\Models\MeetingType;
@@ -193,6 +194,7 @@ class MeetingResource extends Resource
             DecisionsRelationManager::class,
             ActionItemsRelationManager::class,
             AttachmentsRelationManager::class,
+            MinutesApprovalsRelationManager::class,
         ];
     }
 
