@@ -163,19 +163,19 @@ class WidgetVisibilityTest extends TestCase
     public function test_the_dashboard_renders_for_a_user_with_no_permissions_at_all(): void
     {
         $this->actingAs($this->plainUser())
-            ->get(route('dashboard.index'))
+            ->get(route('filament.workspace.pages.dashboard'))
             ->assertOk();
     }
 
-    public function test_the_dashboard_controller_holds_no_queries(): void
+    public function test_the_dashboard_page_holds_no_queries(): void
     {
-        $source = (string) file_get_contents(app_path('Http/Controllers/DashboardController.php'));
+        $source = (string) file_get_contents(app_path('Filament/Workspace/Pages/WorkspaceDashboard.php'));
 
         foreach (['DB::table', '::query()', '->count()', 'selectRaw', 'whereRaw'] as $needle) {
             $this->assertStringNotContainsString(
                 $needle,
                 $source,
-                "DashboardController still contains `{$needle}`; aggregation belongs in a widget.",
+                "The dashboard page still contains `{$needle}`; aggregation belongs in a widget.",
             );
         }
     }

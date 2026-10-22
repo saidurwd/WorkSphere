@@ -414,7 +414,7 @@ class FilamentMeetingResourceTest extends TestCase
     public function test_a_participant_may_view_but_not_edit_and_a_super_admin_may_do_both(): void
     {
         $attendee = $this->userWithPermissions(['meeting.create']);
-        $meeting = MeetingFactory::new()->create();
+        $meeting = MeetingFactory::new()->create(['priority' => 'normal', 'start_time' => '09:00', 'end_time' => '10:00']);
         MeetingParticipant::factory()->create(['meeting_id' => $meeting->id, 'user_id' => $attendee->id]);
 
         $this->actingAs($attendee);

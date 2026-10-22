@@ -57,7 +57,7 @@ class PageBenchmark
     {
         return [
             // Dashboards — the pages that aggregate the most and are hit hardest.
-            ['label' => 'dashboard', 'uri' => '/dashboard', 'kind' => 'web', 'budget' => 90, 'needs' => []],
+            ['label' => 'dashboard', 'uri' => '/workspace', 'kind' => 'web', 'budget' => 90, 'needs' => []],
             ['label' => 'tasks dashboard', 'uri' => '/workspace/task-overview', 'kind' => 'web', 'budget' => 30, 'needs' => []],
             ['label' => 'meetings dashboard', 'uri' => '/workspace/meeting-overview', 'kind' => 'web', 'budget' => 30, 'needs' => []],
             ['label' => 'obligations dashboard', 'uri' => '/workspace/obligation-overview', 'kind' => 'web', 'budget' => 30, 'needs' => []],

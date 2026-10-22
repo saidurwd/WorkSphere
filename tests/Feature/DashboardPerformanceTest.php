@@ -98,11 +98,11 @@ class DashboardPerformanceTest extends TestCase
 
         // Warm the caches so the measurement is of a steady-state render, which is
         // what a user experiences on a second page load rather than a cold one.
-        $this->actingAs($user)->get(route('dashboard.index'));
+        $this->actingAs($user)->get(route('filament.workspace.pages.dashboard'));
 
         $started = hrtime(true);
 
-        $response = $this->actingAs($user)->get(route('dashboard.index'));
+        $response = $this->actingAs($user)->get(route('filament.workspace.pages.dashboard'));
 
         $elapsedMs = (hrtime(true) - $started) / 1_000_000;
 
@@ -131,7 +131,7 @@ class DashboardPerformanceTest extends TestCase
                 $queries++;
             });
 
-            $this->actingAs($user)->get(route('dashboard.index'));
+            $this->actingAs($user)->get(route('filament.workspace.pages.dashboard'));
 
             return $queries;
         };
@@ -161,14 +161,14 @@ class DashboardPerformanceTest extends TestCase
     {
         $user = $this->seedVolume();
 
-        $this->actingAs($user)->get(route('dashboard.index'));
+        $this->actingAs($user)->get(route('filament.workspace.pages.dashboard'));
 
         $queries = 0;
         DB::listen(function () use (&$queries): void {
             $queries++;
         });
 
-        $this->actingAs($user)->get(route('dashboard.index'));
+        $this->actingAs($user)->get(route('filament.workspace.pages.dashboard'));
 
         // A fixed panel count, not a per-row figure. Every widget caps its output
         // and aggregates in SQL, so this stays flat.

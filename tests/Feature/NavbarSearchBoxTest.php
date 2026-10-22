@@ -27,7 +27,7 @@ class NavbarSearchBoxTest extends TestCase
 
     public function test_every_authenticated_page_carries_the_search_box(): void
     {
-        $response = $this->actingAs($this->plainUser())->get(route('dashboard.index'));
+        $response = $this->actingAs($this->plainUser())->get(route('my-work'));
 
         $response->assertOk();
         $response->assertSee('data-search-box', false);
@@ -36,7 +36,7 @@ class NavbarSearchBoxTest extends TestCase
 
     public function test_the_box_is_a_real_form_so_it_works_without_javascript(): void
     {
-        $response = $this->actingAs($this->plainUser())->get(route('dashboard.index'));
+        $response = $this->actingAs($this->plainUser())->get(route('my-work'));
 
         $response->assertSee('action="'.route('search').'"', false);
         $response->assertSee('role="search"', false);
@@ -44,7 +44,7 @@ class NavbarSearchBoxTest extends TestCase
 
     public function test_the_box_is_labelled_and_announced(): void
     {
-        $response = $this->actingAs($this->plainUser())->get(route('dashboard.index'));
+        $response = $this->actingAs($this->plainUser())->get(route('my-work'));
 
         // A visually-hidden label, an aria-live status region for the result
         // count, and combobox wiring for the dropdown.
@@ -58,7 +58,7 @@ class NavbarSearchBoxTest extends TestCase
     {
         // The script is a plain Vite asset, so a Blade expression inside it would
         // reach the browser literally; the URL has to arrive from the view.
-        $response = $this->actingAs($this->plainUser())->get(route('dashboard.index'));
+        $response = $this->actingAs($this->plainUser())->get(route('my-work'));
 
         $response->assertSee('data-search-endpoint="'.route('search.suggest').'"', false);
     }
@@ -83,7 +83,7 @@ class NavbarSearchBoxTest extends TestCase
     public function test_the_box_is_centred_between_the_left_and_right_clusters(): void
     {
         $html = $this->actingAs($this->plainUser())
-            ->get(route('dashboard.index'))
+            ->get(route('my-work'))
             ->content();
 
         $left = strpos($html, 'navbar-nav flex-shrink-0');
@@ -103,7 +103,7 @@ class NavbarSearchBoxTest extends TestCase
         // Below `md` the centred column is hidden, so search would otherwise be
         // unreachable on a phone.
         $html = $this->actingAs($this->plainUser())
-            ->get(route('dashboard.index'))
+            ->get(route('my-work'))
             ->content();
 
         $this->assertStringContainsString('d-md-none', $html);
@@ -112,7 +112,7 @@ class NavbarSearchBoxTest extends TestCase
 
     public function test_an_anonymous_visitor_gets_no_search_box(): void
     {
-        $this->get(route('dashboard.index'))->assertRedirect(route('login'));
+        $this->get(route('my-work'))->assertRedirect(route('login'));
     }
 
     // ---- Endpoint ------------------------------------------------------------

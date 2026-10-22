@@ -29,7 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->brandName('WorkSphere')
-            ->homeUrl(fn (): string => route('dashboard.index'))
+            ->homeUrl(fn (): string => route('filament.workspace.pages.dashboard'))
             ->colors([
                 'primary' => Color::Indigo,
             ])

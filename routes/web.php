@@ -4,7 +4,6 @@ use App\Http\Controllers\Admin\System\HealthController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReportController;
@@ -90,7 +89,9 @@ Route::middleware(['web', 'auth'])->prefix('notifications')->name('notifications
 });
 
 Route::middleware(['web', 'auth'])->prefix('dashboard')->name('dashboard.')->group(function () {
-    Route::get('/', [DashboardController::class, '__invoke'])->name('index');
+    // The dashboard is the workspace panel's home page. This name stays because the
+    // sign-in redirect and the shared layout link to it.
+    Route::get('/', fn () => redirect()->route('filament.workspace.pages.dashboard'))->name('index');
 
     Route::get('ui-kit', function () {
         abort_unless(app()->environment('local'), 404);
