@@ -366,4 +366,48 @@ class FilamentMeetingResourceTest extends TestCase
 
         $this->assertNull($item->fresh()->task_id);
     }
+
+    public function test_minutes_move_through_prepare_submit_approve_publish_with_the_right_people(): void
+    {
+        $organizer = $this->userWithPermissions(['meeting.create']);
+        $meeting = MeetingFactory::new()->create(['organizer_id' => $organizer->id, 'minutes_status' => 'draft']);
+        $approver = $this->userWithPermissions(['meeting.view', 'meeting.approve_minutes', 'meeting.publish_minutes']);
+
+        $this->actingAs($organizer);
+        $page = fn () => Livewire::test(ViewMeeting::class, ['record' => $meeting->getKey()]);
+
+        $page()->assertActionHidden('minutes_submit')->callAction('minutes_prepare');
+        $this->assertSame('prepared', $meeting->fresh()->minutes_status);
+        $this->assertSame($organizer->id, $meeting->fresh()->minutes_prepared_by);
+
+        $page()->callAction('minutes_submit');
+        $this->assertSame('submitted', $meeting->fresh()->minutes_status);
+
+        // The organizer prepared them; they cannot also approve them.
+        $page()->assertActionHidden('minutes_approve')->assertActionHidden('minutes_return');
+
+        $this->actingAs($approver);
+        $page()->callAction('minutes_approve');
+        $this->assertSame('approved', $meeting->fresh()->minutes_status);
+        $this->assertSame($approver->id, $meeting->fresh()->approved_by);
+
+        $page()->callAction('minutes_publish');
+        $this->assertSame('published', $meeting->fresh()->minutes_status);
+        $this->assertNotNull($meeting->fresh()->published_at);
+    }
+
+    public function test_an_approver_can_return_submitted_minutes_with_a_reason(): void
+    {
+        $meeting = MeetingFactory::new()->create(['minutes_status' => 'submitted']);
+        $this->actingAs($this->userWithPermissions(['meeting.view', 'meeting.approve_minutes']));
+
+        Livewire::test(ViewMeeting::class, ['record' => $meeting->getKey()])
+            ->callAction('minutes_return', ['comments' => ''])
+            ->assertHasActionErrors(['comments' => 'required']);
+
+        Livewire::test(ViewMeeting::class, ['record' => $meeting->getKey()])
+            ->callAction('minutes_return', ['comments' => 'Missing the decisions section']);
+
+        $this->assertSame('prepared', $meeting->fresh()->minutes_status);
+    }
 }
