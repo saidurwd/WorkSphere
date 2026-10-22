@@ -573,7 +573,7 @@ class NavigationStructureTest extends TestCase
 
         foreach ([
             '/workspace', '/workspace/todos', '/workspace/tasks', '/workspace/meetings', '/workspace/obligations', '/workspace/projects',
-            '/my-work', '/admin/users', '/admin/employees', '/reports/tasks',
+            '/workspace/my-work', '/admin/users', '/admin/employees', '/reports/tasks',
         ] as $uri) {
             $this->actingAs($user)->get($uri)->assertOk();
         }
@@ -595,12 +595,12 @@ class NavigationStructureTest extends TestCase
 
     public function test_section_headings_only_appear_with_something_under_them(): void
     {
-        $plain = $this->actingAs($this->plainUser())->get('/my-work')->assertOk()->getContent();
+        $plain = $this->actingAs($this->plainUser())->get('/notifications')->assertOk()->getContent();
 
         // A heading with nothing beneath it is a rule on the page with no label.
         $this->assertStringNotContainsString('nav-section-title', $plain);
 
-        $admin = $this->actingAs($this->superAdmin(['user.manage']))->get('/my-work')->assertOk()->getContent();
+        $admin = $this->actingAs($this->superAdmin(['user.manage']))->get('/notifications')->assertOk()->getContent();
 
         $this->assertStringContainsString('nav-section-title', $admin);
     }

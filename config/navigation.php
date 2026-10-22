@@ -84,7 +84,7 @@ return [
         [
             'label' => 'My Work',
             'icon' => 'person-workspace',
-            'route' => 'my-work',
+            'route' => 'filament.workspace.pages.my-work',
         ],
 
         [

@@ -167,7 +167,7 @@ class NotificationCentreTest extends TestCase
         $user = User::factory()->create();
 
         // "Must render identically for users with no notifications."
-        $this->actingAs($user)->get(route('my-work'))->assertOk();
+        $this->actingAs($user)->get(route('notifications.index'))->assertOk();
     }
 
     public function test_the_navbar_shows_an_unread_badge(): void
@@ -176,7 +176,7 @@ class NotificationCentreTest extends TestCase
         $this->notify($user, 'Heads up', 1);
 
         $this->actingAs($user)
-            ->get(route('my-work'))
+            ->get(route('notifications.index'))
             ->assertOk()
             ->assertSee('Heads up');
     }

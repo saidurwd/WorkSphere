@@ -39,6 +39,7 @@ class WorkspacePanelProvider extends PanelProvider
             ->discoverPages(in: base_path('Modules/Tasks/app/Filament/Pages'), for: 'Modules\\Tasks\\Filament\\Pages')
             ->discoverPages(in: base_path('Modules/Obligations/app/Filament/Pages'), for: 'Modules\\Obligations\\Filament\\Pages')
             ->discoverPages(in: base_path('Modules/Meetings/app/Filament/Pages'), for: 'Modules\\Meetings\\Filament\\Pages')
+            ->discoverPages(in: app_path('Filament/Workspace/Pages'), for: 'App\\Filament\\Workspace\\Pages')
             ->pages([
                 WorkspaceDashboard::class,
             ])

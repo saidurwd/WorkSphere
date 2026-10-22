@@ -27,7 +27,6 @@
     "GET|livez|livez|web",
     "GET|login|login|guest,throttle:60,1,web",
     "GET|meetings/{meeting}/print|meetings.print|auth,web",
-    "GET|my-work|my-work|auth,web",
     "GET|notifications|notifications.index|auth,web",
     "GET|readyz|readyz|web",
     "GET|reports/task-distribution/export|reports.distribution.export|auth,throttle:export,web",

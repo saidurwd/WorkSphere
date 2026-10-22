@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Todos\Http\Controllers\CrossModuleLinkController;
-use Modules\Todos\Http\Controllers\MyWorkController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,12 +12,6 @@ use Modules\Todos\Http\Controllers\MyWorkController;
 | cannot be matched as a To-Do whose id happens to be the string "inbox".
 |
 */
-
-Route::middleware(['web', 'auth'])->group(function (): void {
-    // Outside the `todos.` prefix and outside `todos/`: this spans four modules,
-    // so it is not a To-Do route and must not be reachable at /todos/my-work.
-    Route::get('my-work', MyWorkController::class)->name('my-work');
-});
 
 /*
 | One-click To-Do creation from another module, and the reverse navigation that

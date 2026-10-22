@@ -221,7 +221,7 @@ class RouteParityTest extends TestCase
         foreach (Route::getRoutes() as $route) {
             $name = (string) $route->getName();
 
-            if (! str_starts_with($name, 'todos.') && $name !== 'my-work') {
+            if (! str_starts_with($name, 'todos.')) {
                 continue;
             }
 
@@ -234,18 +234,13 @@ class RouteParityTest extends TestCase
     }
 
     /**
-     * `my-work` spans four modules, so it must not live under the `todos.` prefix
-     * where a To-Do action would be a more natural expectation.
+     * My Work spans four modules, so it lives in the workspace panel rather than
+     * under the To-Do resource.
      */
-    public function test_the_cross_module_feed_is_not_nested_under_todos(): void
+    public function test_the_cross_module_feed_is_a_workspace_page(): void
     {
-        $route = collect(Route::getRoutes())->first(
-            fn ($candidate): bool => $candidate->getName() === 'my-work',
-        );
-
-        $this->assertNotNull($route);
-        $this->assertSame('my-work', $route->uri());
-        $this->assertSame('GET', $route->methods()[0]);
+        $this->assertTrue(Route::has('filament.workspace.pages.my-work'));
+        $this->assertFalse(Route::has('my-work'));
     }
 
     /**

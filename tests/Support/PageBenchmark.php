@@ -71,7 +71,7 @@ class PageBenchmark
             ['label' => 'obligations index', 'uri' => '/workspace/obligations', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'obligations my tasks', 'uri' => '/workspace/my-obligation-tasks', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'projects index', 'uri' => '/workspace/projects', 'kind' => 'web', 'budget' => 20, 'needs' => []],
-            ['label' => 'my work', 'uri' => '/my-work', 'kind' => 'web', 'budget' => 30, 'needs' => []],
+            ['label' => 'my work', 'uri' => '/workspace/my-work', 'kind' => 'web', 'budget' => 30, 'needs' => []],
             ['label' => 'task transfers', 'uri' => '/workspace/task-transfers', 'kind' => 'web', 'budget' => 20, 'needs' => []],
 
             // Reports — the aggregation-heavy reads.

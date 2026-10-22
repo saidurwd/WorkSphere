@@ -31,7 +31,7 @@ class MyWorkTest extends TestCase
     public function test_the_page_renders_with_nothing_to_show(): void
     {
         $this->actingAs($this->plainUser())
-            ->get(route('my-work'))
+            ->get(route('filament.workspace.pages.my-work'))
             ->assertOk()
             ->assertSee('Nothing waiting on you');
     }
@@ -56,7 +56,7 @@ class MyWorkTest extends TestCase
             'assigned_to' => $user->id,
         ]);
 
-        $response = $this->actingAs($user)->get(route('my-work'));
+        $response = $this->actingAs($user)->get(route('filament.workspace.pages.my-work'));
 
         $response->assertOk();
         $response->assertSee('A To-Do');
@@ -70,7 +70,7 @@ class MyWorkTest extends TestCase
         $user = $this->userWithPermissions(['todos.view']);
         Todo::factory()->create(['title' => 'Somebody elses To-Do']);
 
-        $response = $this->actingAs($user)->get(route('my-work'));
+        $response = $this->actingAs($user)->get(route('filament.workspace.pages.my-work'));
 
         $response->assertOk();
         $response->assertDontSee('Somebody elses To-Do');
@@ -90,7 +90,7 @@ class MyWorkTest extends TestCase
         $this->assertSame(0, $counts['tasks'], 'A count must not leak what the filter hides.');
         $this->assertSame(0, $counts['obligations'], 'A count must not leak what the filter hides.');
 
-        $response = $this->actingAs($user)->get(route('my-work'));
+        $response = $this->actingAs($user)->get(route('filament.workspace.pages.my-work'));
         $response->assertSee('Visible To-Do');
         $response->assertDontSee('Hidden task');
         $response->assertDontSee('Hidden obligation');
@@ -113,7 +113,7 @@ class MyWorkTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get(route('my-work'))
+            ->get(route('filament.workspace.pages.my-work'))
             ->assertOk()
             ->assertSee('Shared obligation');
     }
@@ -135,7 +135,7 @@ class MyWorkTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get(route('my-work'))
+            ->get(route('filament.workspace.pages.my-work'))
             ->assertOk()
             ->assertDontSee('Lapsed obligation');
     }
@@ -148,7 +148,7 @@ class MyWorkTest extends TestCase
         TodoWatcher::query()->create(['todo_id' => $todo->id, 'user_id' => $user->id]);
 
         $this->actingAs($user)
-            ->get(route('my-work'))
+            ->get(route('filament.workspace.pages.my-work'))
             ->assertOk()
             ->assertSee('Watched To-Do');
     }
@@ -164,14 +164,14 @@ class MyWorkTest extends TestCase
         ]);
 
         $this->actingAs($outsider)
-            ->get(route('my-work'))
+            ->get(route('filament.workspace.pages.my-work'))
             ->assertOk()
             ->assertDontSee('Department To-Do');
     }
 
     public function test_the_page_requires_authentication(): void
     {
-        $this->get(route('my-work'))->assertRedirect(route('login'));
+        $this->get(route('filament.workspace.pages.my-work'))->assertRedirect('/workspace/login');
     }
 
     public function test_permitted_sources_reflect_the_users_permissions(): void
