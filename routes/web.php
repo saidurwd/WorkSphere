@@ -3,7 +3,6 @@
 use App\Http\Controllers\Admin\System\HealthController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DatabaseBackupController;
-use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SearchSuggestController;
@@ -73,12 +72,6 @@ Route::middleware(['web', 'auth'])->prefix('reports')->name('reports.')->group(f
 | records what the user has *received*, and can therefore be marked read.
 |
 */
-
-Route::middleware(['web', 'auth'])->prefix('notifications')->name('notifications.')->group(function (): void {
-    Route::get('/', [NotificationController::class, 'index'])->name('index');
-    Route::post('read-all', [NotificationController::class, 'markAllRead'])->name('read-all');
-    Route::post('{notification}/read', [NotificationController::class, 'markRead'])->name('read');
-});
 
 Route::middleware(['web', 'auth'])->prefix('dashboard')->name('dashboard.')->group(function () {
     // The dashboard is the workspace panel's home page. This name stays because the

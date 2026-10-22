@@ -108,7 +108,7 @@
                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-lg p-0" style="width: 380px; max-height: 420px; overflow: hidden;">
                         <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
                             <span class="fw-semibold">Notifications</span>
-                            <a href="{{ route('notifications.index') }}" class="btn btn-sm btn-link p-0 text-decoration-none">View All</a>
+                            <a href="{{ route('filament.workspace.pages.notifications') }}" class="btn btn-sm btn-link p-0 text-decoration-none">View All</a>
                         </div>
 
                         <div class="overflow-auto" style="max-height: 320px;">
@@ -137,16 +137,6 @@
                             @endforelse
                         </div>
 
-                        @if ($recentNotifications->isNotEmpty())
-                            <div class="px-3 py-2 border-top text-center">
-                                <form method="POST" action="{{ route('notifications.read-all') }}">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary w-100">
-                                        Mark all as read
-                                    </button>
-                                </form>
-                            </div>
-                        @endif
                     </div>
                 </li>
             @endauth
@@ -192,7 +182,7 @@
                                 <a href="{{ route('dashboard.index') }}" class="text-center text-decoration-none">
                                     <i class="bi bi-person d-block mb-1"></i>Profile
                                 </a>
-                                <a href="{{ route('notifications.index') }}" class="text-center text-decoration-none">
+                                <a href="{{ route('filament.workspace.pages.notifications') }}" class="text-center text-decoration-none">
                                     <i class="bi bi-bell d-block mb-1"></i>Notifications
                                 </a>
                             </div>
