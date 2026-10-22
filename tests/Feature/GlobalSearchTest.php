@@ -556,4 +556,13 @@ class GlobalSearchTest extends TestCase
 
         $this->assertStringNotContainsString('Secret body', json_encode($entry->new_value));
     }
+
+    public function test_the_top_bar_carries_one_search_box_only(): void
+    {
+        $html = $this->actingAs($this->plainUser())->get('/')->assertOk()->getContent();
+
+        $this->assertSame(1, substr_count($html, 'role="search"'));
+        $this->assertStringContainsString('id="workspace-search"', $html);
+        $this->assertStringNotContainsString('fi-global-search', $html);
+    }
 }

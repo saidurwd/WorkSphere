@@ -29,6 +29,7 @@ class WorkspacePanelProvider extends PanelProvider
         return $panel
             ->id('workspace')
             ->path('')
+            ->globalSearch(false)
             ->maxContentWidth(Width::Full)
             ->login(Login::class)
             ->passwordReset()
