@@ -58,13 +58,6 @@ Route::middleware(['web', 'auth'])->prefix('reports')->name('reports.')->group(f
 |
 */
 
-Route::middleware(['web', 'auth'])->prefix('dashboard')->name('dashboard.')->group(function () {
-    // The dashboard is the workspace panel's home page. This name stays because the
-    // sign-in redirect and the shared layout link to it.
-    Route::get('/', fn () => redirect()->route('filament.workspace.pages.dashboard'))->name('index');
-
-});
-
 Route::middleware(['web', 'auth', 'admin'])
     ->prefix('dashboard')
     ->name('dashboard.')

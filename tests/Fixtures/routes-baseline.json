@@ -18,7 +18,6 @@
     "GET|api/v1/todos|api.v1.todos.index|api,auth:sanctum,throttle:api",
     "GET|api/v1/tokens|api.v1.tokens.index|api,auth:sanctum,throttle:api",
     "GET|dashboard/database-backups/{filename}/download|dashboard.database-backups.download|admin,auth,web",
-    "GET|dashboard|dashboard.index|auth,web",
     "GET|livez|livez|web",
     "GET|meetings/{meeting}/print|meetings.print|auth,web",
     "GET|readyz|readyz|web",

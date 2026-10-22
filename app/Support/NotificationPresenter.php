@@ -50,7 +50,7 @@ final class NotificationPresenter
             // route() rather than a URL carried in the payload: a stored URL is
             // attacker-controllable and would turn the bell into an open redirect.
             'url' => $todoId === null || ! self::hasTodoRoute()
-                ? route('dashboard.index')
+                ? route('filament.workspace.pages.dashboard')
                 : route('filament.workspace.resources.todos.view', $todoId),
             'icon' => self::iconFor($type),
             'background' => self::backgroundFor($type),
