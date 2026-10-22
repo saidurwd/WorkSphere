@@ -3,8 +3,10 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Auth\Login;
+use App\Filament\InitialsAvatarProvider;
 use App\Filament\Workspace\Pages\WorkspaceDashboard;
 use App\Http\Middleware\AuthenticateFilamentUser;
+use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -29,6 +31,8 @@ class WorkspacePanelProvider extends PanelProvider
             ->login(Login::class)
             ->passwordReset()
             ->brandName('WorkSphere')
+            ->defaultAvatarProvider(InitialsAvatarProvider::class)
+            ->font('ui-sans-serif', provider: LocalFontProvider::class)
             ->renderHook(PanelsRenderHook::GLOBAL_SEARCH_BEFORE, fn (): string => view('filament.workspace.search-box')->render())
             ->navigationGroups(['To-Dos', 'Tasks', 'Projects', 'Obligations', 'Meetings'])
             ->colors([

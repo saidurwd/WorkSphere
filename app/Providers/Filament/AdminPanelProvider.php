@@ -3,7 +3,9 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Auth\Login;
+use App\Filament\InitialsAvatarProvider;
 use App\Http\Middleware\AuthenticateFilamentUser;
+use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -31,6 +33,8 @@ class AdminPanelProvider extends PanelProvider
             ->login(Login::class)
             ->passwordReset()
             ->brandName('WorkSphere')
+            ->defaultAvatarProvider(InitialsAvatarProvider::class)
+            ->font('ui-sans-serif', provider: LocalFontProvider::class)
             ->homeUrl(fn (): string => route('filament.workspace.pages.dashboard'))
             ->colors([
                 'primary' => Color::Indigo,

@@ -69,15 +69,34 @@ class SecurityHeaders
         $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     }
 
+    /**
+     * Paths served by the Filament panels.
+     *
+     * Filament and Livewire render inline scripts (the theme and sidebar bootstrap,
+     * the page's data) and Alpine evaluates the expressions in its templates, so the
+     * strict script policy used everywhere else makes those pages unusable. They
+     * therefore get `'unsafe-inline' 'unsafe-eval'` for scripts, and only they do.
+     * Everything else — framing, objects, base tags, form targets, default sources —
+     * is as strict as on any other page. Revisit when Filament ships a nonce-based
+     * integration.
+     *
+     * @var list<string>
+     */
+    private const PANEL_PATHS = ['admin', 'admin/*', 'workspace', 'workspace/*', 'livewire*'];
+
     protected function contentSecurityPolicy(Request $request, Response $response): void
     {
+        $scripts = $request->is(self::PANEL_PATHS)
+            ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+            : "script-src 'self'";
+
         $directives = [
             "default-src 'self'",
             // The application ships no third-party script and loads its own Vite
             // bundles from self. `'unsafe-inline'` is required for stylesheets only:
             // AdminLTE, TomSelect and flatpickr all set inline styles at runtime,
             // and denying that visibly breaks the UI.
-            "script-src 'self'",
+            $scripts,
             "style-src 'self' 'unsafe-inline'",
             "img-src 'self' data: blob:",
             "font-src 'self' data:",

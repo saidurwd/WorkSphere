@@ -72,8 +72,33 @@ class SecurityHardeningTest extends TestCase
         $this->assertStringContainsString("frame-ancestors 'self'", $csp);
         $this->assertStringContainsString("form-action 'self'", $csp);
 
-        // Scripts must NOT be allowed to run inline, or the policy is decorative.
-        $this->assertStringNotContainsString("script-src 'self' 'unsafe-inline'", $csp);
+        // Outside the panels, scripts must NOT be allowed to run inline, or the
+        // policy is decorative.
+        $strict = (string) $this->get('/no-such-page')->headers->get('Content-Security-Policy');
+
+        $this->assertStringContainsString("script-src 'self';", $strict.';');
+        $this->assertStringNotContainsString("'unsafe-inline'", explode('style-src', $strict)[0]);
+    }
+
+    public function test_only_the_panels_may_run_inline_scripts(): void
+    {
+        $panel = (string) $this->get('/workspace/login')->headers->get('Content-Security-Policy');
+
+        // Filament renders inline scripts and Alpine evaluates its templates.
+        $this->assertStringContainsString("script-src 'self' 'unsafe-inline' 'unsafe-eval'", $panel);
+
+        // The relaxation is for scripts on those pages and nothing else.
+        $this->assertStringContainsString("object-src 'none'", $panel);
+        $this->assertStringContainsString("frame-ancestors 'self'", $panel);
+        $this->assertStringContainsString("connect-src 'self'", $panel);
+
+        foreach (['/no-such-page', '/login'] as $path) {
+            $this->assertStringNotContainsString(
+                "'unsafe-eval'",
+                (string) $this->get($path)->headers->get('Content-Security-Policy'),
+                "{$path} must keep the strict script policy.",
+            );
+        }
     }
 
     public function test_the_policy_covers_the_themes_the_app_actually_uses(): void
