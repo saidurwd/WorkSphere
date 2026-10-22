@@ -4,6 +4,7 @@ namespace Modules\Meetings\Models;
 
 use App\Models\Department;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -107,6 +108,25 @@ class MeetingActionItem extends Model
     public function scopeCompleted($query)
     {
         return $query->where('status', 'completed');
+    }
+
+    /**
+     * Narrow to the action items a user may see: all of them for
+     * `meeting.view_all_actions` or a super-admin, otherwise the ones assigned to
+     * them or sitting on a meeting they may see.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeVisibleTo(Builder $query, User $user): void
+    {
+        if ($user->hasPermission('meeting.view_all_actions') || $user->hasRole('super-admin')) {
+            return;
+        }
+
+        $query->where(function (Builder $inner) use ($user): void {
+            $inner->where($inner->qualifyColumn('assigned_to'), $user->id)
+                ->orWhereHas('meeting', fn (Builder $meeting): Builder => $meeting->visibleTo($user));
+        });
     }
 
     public function scopeOverdue($query)

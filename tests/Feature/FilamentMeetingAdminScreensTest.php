@@ -2,9 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
+use Database\Factories\MeetingFactory;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Modules\Meetings\Filament\Pages\MeetingCalendar;
+use Modules\Meetings\Filament\Pages\MeetingOverview;
+use Modules\Meetings\Filament\Pages\MeetingReports;
+use Modules\Meetings\Filament\Resources\ActionItems\Pages\ListMeetingActionItems;
+use Modules\Meetings\Filament\Resources\Decisions\Pages\ListMeetingDecisions;
 use Modules\Meetings\Filament\Resources\NotificationLogs\Pages\ListMeetingNotificationLogs;
 use Modules\Meetings\Filament\Resources\Tags\Pages\CreateMeetingTag;
 use Modules\Meetings\Filament\Resources\Tags\Pages\ListMeetingTags;
@@ -16,6 +23,8 @@ use Modules\Meetings\Filament\Resources\Types\Pages\CreateMeetingType;
 use Modules\Meetings\Filament\Resources\Types\Pages\EditMeetingType;
 use Modules\Meetings\Filament\Resources\Types\Pages\ListMeetingTypes;
 use Modules\Meetings\Models\Meeting;
+use Modules\Meetings\Models\MeetingActionItem;
+use Modules\Meetings\Models\MeetingDecision;
 use Modules\Meetings\Models\MeetingNotificationLog;
 use Modules\Meetings\Models\MeetingTag;
 use Modules\Meetings\Models\MeetingTemplate;
@@ -234,5 +243,98 @@ class FilamentMeetingAdminScreensTest extends TestCase
 
         Livewire::test(ListMeetingNotificationLogs::class)->callTableAction('remove', $sent);
         $this->assertModelMissing($sent);
+    }
+
+    private function mine(): array
+    {
+        $user = $this->userWithPermissions(['meeting.create']);
+
+        return [$user, MeetingFactory::new()->create(['organizer_id' => $user->id]), MeetingFactory::new()->create()];
+    }
+
+    public function test_the_action_item_and_decision_registers_cover_only_visible_meetings(): void
+    {
+        [$user, $mine, $theirs] = $this->mine();
+        $myItem = MeetingActionItem::factory()->create(['meeting_id' => $mine->id, 'assigned_to' => null]);
+        $assignedToMe = MeetingActionItem::factory()->create(['meeting_id' => $theirs->id, 'assigned_to' => $user->id]);
+        $theirItem = MeetingActionItem::factory()->create(['meeting_id' => $theirs->id, 'assigned_to' => null]);
+        $myDecision = MeetingDecision::factory()->create(['meeting_id' => $mine->id]);
+        $theirDecision = MeetingDecision::factory()->create(['meeting_id' => $theirs->id]);
+        $this->actingAs($user);
+
+        Livewire::test(ListMeetingActionItems::class)
+            ->assertCanSeeTableRecords([$myItem, $assignedToMe])
+            ->assertCanNotSeeTableRecords([$theirItem]);
+
+        Livewire::test(ListMeetingDecisions::class)
+            ->assertCanSeeTableRecords([$myDecision])
+            ->assertCanNotSeeTableRecords([$theirDecision]);
+
+        $this->actingAs($this->userWithPermissions(['meeting.view_all_actions']));
+        Livewire::test(ListMeetingActionItems::class)->assertCanSeeTableRecords([$myItem, $theirItem]);
+    }
+
+    public function test_the_overdue_filter_finds_late_open_items(): void
+    {
+        [$user, $mine] = $this->mine();
+        $late = MeetingActionItem::factory()->create(['meeting_id' => $mine->id, 'status' => 'open', 'due_date' => now()->subDays(3)]);
+        $done = MeetingActionItem::factory()->create(['meeting_id' => $mine->id, 'status' => 'completed', 'due_date' => now()->subDays(3)]);
+        $this->actingAs($user);
+
+        Livewire::test(ListMeetingActionItems::class)
+            ->filterTable('overdue')
+            ->assertCanSeeTableRecords([$late])
+            ->assertCanNotSeeTableRecords([$done]);
+    }
+
+    public function test_the_overview_counts_only_what_the_viewer_may_see(): void
+    {
+        [$user, $mine, $theirs] = $this->mine();
+        MeetingActionItem::factory()->create(['meeting_id' => $mine->id, 'status' => 'open', 'assigned_to' => null]);
+        MeetingActionItem::factory()->count(4)->create(['meeting_id' => $theirs->id, 'status' => 'open', 'assigned_to' => null]);
+        $this->actingAs($user);
+
+        $page = Livewire::test(MeetingOverview::class)->assertOk();
+
+        $this->assertSame(1, $page->viewData('stats')['Open actions']);
+    }
+
+    public function test_reports_need_their_permission_and_are_scoped(): void
+    {
+        [$user, $mine, $theirs] = $this->mine();
+        $someone = $this->plainUser();
+        MeetingActionItem::factory()->create(['meeting_id' => $mine->id, 'assigned_to' => $someone->id, 'status' => 'open']);
+        $stranger = User::factory()->create(['name' => 'Hidden Assignee']);
+        MeetingActionItem::factory()->create(['meeting_id' => $theirs->id, 'assigned_to' => $stranger->id, 'status' => 'open']);
+
+        $this->actingAs($user);
+        $this->get('/workspace/meeting-reports')->assertForbidden();
+
+        $viewer = $this->userWithPermissions(['meeting.view_reports', 'meeting.create']);
+        $mineToo = MeetingFactory::new()->create(['organizer_id' => $viewer->id]);
+        MeetingActionItem::factory()->create(['meeting_id' => $mineToo->id, 'assigned_to' => $someone->id, 'status' => 'open']);
+        $this->actingAs($viewer);
+
+        Livewire::test(MeetingReports::class)
+            ->assertSee($someone->name)
+            ->assertDontSee('Hidden Assignee');
+    }
+
+    public function test_the_calendar_shows_visible_meetings_and_due_actions_only(): void
+    {
+        $user = $this->userWithPermissions(['meeting.create']);
+        $date = now()->startOfMonth()->addDays(8);
+        $mine = MeetingFactory::new()->create(['organizer_id' => $user->id, 'title' => 'Board review', 'meeting_date' => $date]);
+        MeetingFactory::new()->create(['title' => 'Closed door session', 'meeting_date' => $date]);
+        MeetingActionItem::factory()->create(['meeting_id' => $mine->id, 'title' => 'Circulate notes', 'due_date' => $date, 'assigned_to' => null]);
+        $other = MeetingFactory::new()->create();
+        MeetingActionItem::factory()->create(['meeting_id' => $other->id, 'title' => 'Hidden follow-up', 'due_date' => $date, 'assigned_to' => null]);
+        $this->actingAs($user);
+
+        Livewire::test(MeetingCalendar::class)
+            ->assertSee('Board review')
+            ->assertSee('Circulate notes')
+            ->assertDontSee('Closed door session')
+            ->assertDontSee('Hidden follow-up');
     }
 }

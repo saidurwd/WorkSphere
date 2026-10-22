@@ -3,6 +3,7 @@
 namespace Modules\Meetings\Models;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -60,6 +61,16 @@ class MeetingDecision extends Model
     public function actionItems(): HasMany
     {
         return $this->hasMany(MeetingActionItem::class, 'decision_id');
+    }
+
+    /**
+     * Narrow to the decisions of meetings a user may see.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeVisibleTo(Builder $query, User $user): void
+    {
+        $query->whereHas('meeting', fn (Builder $meeting): Builder => $meeting->visibleTo($user));
     }
 
     public function scopeActive($query)
