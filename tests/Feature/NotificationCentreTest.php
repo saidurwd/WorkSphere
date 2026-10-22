@@ -134,7 +134,7 @@ class NotificationCentreTest extends TestCase
 
     public function test_an_anonymous_visitor_is_sent_to_sign_in(): void
     {
-        $this->get('/workspace/notifications')->assertRedirect('/workspace/login');
+        $this->get('/notifications')->assertRedirect('/login');
     }
 
     public function test_a_notification_links_through_a_route_not_a_stored_url(): void

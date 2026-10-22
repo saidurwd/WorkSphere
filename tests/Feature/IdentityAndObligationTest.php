@@ -87,8 +87,8 @@ class IdentityAndObligationTest extends TestCase
         $user->update(['status' => 'inactive']);
 
         $this->actingAs($user)
-            ->get('/workspace/notifications')
-            ->assertRedirect(route('login'));
+            ->get('/notifications')
+            ->assertRedirect(route('filament.workspace.auth.login'));
 
         $this->assertGuest();
     }
@@ -97,7 +97,7 @@ class IdentityAndObligationTest extends TestCase
     {
         $user = User::factory()->create(['status' => 'active'])->fresh();
 
-        $this->actingAs($user)->get('/workspace/notifications')->assertOk();
+        $this->actingAs($user)->get('/notifications')->assertOk();
     }
 
     public function test_a_new_user_defaults_to_an_unblocked_status(): void
@@ -111,7 +111,7 @@ class IdentityAndObligationTest extends TestCase
             ['inactive', 'suspended', 'disabled'],
         );
 
-        $this->actingAs($user)->get('/workspace/notifications')->assertOk();
+        $this->actingAs($user)->get('/notifications')->assertOk();
     }
 
     public function test_each_blocked_status_is_refused(): void
@@ -121,8 +121,8 @@ class IdentityAndObligationTest extends TestCase
             $user->update(['status' => $status]);
 
             $this->actingAs($user)
-                ->get('/workspace/notifications')
-                ->assertRedirect(route('login'), "Status '{$status}' was allowed through.");
+                ->get('/notifications')
+                ->assertRedirect(route('filament.workspace.auth.login'), "Status '{$status}' was allowed through.");
         }
     }
 

@@ -146,7 +146,7 @@ class FilamentMeetingResourceTest extends TestCase
             ->assertHasFormErrors(['title' => 'required', 'end_time']);
 
         $this->actingAs($this->plainUser());
-        $this->get('/workspace/meetings/create')->assertForbidden();
+        $this->get('/meetings/create')->assertForbidden();
     }
 
     public function test_the_organizer_edits_and_it_is_announced_but_a_viewer_cannot(): void
@@ -166,7 +166,7 @@ class FilamentMeetingResourceTest extends TestCase
         Event::assertDispatched(MeetingUpdated::class);
 
         $this->actingAs($this->userWithPermissions(['meeting.view']));
-        $this->get("/workspace/meetings/{$meeting->id}/edit")->assertForbidden();
+        $this->get("/meetings/{$meeting->id}/edit")->assertForbidden();
     }
 
     public function test_a_stranger_cannot_open_a_meeting_they_have_no_part_in(): void
@@ -174,7 +174,7 @@ class FilamentMeetingResourceTest extends TestCase
         $this->actingAs($this->userWithPermissions(['meeting.create']));
         $meeting = MeetingFactory::new()->create();
 
-        $this->get("/workspace/meetings/{$meeting->id}")->assertNotFound();
+        $this->get("/meetings/{$meeting->id}")->assertNotFound();
     }
 
     public function test_the_lifecycle_runs_start_then_complete_and_announces_each_step(): void
@@ -560,8 +560,8 @@ class FilamentMeetingResourceTest extends TestCase
         MeetingParticipant::factory()->create(['meeting_id' => $meeting->id, 'user_id' => $attendee->id]);
 
         $this->actingAs($attendee);
-        $this->get("/workspace/meetings/{$meeting->id}")->assertOk();
-        $this->get("/workspace/meetings/{$meeting->id}/edit")->assertForbidden();
+        $this->get("/meetings/{$meeting->id}")->assertOk();
+        $this->get("/meetings/{$meeting->id}/edit")->assertForbidden();
         Livewire::test(ViewMeeting::class, ['record' => $meeting->getKey()])
             ->assertActionHidden('start')
             ->assertActionHidden('cancel');
@@ -579,8 +579,8 @@ class FilamentMeetingResourceTest extends TestCase
         $meeting = MeetingFactory::new()->create();
         $this->actingAs($this->userWithPermissions(['meeting.view']));
 
-        $this->get("/workspace/meetings/{$meeting->id}")->assertOk();
-        $this->get("/workspace/meetings/{$meeting->id}/edit")->assertForbidden();
+        $this->get("/meetings/{$meeting->id}")->assertOk();
+        $this->get("/meetings/{$meeting->id}/edit")->assertForbidden();
         Livewire::test(ListMeetings::class)->assertTableActionHidden('delete', $meeting);
     }
 
@@ -588,7 +588,7 @@ class FilamentMeetingResourceTest extends TestCase
     {
         $meeting = MeetingFactory::new()->create();
 
-        $this->get("/workspace/meetings/{$meeting->id}")->assertRedirect('/workspace/login');
+        $this->get("/meetings/{$meeting->id}")->assertRedirect('/login');
 
         $this->actingAs($this->userWithPermissions(['meeting.create']));
         $this->get(route('meetings.print', $meeting))->assertForbidden();

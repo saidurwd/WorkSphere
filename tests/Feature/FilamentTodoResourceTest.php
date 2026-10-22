@@ -77,7 +77,7 @@ class FilamentTodoResourceTest extends TestCase
     {
         $this->actingAs($this->plainUser());
 
-        $this->get('/workspace/todos/create')->assertForbidden();
+        $this->get('/todos/create')->assertForbidden();
     }
 
     public function test_assigning_to_someone_else_needs_its_own_permission(): void
@@ -125,7 +125,7 @@ class FilamentTodoResourceTest extends TestCase
         $this->actingAs($this->userWithPermissions(['todos.create']));
         $theirs = Todo::factory()->create();
 
-        $this->get("/workspace/todos/{$theirs->getKey()}")->assertNotFound();
+        $this->get("/todos/{$theirs->getKey()}")->assertNotFound();
     }
 
     public function test_a_move_the_transition_graph_refuses_is_reported_not_swallowed(): void
@@ -437,7 +437,7 @@ class FilamentTodoResourceTest extends TestCase
     {
         $this->actingAs($this->userWithPermissions(['todos.create']));
 
-        $this->get('/workspace/todo-reports')->assertForbidden();
+        $this->get('/todo-reports')->assertForbidden();
     }
 
     public function test_bulk_actions_are_authorised_per_item_and_report_what_was_skipped(): void
@@ -518,7 +518,7 @@ class FilamentTodoResourceTest extends TestCase
             ->assertCanNotSeeTableRecords([$other]);
 
         $this->actingAs($this->userWithPermissions(['todos.create']));
-        $this->get('/workspace/todo-notification-logs')->assertForbidden();
+        $this->get('/todo-notification-logs')->assertForbidden();
     }
 
     public function test_only_a_super_admin_can_delete_a_notification_log(): void

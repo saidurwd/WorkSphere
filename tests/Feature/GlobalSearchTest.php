@@ -115,7 +115,7 @@ class GlobalSearchTest extends TestCase
 
     public function test_search_requires_authentication(): void
     {
-        $this->get(route('filament.workspace.pages.search'))->assertRedirect('/workspace/login');
+        $this->get(route('filament.workspace.pages.search'))->assertRedirect('/login');
     }
 
     // ---- 1. Permission filtering -------------------------------------------

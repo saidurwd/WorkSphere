@@ -91,7 +91,7 @@ class FilamentTaskResourceTest extends TestCase
     {
         $this->actingAs($this->plainUser());
 
-        $this->get('/workspace/tasks/create')->assertForbidden();
+        $this->get('/tasks/create')->assertForbidden();
     }
 
     public function test_required_fields_are_enforced(): void

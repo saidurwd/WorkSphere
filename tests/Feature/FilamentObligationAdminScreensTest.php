@@ -74,11 +74,11 @@ class FilamentObligationAdminScreensTest extends TestCase
         Vendor::factory()->create();
 
         $this->actingAs($this->plainUser());
-        $this->get('/workspace/vendors')->assertForbidden();
+        $this->get('/vendors')->assertForbidden();
 
         $this->actingAs($this->userWithPermissions(['obligation.view']));
-        $this->get('/workspace/vendors')->assertOk();
-        $this->get('/workspace/vendors/create')->assertForbidden();
+        $this->get('/vendors')->assertOk();
+        $this->get('/vendors/create')->assertForbidden();
     }
 
     private function log(array $attributes = []): NotificationLog
@@ -105,7 +105,7 @@ class FilamentObligationAdminScreensTest extends TestCase
         $todoRow->save();
 
         $this->actingAs($this->userWithPermissions(['obligation.view']));
-        $this->get('/workspace/obligation-notifications')->assertForbidden();
+        $this->get('/obligation-notifications')->assertForbidden();
 
         $this->actingAs($this->userWithPermissions(['obligation.view_notification_logs']));
         Livewire::test(ListObligationNotificationLogs::class)
@@ -180,7 +180,7 @@ class FilamentObligationAdminScreensTest extends TestCase
     {
         $this->actingAs($this->userWithPermissions(['obligation.view']));
 
-        $this->get('/workspace/obligation-reports')->assertForbidden();
+        $this->get('/obligation-reports')->assertForbidden();
     }
 
     public function test_the_calendar_shows_visible_expiries_and_linked_tasks(): void

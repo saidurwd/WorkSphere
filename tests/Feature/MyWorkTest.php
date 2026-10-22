@@ -171,7 +171,7 @@ class MyWorkTest extends TestCase
 
     public function test_the_page_requires_authentication(): void
     {
-        $this->get(route('filament.workspace.pages.my-work'))->assertRedirect('/workspace/login');
+        $this->get(route('filament.workspace.pages.my-work'))->assertRedirect('/login');
     }
 
     public function test_permitted_sources_reflect_the_users_permissions(): void

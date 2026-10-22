@@ -46,7 +46,7 @@ class EnsureAccountIsActive
         }
 
         return redirect()
-            ->route('login')
+            ->route('filament.workspace.auth.login')
             ->withErrors(['email' => 'This account is not active. Please contact an administrator.']);
     }
 

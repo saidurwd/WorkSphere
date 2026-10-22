@@ -124,22 +124,21 @@ class LoginFailureLoggingTest extends TestCase
     {
         $user = $this->superAdmin();
 
-        $this->actingAs($user)->post(route('logout'))->assertRedirect();
+        $this->actingAs($user)->post(route('filament.workspace.auth.logout'))->assertRedirect();
 
         $this->assertDatabaseHas('login_logs', ['user_id' => $user->id, 'event' => LoginLog::LOGOUT]);
     }
 
-    public function test_the_old_addresses_lead_to_the_one_sign_in_page(): void
+    public function test_the_old_addresses_root_leads_to_the_one_sign_in_page(): void
     {
-        $this->get('/login')->assertRedirect('/workspace/login');
-        $this->get('/')->assertRedirect('/workspace');
-        $this->get('/workspace/login')->assertOk();
+        $this->get('/')->assertRedirect('/login');
+        $this->get('/login')->assertOk();
         $this->get('/admin/login')->assertOk();
     }
 
     public function test_password_reset_is_offered_from_the_sign_in_page(): void
     {
-        $this->get('/workspace/login')->assertOk()->assertSee('Forgot password?');
-        $this->get('/workspace/password-reset/request')->assertOk();
+        $this->get('/login')->assertOk()->assertSee('Forgot password?');
+        $this->get('/password-reset/request')->assertOk();
     }
 }

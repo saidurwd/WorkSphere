@@ -172,7 +172,7 @@ class CrossModuleNavigationTest extends TestCase
     {
         $task = TaskFactory::new()->create();
 
-        $this->post(route('todos.links.from.task', $task))->assertRedirect(route('login'));
+        $this->post(route('todos.links.from.task', $task))->assertRedirect(route('filament.workspace.auth.login'));
     }
 
     // ---- Reverse navigation -------------------------------------------------

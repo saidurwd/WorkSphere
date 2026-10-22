@@ -81,7 +81,7 @@ class FilamentProjectResourceTest extends TestCase
     public function test_creating_needs_permission_and_a_name(): void
     {
         $this->actingAs($this->plainUser());
-        $this->get('/workspace/projects/create')->assertForbidden();
+        $this->get('/projects/create')->assertForbidden();
 
         $this->actingAs($this->userWithPermissions(['project.create']));
         Livewire::test(CreateProject::class)
@@ -103,7 +103,7 @@ class FilamentProjectResourceTest extends TestCase
         $this->assertSame('Renamed', $project->fresh()->name);
 
         $this->actingAs($this->userWithPermissions(['project.view']));
-        $this->get("/workspace/projects/{$project->id}/edit")->assertForbidden();
+        $this->get("/projects/{$project->id}/edit")->assertForbidden();
     }
 
     public function test_only_project_delete_or_super_admin_can_delete(): void
@@ -124,7 +124,7 @@ class FilamentProjectResourceTest extends TestCase
         $this->actingAs($this->userWithPermissions(['project.create']));
         $project = Project::factory()->create();
 
-        $this->get("/workspace/projects/{$project->id}")->assertNotFound();
+        $this->get("/projects/{$project->id}")->assertNotFound();
     }
 
     public function test_the_project_page_lists_its_tasks(): void

@@ -93,7 +93,7 @@ class FilamentTaskAdminScreensTest extends TestCase
         $log = TaskNotificationLog::factory()->create();
 
         $this->actingAs($this->userWithPermissions(['task.view']));
-        $this->get('/workspace/task-notification-logs')->assertForbidden();
+        $this->get('/task-notification-logs')->assertForbidden();
 
         $this->actingAs($this->userWithPermissions(['task.view_notification_logs']));
         Livewire::test(ListTaskNotificationLogs::class)

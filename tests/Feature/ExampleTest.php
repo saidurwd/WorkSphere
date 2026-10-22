@@ -12,6 +12,6 @@ class ExampleTest extends TestCase
      */
     public function test_the_application_root_redirects_anonymous_visitors_to_login(): void
     {
-        $this->get('/')->assertRedirect('/workspace');
+        $this->get('/')->assertRedirect('/login');
     }
 }

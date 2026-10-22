@@ -141,7 +141,7 @@ class FilamentObligationResourceTest extends TestCase
     {
         $this->actingAs($this->plainUser());
 
-        $this->get('/workspace/obligations/create')->assertForbidden();
+        $this->get('/obligations/create')->assertForbidden();
     }
 
     public function test_the_owner_edits_and_it_is_logged_but_a_viewer_cannot(): void
@@ -159,7 +159,7 @@ class FilamentObligationResourceTest extends TestCase
         $this->assertDatabaseHas('obligation_activity_logs', ['obligation_id' => $obligation->id, 'action' => 'UPDATED']);
 
         $this->actingAs($this->userWithPermissions(['obligation.view']));
-        $this->get("/workspace/obligations/{$obligation->id}/edit")->assertForbidden();
+        $this->get("/obligations/{$obligation->id}/edit")->assertForbidden();
     }
 
     public function test_a_stranger_cannot_open_an_obligation_they_have_no_stake_in(): void
@@ -167,7 +167,7 @@ class FilamentObligationResourceTest extends TestCase
         $this->actingAs($this->userWithPermissions(['obligation.create']));
         $obligation = ObligationFactory::new()->create();
 
-        $this->get("/workspace/obligations/{$obligation->id}")->assertNotFound();
+        $this->get("/obligations/{$obligation->id}")->assertNotFound();
     }
 
     public function test_deleting_is_for_the_owner_or_obligation_delete(): void
@@ -281,11 +281,11 @@ class FilamentObligationResourceTest extends TestCase
         ObligationResponsibility::factory()->create(['obligation_id' => $obligation->id, 'user_id' => $lapsed->id, 'active' => false]);
 
         $this->actingAs($holder);
-        $this->get("/workspace/obligations/{$obligation->id}")->assertOk();
-        $this->get("/workspace/obligations/{$obligation->id}/edit")->assertForbidden();
+        $this->get("/obligations/{$obligation->id}")->assertOk();
+        $this->get("/obligations/{$obligation->id}/edit")->assertForbidden();
 
         $this->actingAs($lapsed);
-        $this->get("/workspace/obligations/{$obligation->id}")->assertNotFound();
+        $this->get("/obligations/{$obligation->id}")->assertNotFound();
     }
 
     public function test_a_super_admin_may_edit_any_obligation_and_a_stranger_cannot_change_one(): void
@@ -300,7 +300,7 @@ class FilamentObligationResourceTest extends TestCase
         $this->assertSame('Admin edit', $obligation->fresh()->title);
 
         $this->actingAs($this->userWithPermissions(['obligation.create']));
-        $this->get("/workspace/obligations/{$obligation->id}/edit")->assertNotFound();
+        $this->get("/obligations/{$obligation->id}/edit")->assertNotFound();
     }
 
     public function test_obligation_view_alone_does_not_grant_update_or_delete(): void
@@ -308,8 +308,8 @@ class FilamentObligationResourceTest extends TestCase
         $obligation = ObligationFactory::new()->create();
         $this->actingAs($this->userWithPermissions(['obligation.view']));
 
-        $this->get("/workspace/obligations/{$obligation->id}")->assertOk();
-        $this->get("/workspace/obligations/{$obligation->id}/edit")->assertForbidden();
+        $this->get("/obligations/{$obligation->id}")->assertOk();
+        $this->get("/obligations/{$obligation->id}/edit")->assertForbidden();
 
         Livewire::test(ListObligations::class)->assertTableActionHidden('delete', $obligation);
     }
@@ -318,7 +318,7 @@ class FilamentObligationResourceTest extends TestCase
     {
         $obligation = ObligationFactory::new()->create();
 
-        $this->get("/workspace/obligations/{$obligation->id}")->assertRedirect('/workspace/login');
+        $this->get("/obligations/{$obligation->id}")->assertRedirect('/login');
     }
 
     public function test_the_backfill_command_mirrors_older_documents_and_is_idempotent(): void

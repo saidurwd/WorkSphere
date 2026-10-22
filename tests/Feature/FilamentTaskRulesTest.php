@@ -54,15 +54,15 @@ class FilamentTaskRulesTest extends TestCase
         $this->actingAs($this->userWithPermissions(['task.create']));
         $task = $this->task();
 
-        $this->get("/workspace/tasks/{$task->id}")->assertNotFound();
-        $this->get("/workspace/tasks/{$task->id}/edit")->assertNotFound();
+        $this->get("/tasks/{$task->id}")->assertNotFound();
+        $this->get("/tasks/{$task->id}/edit")->assertNotFound();
     }
 
     public function test_an_anonymous_visitor_is_sent_to_sign_in(): void
     {
         $task = $this->task();
 
-        $this->get("/workspace/tasks/{$task->id}")->assertRedirect('/workspace/login');
+        $this->get("/tasks/{$task->id}")->assertRedirect('/login');
     }
 
     public function test_the_owner_and_the_responsible_user_may_both_edit(): void
@@ -88,8 +88,8 @@ class FilamentTaskRulesTest extends TestCase
         $this->actingAs($this->userWithPermissions(['task.view']));
         $task = $this->task();
 
-        $this->get("/workspace/tasks/{$task->id}")->assertOk();
-        $this->get("/workspace/tasks/{$task->id}/edit")->assertForbidden();
+        $this->get("/tasks/{$task->id}")->assertOk();
+        $this->get("/tasks/{$task->id}/edit")->assertForbidden();
 
         Livewire::test(ListTasks::class)
             ->assertCanSeeTableRecords([$task])
@@ -117,9 +117,9 @@ class FilamentTaskRulesTest extends TestCase
         $this->actingAs($watcher);
 
         Livewire::test(ListTasks::class)->assertCanSeeTableRecords([$task]);
-        $response = $this->get("/workspace/tasks/{$task->id}");
+        $response = $this->get("/tasks/{$task->id}");
         $response->assertOk();
-        $this->get("/workspace/tasks/{$task->id}/edit")->assertForbidden();
+        $this->get("/tasks/{$task->id}/edit")->assertForbidden();
     }
 
     public function test_a_stranger_cannot_manage_the_watcher_list_or_tags_or_subtasks_or_time(): void
@@ -136,7 +136,7 @@ class FilamentTaskRulesTest extends TestCase
     {
         $this->actingAs($this->plainUser());
 
-        $this->get('/workspace/task-transfers/create')->assertForbidden();
+        $this->get('/task-transfers/create')->assertForbidden();
     }
 
     // ---- validation --------------------------------------------------------

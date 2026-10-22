@@ -43,7 +43,7 @@ class FilamentUserResourceTest extends TestCase
         $user = $this->superAdmin();
         $user->update(['status' => 'inactive']);
 
-        $this->actingAs($user)->get('/admin')->assertRedirect(route('login'));
+        $this->actingAs($user)->get('/admin')->assertRedirect(route('filament.workspace.auth.login'));
         $this->assertGuest();
     }
 

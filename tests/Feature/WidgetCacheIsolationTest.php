@@ -156,10 +156,10 @@ class WidgetCacheIsolationTest extends TestCase
         Task::factory()->create(['title' => 'ALICE TASK', 'user_id' => $alice->id]);
         Meeting::factory()->organisedBy($alice)->create(['title' => 'ALICE MEETING']);
 
-        $this->actingAs($alice)->get('/workspace')->assertOk();
+        $this->actingAs($alice)->get('/')->assertOk();
 
         // Bob's first dashboard load, with Alice's already cached.
-        $this->actingAs($bob)->get('/workspace')->assertOk();
+        $this->actingAs($bob)->get('/')->assertOk();
 
         $data = $this->registry->resolveFor($bob);
 

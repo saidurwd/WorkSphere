@@ -37,7 +37,7 @@ class SecurityHardeningTest extends TestCase
 
     public function test_a_page_carries_every_security_header(): void
     {
-        $response = $this->get('/workspace/login');
+        $response = $this->get('/login');
 
         foreach ([
             'X-Frame-Options',
@@ -55,7 +55,7 @@ class SecurityHardeningTest extends TestCase
 
     public function test_the_frame_and_sniff_headers_have_the_right_values(): void
     {
-        $response = $this->get('/workspace/login');
+        $response = $this->get('/login');
 
         $this->assertSame('SAMEORIGIN', $response->headers->get('X-Frame-Options'));
         $this->assertSame('nosniff', $response->headers->get('X-Content-Type-Options'));
@@ -64,7 +64,7 @@ class SecurityHardeningTest extends TestCase
 
     public function test_the_csp_denies_framing_objects_and_base_tag_hijacking(): void
     {
-        $csp = (string) $this->get('/workspace/login')->headers->get('Content-Security-Policy');
+        $csp = (string) $this->get('/login')->headers->get('Content-Security-Policy');
 
         $this->assertStringContainsString("default-src 'self'", $csp);
         $this->assertStringContainsString("object-src 'none'", $csp);
@@ -72,9 +72,9 @@ class SecurityHardeningTest extends TestCase
         $this->assertStringContainsString("frame-ancestors 'self'", $csp);
         $this->assertStringContainsString("form-action 'self'", $csp);
 
-        // Outside the panels, scripts must NOT be allowed to run inline, or the
+        // Outside the panels (API, print, exports), scripts must NOT be allowed to run inline, or the
         // policy is decorative.
-        $strict = (string) $this->get('/no-such-page')->headers->get('Content-Security-Policy');
+        $strict = (string) $this->get('/api/no-such-page')->headers->get('Content-Security-Policy');
 
         $this->assertStringContainsString("script-src 'self';", $strict.';');
         $this->assertStringNotContainsString("'unsafe-inline'", explode('style-src', $strict)[0]);
@@ -82,7 +82,7 @@ class SecurityHardeningTest extends TestCase
 
     public function test_only_the_panels_may_run_inline_scripts(): void
     {
-        $panel = (string) $this->get('/workspace/login')->headers->get('Content-Security-Policy');
+        $panel = (string) $this->get('/login')->headers->get('Content-Security-Policy');
 
         // Filament renders inline scripts and Alpine evaluates its templates.
         $this->assertStringContainsString("script-src 'self' 'unsafe-inline' 'unsafe-eval'", $panel);
@@ -92,7 +92,7 @@ class SecurityHardeningTest extends TestCase
         $this->assertStringContainsString("frame-ancestors 'self'", $panel);
         $this->assertStringContainsString("connect-src 'self'", $panel);
 
-        foreach (['/no-such-page', '/login'] as $path) {
+        foreach (['/api/no-such-page', '/meetings/1/print'] as $path) {
             $this->assertStringNotContainsString(
                 "'unsafe-eval'",
                 (string) $this->get($path)->headers->get('Content-Security-Policy'),
@@ -103,7 +103,7 @@ class SecurityHardeningTest extends TestCase
 
     public function test_the_policy_covers_the_themes_the_app_actually_uses(): void
     {
-        $csp = (string) $this->get('/workspace/login')->headers->get('Content-Security-Policy');
+        $csp = (string) $this->get('/login')->headers->get('Content-Security-Policy');
 
         // AdminLTE, TomSelect and flatpickr all set inline styles at runtime.
         // Denying that visibly breaks the UI, so inline STYLE is permitted even
@@ -116,7 +116,7 @@ class SecurityHardeningTest extends TestCase
         $user = $this->userWithPermissions(['todos.view']);
         Todo::factory()->createdBy($user)->create(['title' => 'Still visible']);
 
-        $response = $this->actingAs($user)->get('/workspace/todos');
+        $response = $this->actingAs($user)->get('/todos');
 
         $response->assertOk();
         $response->assertSee('Still visible');
@@ -138,7 +138,7 @@ class SecurityHardeningTest extends TestCase
         // Sending HSTS over HTTP is meaningless, and it tells a man-in-the-middle
         // that a downgrade would still be pinned.
         $this->assertFalse(
-            $this->get('/workspace/login')->headers->has('Strict-Transport-Security'),
+            $this->get('/login')->headers->has('Strict-Transport-Security'),
         );
     }
 

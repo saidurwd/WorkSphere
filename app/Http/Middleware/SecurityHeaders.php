@@ -70,25 +70,27 @@ class SecurityHeaders
     }
 
     /**
-     * Paths served by the Filament panels.
+     * Paths NOT served by the Filament panels. The workspace panel lives at the site
+     * root, so the panels are everything except these.
      *
      * Filament and Livewire render inline scripts (the theme and sidebar bootstrap,
      * the page's data) and Alpine evaluates the expressions in its templates, so the
      * strict script policy used everywhere else makes those pages unusable. They
-     * therefore get `'unsafe-inline' 'unsafe-eval'` for scripts, and only they do.
+     * therefore get `'unsafe-inline' 'unsafe-eval'` for scripts, and only they do: the
+     * API, the print view and the export downloads keep the strict policy.
      * Everything else — framing, objects, base tags, form targets, default sources —
      * is as strict as on any other page. Revisit when Filament ships a nonce-based
      * integration.
      *
      * @var list<string>
      */
-    private const PANEL_PATHS = ['admin', 'admin/*', 'workspace', 'workspace/*', 'livewire*'];
+    private const NON_PANEL_PATHS = ['api/*', 'meetings/*/print', 'reports/*', 'dashboard/*', 'storage/*'];
 
     protected function contentSecurityPolicy(Request $request, Response $response): void
     {
-        $scripts = $request->is(self::PANEL_PATHS)
-            ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
-            : "script-src 'self'";
+        $scripts = $request->is(self::NON_PANEL_PATHS)
+            ? "script-src 'self'"
+            : "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
 
         $directives = [
             "default-src 'self'",

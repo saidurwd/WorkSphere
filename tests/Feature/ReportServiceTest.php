@@ -279,8 +279,8 @@ class ReportServiceTest extends TestCase
 
     public function test_reports_require_authentication(): void
     {
-        $this->get(route('filament.workspace.pages.task-completion-report'))->assertRedirect('/workspace/login');
-        $this->get(route('reports.tasks.export'))->assertRedirect(route('login'));
+        $this->get(route('filament.workspace.pages.task-completion-report'))->assertRedirect('/login');
+        $this->get(route('reports.tasks.export'))->assertRedirect(route('filament.workspace.auth.login'));
     }
 
     public function test_a_reversed_date_range_is_swapped(): void

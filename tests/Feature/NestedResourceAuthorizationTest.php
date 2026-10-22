@@ -29,17 +29,17 @@ class NestedResourceAuthorizationTest extends TestCase
     {
         return [
             'task' => [
-                '/workspace/task-notification-logs',
+                '/task-notification-logs',
                 'task.view_notification_logs',
                 ['task.view'],
             ],
             'meeting' => [
-                '/workspace/meeting-notification-logs',
+                '/meeting-notification-logs',
                 'meeting.view_notification_logs',
                 ['meeting.view'],
             ],
             'obligation' => [
-                '/workspace/obligation-notifications',
+                '/obligation-notifications',
                 'obligation.view_notification_logs',
                 ['obligation.view'],
             ],

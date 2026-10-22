@@ -72,7 +72,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 | Request::HEADER_X_FORWARDED_PROTO,
         );
 
-        $middleware->redirectGuestsTo(fn () => route('login'));
+        $middleware->redirectGuestsTo(fn () => route('filament.workspace.auth.login'));
     })
     ->withSchedule(function (Schedule $schedule) {
         // Defined in a class rather than inline so it can be asserted without the

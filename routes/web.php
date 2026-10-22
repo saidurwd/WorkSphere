@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Admin\System\HealthController;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\ReportController;
 use App\Models\User;
@@ -11,14 +10,6 @@ use Illuminate\Support\Facades\Route;
 // Route::get('/', function () {
 //     return view('welcome');
 // });
-
-Route::redirect('/', '/workspace');
-
-// Sign-in lives in the Filament panels (one page, App\Filament\Auth\Login). The
-// name stays because the `auth` middleware redirects guests to `route('login')`.
-Route::get('login', fn () => redirect('/workspace/login'))->name('login');
-
-Route::middleware(['web', 'auth'])->post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
 /*
 |--------------------------------------------------------------------------

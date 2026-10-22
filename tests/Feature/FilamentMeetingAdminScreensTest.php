@@ -96,12 +96,12 @@ class FilamentMeetingAdminScreensTest extends TestCase
     {
         $this->actingAs($this->userWithPermissions(['meeting.view']));
 
-        $this->get('/workspace/meeting-types')->assertOk();
-        $this->get('/workspace/meeting-types/create')->assertForbidden();
-        $this->get('/workspace/meeting-tags/create')->assertForbidden();
+        $this->get('/meeting-types')->assertOk();
+        $this->get('/meeting-types/create')->assertForbidden();
+        $this->get('/meeting-tags/create')->assertForbidden();
 
         $this->actingAs($this->plainUser());
-        $this->get('/workspace/meeting-types')->assertForbidden();
+        $this->get('/meeting-types')->assertForbidden();
     }
 
     private function templateForm(): array
@@ -213,11 +213,11 @@ class FilamentMeetingAdminScreensTest extends TestCase
         MeetingTemplate::factory()->create();
 
         $this->actingAs($this->userWithPermissions(['meeting.view', 'meeting.create']));
-        $this->get('/workspace/meeting-templates')->assertForbidden();
-        $this->get('/workspace/meeting-templates/create')->assertForbidden();
+        $this->get('/meeting-templates')->assertForbidden();
+        $this->get('/meeting-templates/create')->assertForbidden();
 
         $this->actingAs($this->userWithPermissions(['meeting.manage_templates']));
-        $this->get('/workspace/meeting-templates')->assertOk();
+        $this->get('/meeting-templates')->assertOk();
     }
 
     public function test_the_notification_log_needs_its_permission_and_only_a_super_admin_deletes(): void
@@ -226,7 +226,7 @@ class FilamentMeetingAdminScreensTest extends TestCase
         $sent = MeetingNotificationLog::factory()->create(['status' => 'sent']);
 
         $this->actingAs($this->userWithPermissions(['meeting.view']));
-        $this->get('/workspace/meeting-notification-logs')->assertForbidden();
+        $this->get('/meeting-notification-logs')->assertForbidden();
 
         $this->actingAs($this->userWithPermissions(['meeting.view_notification_logs']));
         Livewire::test(ListMeetingNotificationLogs::class)
@@ -308,7 +308,7 @@ class FilamentMeetingAdminScreensTest extends TestCase
         MeetingActionItem::factory()->create(['meeting_id' => $theirs->id, 'assigned_to' => $stranger->id, 'status' => 'open']);
 
         $this->actingAs($user);
-        $this->get('/workspace/meeting-reports')->assertForbidden();
+        $this->get('/meeting-reports')->assertForbidden();
 
         $viewer = $this->userWithPermissions(['meeting.view_reports', 'meeting.create']);
         $mineToo = MeetingFactory::new()->create(['organizer_id' => $viewer->id]);

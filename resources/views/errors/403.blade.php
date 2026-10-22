@@ -19,7 +19,7 @@
         <h1>403</h1>
         <h2>Access restricted</h2>
         <p>You do not have permission to view this resource. If you believe this is an error, please contact your administrator.</p>
-        <p><a href="{{ url('/workspace') }}">Back to the workspace</a></p>
+        <p><a href="{{ url('/') }}">Back to the workspace</a></p>
     </main>
 </body>
 </html>
