@@ -19,6 +19,7 @@ use Modules\Meetings\Filament\Resources\Tags\Pages\CreateMeetingTag;
 use Modules\Meetings\Filament\Resources\Tags\Pages\EditMeetingTag;
 use Modules\Meetings\Filament\Resources\Tags\Pages\ListMeetingTags;
 use Modules\Meetings\Models\MeetingTag;
+use UnitEnum;
 
 /**
  * Meeting tags. Changing them needs `meeting.manage_tags`; reading the list needs
@@ -33,6 +34,8 @@ class MeetingTagResource extends Resource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHashtag;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Meetings';
 
     protected static ?int $navigationSort = 42;
 

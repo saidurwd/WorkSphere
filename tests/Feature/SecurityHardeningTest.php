@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Filament\Auth\Login;
+use App\Filament\Pages\System\DatabaseBackupsPage;
 use App\Models\ActivityLog;
 use App\Models\Role;
 use App\Models\User;
@@ -329,7 +330,7 @@ class SecurityHardeningTest extends TestCase
 
         // An `admin` is NOT enough — this was the Phase 11 finding.
         $this->actingAs($admin->fresh())
-            ->get(route('dashboard.database-backups.index'))
+            ->get('/admin/system/database-backups')
             ->assertForbidden();
     }
 
@@ -338,7 +339,7 @@ class SecurityHardeningTest extends TestCase
         Storage::fake('local');
 
         $this->actingAs($this->superAdmin())
-            ->get(route('dashboard.database-backups.index'))
+            ->get('/admin/system/database-backups')
             ->assertOk();
     }
 
@@ -364,9 +365,9 @@ class SecurityHardeningTest extends TestCase
 
         $super = $this->superAdmin();
 
-        $this->actingAs($super)
-            ->post(route('dashboard.database-backups.store'), ['name' => 'verify'])
-            ->assertRedirect();
+        $this->actingAs($super);
+        Filament::setCurrentPanel('admin');
+        Livewire::test(DatabaseBackupsPage::class)->callAction('backup', ['name' => 'verify']);
 
         $files = Storage::disk('local')->files('backups');
 
@@ -391,8 +392,9 @@ class SecurityHardeningTest extends TestCase
 
         $super = $this->superAdmin();
 
-        $this->actingAs($super)
-            ->post(route('dashboard.database-backups.store'), ['name' => 'audited']);
+        $this->actingAs($super);
+        Filament::setCurrentPanel('admin');
+        Livewire::test(DatabaseBackupsPage::class)->callAction('backup', ['name' => 'audited']);
 
         $this->assertDatabaseHas('activity_logs', [
             'module_name' => 'DatabaseBackup',
@@ -424,9 +426,9 @@ class SecurityHardeningTest extends TestCase
             Storage::disk('local')->put('backups/old_'.$index.'.enc', 'x');
         }
 
-        $this->actingAs($super)
-            ->post(route('dashboard.database-backups.store'), ['name' => 'new'])
-            ->assertRedirect();
+        $this->actingAs($super);
+        Filament::setCurrentPanel('admin');
+        Livewire::test(DatabaseBackupsPage::class)->callAction('backup', ['name' => 'new']);
 
         $this->assertLessThanOrEqual(
             5,

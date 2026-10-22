@@ -45,6 +45,7 @@ use Modules\Todos\Filament\Resources\Todos\RelationManagers\WatchersRelationMana
 use Modules\Todos\Models\Todo;
 use Modules\Todos\Policies\TodoPolicy;
 use Modules\Todos\Services\TodoService;
+use UnitEnum;
 
 /**
  * To-Dos in the Filament workspace panel.
@@ -65,6 +66,8 @@ class TodoResource extends Resource
     protected static ?string $recordTitleAttribute = 'title';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCheckCircle;
+
+    protected static string|UnitEnum|null $navigationGroup = 'To-Dos';
 
     protected static ?int $navigationSort = 1;
 

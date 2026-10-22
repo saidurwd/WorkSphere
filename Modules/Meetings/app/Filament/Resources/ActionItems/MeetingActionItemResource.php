@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
 use Modules\Meetings\Filament\Resources\ActionItems\Pages\ListMeetingActionItems;
 use Modules\Meetings\Filament\Resources\Meetings\MeetingResource;
 use Modules\Meetings\Models\MeetingActionItem;
+use UnitEnum;
 
 /**
  * Every action item across the meetings the viewer can see — the register and, with
@@ -27,6 +28,8 @@ class MeetingActionItemResource extends Resource
     protected static ?string $modelLabel = 'action item';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedListBullet;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Meetings';
 
     protected static ?string $navigationLabel = 'Action items';
 

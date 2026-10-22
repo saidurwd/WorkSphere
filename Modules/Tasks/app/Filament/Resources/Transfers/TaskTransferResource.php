@@ -25,6 +25,7 @@ use Modules\Tasks\Filament\Resources\Transfers\Pages\CreateTaskTransfer;
 use Modules\Tasks\Filament\Resources\Transfers\Pages\ListTaskTransfers;
 use Modules\Tasks\Models\Task;
 use Modules\Tasks\Models\TaskTransfer;
+use UnitEnum;
 
 /**
  * Hand-overs of a task from one responsible user to another.
@@ -41,6 +42,8 @@ class TaskTransferResource extends Resource
     protected static ?string $modelLabel = 'task transfer';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowsRightLeft;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Tasks';
 
     protected static ?string $navigationLabel = 'Transfers';
 

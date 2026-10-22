@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Gate;
 use Modules\Obligations\Models\NotificationLog;
 use Modules\Todos\Filament\Resources\NotificationLogs\Pages\ListTodoNotificationLogs;
 use Modules\Todos\Models\Todo;
+use UnitEnum;
 
 /**
  * Delivery log for To-Do notifications.
@@ -32,6 +33,8 @@ class TodoNotificationLogResource extends Resource
     protected static ?string $modelLabel = 'notification log';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBell;
+
+    protected static string|UnitEnum|null $navigationGroup = 'To-Dos';
 
     protected static ?string $navigationLabel = 'Notification log';
 

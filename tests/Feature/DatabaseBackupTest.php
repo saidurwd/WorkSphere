@@ -2,14 +2,16 @@
 
 namespace Tests\Feature;
 
-use App\Http\Controllers\DatabaseBackupController;
+use App\Filament\Pages\System\DatabaseBackupsPage;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\DatabaseBackups;
 use App\Services\MysqlDumpExport;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
-use ReflectionMethod;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class DatabaseBackupTest extends TestCase
@@ -21,11 +23,12 @@ class DatabaseBackupTest extends TestCase
         parent::setUp();
 
         Storage::fake('local');
+        Filament::setCurrentPanel('admin');
     }
 
     private function adminUser(): User
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create()->fresh();
 
         $adminRole = Role::firstOrCreate(
             ['slug' => 'super-admin'],
@@ -55,11 +58,9 @@ class DatabaseBackupTest extends TestCase
 
     public function test_index_page_loads(): void
     {
-        $response = $this->actingAs($this->adminUser())
-            ->get(route('dashboard.database-backups.index'));
+        $this->actingAs($this->adminUser());
 
-        $response->assertStatus(200);
-        $response->assertSee('Database Backup');
+        Livewire::test(DatabaseBackupsPage::class)->assertOk()->assertSee('Database backups');
     }
 
     public function test_index_lists_an_existing_backup(): void
@@ -71,15 +72,14 @@ class DatabaseBackupTest extends TestCase
         // every other test here starts from an empty fake disk.
         Storage::disk('local')->put('backups/worksphere_20260101_090000.enc', str_repeat('x', 2048));
 
-        $response = $this->actingAs($this->adminUser())
-            ->get(route('dashboard.database-backups.index'));
+        $this->actingAs($this->adminUser());
 
-        $response->assertStatus(200);
-        $response->assertSee('worksphere_20260101_090000.enc');
-        // 2048 bytes as 2.0 KB, and a relative age — never the raw byte count or
-        // a Unix timestamp, which is what the controller used to pass.
-        $response->assertSee('2.0 KB');
-        $response->assertSee('ago');
+        Livewire::test(DatabaseBackupsPage::class)
+            ->assertSee('worksphere_20260101_090000.enc')
+            // 2048 bytes as 2.0 KB, and a relative age — never the raw byte count or
+            // a Unix timestamp.
+            ->assertSee('2.0 KB')
+            ->assertSee('ago');
     }
 
     public function test_index_orders_backups_newest_first(): void
@@ -90,52 +90,36 @@ class DatabaseBackupTest extends TestCase
         Storage::disk('local')->put('backups/older.enc', str_repeat('x', 1024));
         Storage::disk('local')->put('backups/newer.enc', str_repeat('x', 1024));
 
-        $content = $this->actingAs($this->adminUser())
-            ->get(route('dashboard.database-backups.index'))
-            ->assertStatus(200)
-            ->getContent();
-
-        $this->assertIsString($content);
+        $this->actingAs($this->adminUser());
 
         // Same-second mtimes make a strict order assertion flaky, so this only
         // pins that both rows render and neither throws.
-        $this->assertStringContainsString('older.enc', $content);
-        $this->assertStringContainsString('newer.enc', $content);
+        Livewire::test(DatabaseBackupsPage::class)->assertSee('older.enc')->assertSee('newer.enc');
     }
 
     public function test_human_size_reports_binary_units(): void
     {
-        $controller = app(DatabaseBackupController::class);
+        $backups = app(DatabaseBackups::class);
 
-        $method = new ReflectionMethod($controller, 'humanSize');
-
-        $this->assertSame('0 B', $method->invoke($controller, 0));
-        $this->assertSame('512 B', $method->invoke($controller, 512));
-        $this->assertSame('1.0 KB', $method->invoke($controller, 1024));
-        $this->assertSame('1.5 MB', $method->invoke($controller, 1024 * 1024 * 1.5));
-        $this->assertSame('2.0 GB', $method->invoke($controller, 2 * 1024 * 1024 * 1024));
+        $this->assertSame('0 B', $backups->humanSize(0));
+        $this->assertSame('512 B', $backups->humanSize(512));
+        $this->assertSame('1.0 KB', $backups->humanSize(1024));
+        $this->assertSame('1.5 MB', $backups->humanSize((int) (1024 * 1024 * 1.5)));
+        $this->assertSame('2.0 GB', $backups->humanSize(2 * 1024 * 1024 * 1024));
     }
 
     public function test_anonymous_user_is_redirected_to_login(): void
     {
-        $this->get(route('dashboard.database-backups.index'))
-            ->assertRedirect(route('login'));
+        $this->get('/admin/system/database-backups')->assertRedirect('/admin/login');
     }
 
     public function test_store_creates_a_backup_file(): void
     {
         $this->fakeExporter();
 
-        $response = $this->actingAs($this->adminUser())
-            ->post(route('dashboard.database-backups.store'), [
-                'name' => 'smoke-test',
-            ]);
+        $this->actingAs($this->adminUser());
 
-        // Phase 11 made this `back()`: the store is an action on the index
-        // screen, which a plain `admin` can no longer reach now that backups are
-        // super-admin only. A redirect to a forbidden page would be a dead end.
-        $response->assertRedirect();
-        $response->assertSessionHas('success');
+        Livewire::test(DatabaseBackupsPage::class)->callAction('backup', ['name' => 'smoke-test'])->assertNotified('Backup created and encrypted');
 
         $files = Storage::disk('local')->files('backups');
         $this->assertNotEmpty($files);
@@ -146,8 +130,8 @@ class DatabaseBackupTest extends TestCase
     {
         $this->fakeExporter('SELECT 1;');
 
-        $this->actingAs($this->adminUser())
-            ->post(route('dashboard.database-backups.store'), ['name' => 'content']);
+        $this->actingAs($this->adminUser());
+        Livewire::test(DatabaseBackupsPage::class)->callAction('backup', ['name' => 'content']);
 
         $files = Storage::disk('local')->files('backups');
 
@@ -167,8 +151,8 @@ class DatabaseBackupTest extends TestCase
     {
         $this->fakeExporter();
 
-        $this->actingAs($this->adminUser())
-            ->post(route('dashboard.database-backups.store'), ['name' => '../../etc/passwd']);
+        $this->actingAs($this->adminUser());
+        Livewire::test(DatabaseBackupsPage::class)->callAction('backup', ['name' => '../../etc/passwd']);
 
         $files = Storage::disk('local')->files('backups');
 
@@ -180,13 +164,14 @@ class DatabaseBackupTest extends TestCase
     {
         $this->fakeExporter();
 
-        $this->actingAs($this->adminUser())
-            ->post(route('dashboard.database-backups.store'));
+        $admin = $this->adminUser();
+        $this->actingAs($admin);
+        Livewire::test(DatabaseBackupsPage::class)->callAction('backup');
 
         $files = Storage::disk('local')->files('backups');
         $filename = basename($files[0]);
 
-        $response = $this->actingAs($this->adminUser())
+        $response = $this->actingAs($admin)
             ->get(route('dashboard.database-backups.download', $filename));
 
         $response->assertStatus(200);
@@ -208,16 +193,15 @@ class DatabaseBackupTest extends TestCase
     {
         $this->fakeExporter();
 
-        $this->actingAs($this->adminUser())
-            ->post(route('dashboard.database-backups.store'));
+        $admin = $this->adminUser();
+        $this->actingAs($admin);
+        Livewire::test(DatabaseBackupsPage::class)->callAction('backup');
 
         $files = Storage::disk('local')->files('backups');
         $filename = basename($files[0]);
 
-        $response = $this->actingAs($this->adminUser())
-            ->delete(route('dashboard.database-backups.destroy', $filename));
+        Livewire::test(DatabaseBackupsPage::class)->call('deleteBackup', $filename);
 
-        $response->assertRedirect();
         Storage::disk('local')->assertMissing('backups/'.$filename);
     }
 }

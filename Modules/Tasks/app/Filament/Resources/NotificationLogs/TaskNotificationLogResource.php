@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Modules\Tasks\Filament\Resources\NotificationLogs\Pages\ListTaskNotificationLogs;
 use Modules\Tasks\Models\TaskNotificationLog;
+use UnitEnum;
 
 /**
  * Delivery log for task notifications. Viewing is `task.view_notification_logs`;
@@ -26,6 +27,8 @@ class TaskNotificationLogResource extends Resource
     protected static ?string $modelLabel = 'task notification log';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBell;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Tasks';
 
     protected static ?string $navigationLabel = 'Task notification log';
 

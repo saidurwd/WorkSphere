@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Modules\Meetings\Filament\Resources\NotificationLogs\Pages\ListMeetingNotificationLogs;
 use Modules\Meetings\Models\MeetingNotificationLog;
+use UnitEnum;
 
 /**
  * Delivery log for meeting notifications. Viewing is
@@ -27,6 +28,8 @@ class MeetingNotificationLogResource extends Resource
     protected static ?string $modelLabel = 'meeting notification log';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBell;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Meetings';
 
     protected static ?string $navigationLabel = 'Meeting notification log';
 

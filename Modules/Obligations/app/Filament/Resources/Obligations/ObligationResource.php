@@ -37,6 +37,7 @@ use Modules\Obligations\Models\Obligation;
 use Modules\Obligations\Models\ObligationCategory;
 use Modules\Obligations\Models\ObligationType;
 use Modules\Obligations\Models\Vendor;
+use UnitEnum;
 
 /**
  * Obligations in the Filament workspace panel.
@@ -52,6 +53,8 @@ class ObligationResource extends Resource
     protected static ?string $recordTitleAttribute = 'title';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentCheck;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Obligations';
 
     protected static ?int $navigationSort = 30;
 

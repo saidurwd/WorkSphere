@@ -8,6 +8,7 @@ use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Modules\Meetings\Models\Meeting;
 use Modules\Meetings\Models\MeetingActionItem;
+use UnitEnum;
 
 /**
  * A month grid of the meetings the viewer may see and the action items due.
@@ -15,6 +16,8 @@ use Modules\Meetings\Models\MeetingActionItem;
 class MeetingCalendar extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Meetings';
 
     protected static ?string $navigationLabel = 'Meeting calendar';
 

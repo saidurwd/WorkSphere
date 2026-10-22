@@ -75,8 +75,8 @@ class PageBenchmark
             ['label' => 'task transfers', 'uri' => '/workspace/task-transfers', 'kind' => 'web', 'budget' => 20, 'needs' => []],
 
             // Reports — the aggregation-heavy reads.
-            ['label' => 'tasks report', 'uri' => '/reports/tasks', 'kind' => 'web', 'budget' => 20, 'needs' => []],
-            ['label' => 'task workload report', 'uri' => '/reports/task-workload', 'kind' => 'web', 'budget' => 20, 'needs' => []],
+            ['label' => 'tasks report', 'uri' => '/workspace/task-completion-report', 'kind' => 'web', 'budget' => 20, 'needs' => []],
+            ['label' => 'task workload report', 'uri' => '/workspace/task-workload-report', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'todos report', 'uri' => '/workspace/todo-reports', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'meetings report', 'uri' => '/workspace/meeting-reports', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'obligations report', 'uri' => '/workspace/obligation-reports', 'kind' => 'web', 'budget' => 20, 'needs' => []],

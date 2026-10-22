@@ -6,6 +6,7 @@ use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Modules\Obligations\Services\ObligationInsights;
+use UnitEnum;
 
 /**
  * The obligation overview: what is active, what is about to lapse, and what has.
@@ -13,6 +14,8 @@ use Modules\Obligations\Services\ObligationInsights;
 class ObligationOverview extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPresentationChartBar;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Obligations';
 
     protected static ?string $navigationLabel = 'Obligation overview';
 

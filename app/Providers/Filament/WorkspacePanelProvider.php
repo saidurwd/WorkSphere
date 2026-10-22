@@ -30,6 +30,7 @@ class WorkspacePanelProvider extends PanelProvider
             ->passwordReset()
             ->brandName('WorkSphere')
             ->renderHook(PanelsRenderHook::GLOBAL_SEARCH_BEFORE, fn (): string => view('filament.workspace.search-box')->render())
+            ->navigationGroups(['To-Dos', 'Tasks', 'Projects', 'Obligations', 'Meetings'])
             ->colors([
                 'primary' => Color::Indigo,
             ])

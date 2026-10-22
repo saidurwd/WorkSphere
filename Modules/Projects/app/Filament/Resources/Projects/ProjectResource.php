@@ -23,6 +23,7 @@ use Modules\Projects\Filament\Resources\Projects\Pages\ListProjects;
 use Modules\Projects\Filament\Resources\Projects\Pages\ViewProject;
 use Modules\Projects\Filament\Resources\Projects\RelationManagers\TasksRelationManager;
 use Modules\Projects\Models\Project;
+use UnitEnum;
 
 /**
  * Projects in the Filament workspace panel.
@@ -38,6 +39,8 @@ class ProjectResource extends Resource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFolder;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Projects';
 
     protected static ?int $navigationSort = 20;
 

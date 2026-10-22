@@ -7,6 +7,7 @@ use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Gate;
 use Modules\Meetings\Services\MeetingInsights;
+use UnitEnum;
 
 /**
  * Accountability by person and by department. Needs `meeting.view_reports`, and
@@ -15,6 +16,8 @@ use Modules\Meetings\Services\MeetingInsights;
 class MeetingReports extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Meetings';
 
     protected static ?string $navigationLabel = 'Meeting reports';
 

@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 use Modules\Meetings\Filament\Resources\Decisions\Pages\ListMeetingDecisions;
 use Modules\Meetings\Filament\Resources\Meetings\MeetingResource;
 use Modules\Meetings\Models\MeetingDecision;
+use UnitEnum;
 
 /**
  * The decision register across the meetings the viewer can see. Decisions are
@@ -28,6 +29,8 @@ class MeetingDecisionResource extends Resource
     protected static ?string $modelLabel = 'decision';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedScale;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Meetings';
 
     protected static ?string $navigationLabel = 'Decision register';
 

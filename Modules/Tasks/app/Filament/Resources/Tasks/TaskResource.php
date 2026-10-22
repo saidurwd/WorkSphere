@@ -34,6 +34,7 @@ use Modules\Tasks\Filament\Resources\Tasks\RelationManagers\TagsRelationManager;
 use Modules\Tasks\Filament\Resources\Tasks\RelationManagers\TimeEntriesRelationManager;
 use Modules\Tasks\Filament\Resources\Tasks\RelationManagers\WatchersRelationManager;
 use Modules\Tasks\Models\Task;
+use UnitEnum;
 
 /**
  * Tasks in the Filament workspace panel.
@@ -49,6 +50,8 @@ class TaskResource extends Resource
     protected static ?string $recordTitleAttribute = 'title';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Tasks';
 
     protected static ?int $navigationSort = 10;
 

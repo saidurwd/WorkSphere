@@ -125,21 +125,6 @@ class PermissionCatalogTest extends TestCase
         );
     }
 
-    public function test_every_permission_the_navigation_names_is_in_the_catalogue(): void
-    {
-        $named = $this->navigationPermissions();
-
-        $this->assertNotEmpty($named);
-
-        // A nav item gated on a permission that cannot exist is hidden from
-        // everybody, which reads as a missing feature rather than a permissions
-        // bug — the menu is supposed to be a contract, not a suggestion.
-        $this->assertNoUnseededPermissions(
-            $named,
-            'The navigation names permissions the seeder does not create, so these items never appear:',
-        );
-    }
-
     public function test_every_dashboard_widget_permission_is_in_the_catalogue(): void
     {
         $named = [];
@@ -216,26 +201,6 @@ class PermissionCatalogTest extends TestCase
     private function seededPermissions(): array
     {
         return (new AppServiceProvider($this->app))->requiredPermissions();
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function navigationPermissions(): array
-    {
-        $walk = function (array $nodes) use (&$walk): array {
-            $found = [];
-
-            foreach ($nodes as $node) {
-                $found[] = (string) ($node['permission'] ?? '');
-                $found = [...$found, ...array_map(strval(...), (array) ($node['permissions'] ?? []))];
-                $found = [...$found, ...$walk((array) ($node['children'] ?? []))];
-            }
-
-            return array_values(array_filter($found));
-        };
-
-        return array_values(array_unique($walk((array) config('navigation.menu', []))));
     }
 
     /**

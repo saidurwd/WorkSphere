@@ -10,6 +10,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Modules\Todos\Services\TodoReportService;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use UnitEnum;
 
 /**
  * To-Do completion, overdue and productivity reports.
@@ -20,6 +21,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class TodoReports extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
+
+    protected static string|UnitEnum|null $navigationGroup = 'To-Dos';
 
     protected static ?string $navigationLabel = 'Reports';
 

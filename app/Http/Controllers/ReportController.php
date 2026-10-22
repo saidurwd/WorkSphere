@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Services\ReportService;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -21,32 +20,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class ReportController extends Controller
 {
     public function __construct(private readonly ReportService $reports) {}
-
-    public function tasks(Request $request): View
-    {
-        $this->authorize('report.view');
-
-        [$from, $to] = $this->range($request);
-
-        return view('reports.tasks', [
-            'from' => $from,
-            'to' => $to,
-            'byOwner' => $this->reports->taskCompletionByOwner($from, $to, $request->user()),
-            'byProject' => $this->reports->taskCompletionByProject($from, $to, $request->user()),
-            'distribution' => $this->reports->taskDistribution($request->user()),
-        ]);
-    }
-
-    public function taskWorkload(Request $request): View
-    {
-        // A different permission from the general report: this one reports on
-        // other people's work.
-        $this->authorize('task.view_all');
-
-        return view('reports.task-workload', [
-            'rows' => $this->reports->taskWorkload($request->user()),
-        ]);
-    }
 
     public function exportCompletion(Request $request): StreamedResponse
     {

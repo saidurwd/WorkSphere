@@ -170,7 +170,8 @@ class ReportServiceTest extends TestCase
         $this->seedFixture();
 
         foreach (['tasks', 'workload'] as $report) {
-            $response = $this->actingAs($user)->get(route('reports.'.$report));
+            $page = $report === 'tasks' ? 'task-completion-report' : 'task-workload-report';
+            $response = $this->actingAs($user)->get(route('filament.workspace.pages.'.$page));
 
             $response->assertOk();
 
@@ -247,7 +248,7 @@ class ReportServiceTest extends TestCase
     public function test_reports_require_the_report_permission(): void
     {
         $this->actingAs($this->plainUser())
-            ->get(route('reports.tasks'))
+            ->get(route('filament.workspace.pages.task-completion-report'))
             ->assertForbidden();
     }
 
@@ -272,13 +273,13 @@ class ReportServiceTest extends TestCase
     {
         $user = $this->userWithPermissions(['report.view']);
 
-        $this->actingAs($user)->get(route('reports.workload'))->assertForbidden();
-        $this->actingAs($user)->get(route('reports.tasks'))->assertOk();
+        $this->actingAs($user)->get(route('filament.workspace.pages.task-workload-report'))->assertForbidden();
+        $this->actingAs($user)->get(route('filament.workspace.pages.task-completion-report'))->assertOk();
     }
 
     public function test_reports_require_authentication(): void
     {
-        $this->get(route('reports.tasks'))->assertRedirect(route('login'));
+        $this->get(route('filament.workspace.pages.task-completion-report'))->assertRedirect('/workspace/login');
         $this->get(route('reports.tasks.export'))->assertRedirect(route('login'));
     }
 
@@ -291,7 +292,7 @@ class ReportServiceTest extends TestCase
         $alice->roles()->attach($user->roles->first()->id);
         $user = $user->fresh();
 
-        $response = $this->actingAs($alice)->get(route('reports.tasks', [
+        $response = $this->actingAs($alice)->get(route('filament.workspace.pages.task-completion-report', [
             'from' => now()->addDay()->toDateString(),
             'to' => now()->subMonth()->toDateString(),
         ]));

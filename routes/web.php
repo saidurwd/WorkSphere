@@ -51,9 +51,7 @@ Route::middleware(['web', 'auth'])->group(function (): void {
 */
 
 Route::middleware(['web', 'auth'])->prefix('reports')->name('reports.')->group(function (): void {
-    Route::get('tasks', [ReportController::class, 'tasks'])->name('tasks');
     Route::get('tasks/export', [ReportController::class, 'exportCompletion'])->middleware('throttle:export')->name('tasks.export');
-    Route::get('task-workload', [ReportController::class, 'taskWorkload'])->name('workload');
     Route::get('task-workload/export', [ReportController::class, 'exportWorkload'])->middleware('throttle:export')->name('workload.export');
     Route::get('task-distribution/export', [ReportController::class, 'exportDistribution'])->middleware('throttle:export')->name('distribution.export');
 });
@@ -74,25 +72,16 @@ Route::middleware(['web', 'auth'])->prefix('dashboard')->name('dashboard.')->gro
     // sign-in redirect and the shared layout link to it.
     Route::get('/', fn () => redirect()->route('filament.workspace.pages.dashboard'))->name('index');
 
-    Route::get('ui-kit', function () {
-        abort_unless(app()->environment('local'), 404);
-
-        return view('ui-kit.index');
-    })->name('ui-kit');
 });
 
 Route::middleware(['web', 'auth', 'admin'])
     ->prefix('dashboard')
     ->name('dashboard.')
     ->group(function () {
-        Route::get('database-backups', [DatabaseBackupController::class, 'index'])
-            ->name('database-backups.index');
-        Route::post('database-backups', [DatabaseBackupController::class, 'store'])
-            ->name('database-backups.store');
+        // Listing, creating and deleting backups is the Database backups page in the
+        // admin panel; only the file download is a plain route.
         Route::get('database-backups/{filename}/download', [DatabaseBackupController::class, 'download'])
             ->name('database-backups.download');
-        Route::delete('database-backups/{filename}', [DatabaseBackupController::class, 'destroy'])
-            ->name('database-backups.destroy');
     });
 
 /*

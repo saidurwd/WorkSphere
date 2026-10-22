@@ -7,6 +7,7 @@ use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Gate;
 use Modules\Obligations\Services\ObligationInsights;
+use UnitEnum;
 
 /**
  * Expiry, department, vendor, renewal and risk reports. Needs
@@ -15,6 +16,8 @@ use Modules\Obligations\Services\ObligationInsights;
 class ObligationReports extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Obligations';
 
     protected static ?string $navigationLabel = 'Obligation reports';
 

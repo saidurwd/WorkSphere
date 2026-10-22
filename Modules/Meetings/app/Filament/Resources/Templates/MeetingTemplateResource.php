@@ -40,6 +40,7 @@ use Modules\Meetings\Models\Meeting;
 use Modules\Meetings\Models\MeetingTemplate;
 use Modules\Meetings\Models\MeetingType;
 use Modules\Meetings\Services\MeetingNumberService;
+use UnitEnum;
 
 /**
  * Reusable meeting templates. Every ability here is `meeting.manage_templates`,
@@ -55,6 +56,8 @@ class MeetingTemplateResource extends Resource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentDuplicate;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Meetings';
 
     protected static ?int $navigationSort = 43;
 

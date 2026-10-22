@@ -20,6 +20,7 @@ use Modules\Obligations\Filament\Resources\Vendors\Pages\CreateVendor;
 use Modules\Obligations\Filament\Resources\Vendors\Pages\EditVendor;
 use Modules\Obligations\Filament\Resources\Vendors\Pages\ListVendors;
 use Modules\Obligations\Models\Vendor;
+use UnitEnum;
 
 /**
  * Obligation vendors. Changing them needs `obligation.manage_vendors`; reading the
@@ -33,6 +34,8 @@ class VendorResource extends Resource
     protected static ?string $recordTitleAttribute = 'vendor_name';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingStorefront;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Obligations';
 
     protected static ?int $navigationSort = 31;
 

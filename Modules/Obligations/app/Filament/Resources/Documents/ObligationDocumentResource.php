@@ -15,6 +15,7 @@ use Modules\Obligations\Filament\Resources\Documents\Pages\ListObligationDocumen
 use Modules\Obligations\Filament\Resources\Obligations\ObligationResource;
 use Modules\Obligations\Models\Obligation;
 use Modules\Obligations\Models\ObligationDocument;
+use UnitEnum;
 
 /**
  * Every document across the obligations the viewer can see, read-only. Uploading
@@ -30,6 +31,8 @@ class ObligationDocumentResource extends Resource
     protected static ?string $modelLabel = 'obligation document';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Obligations';
 
     protected static ?string $navigationLabel = 'Obligation documents';
 

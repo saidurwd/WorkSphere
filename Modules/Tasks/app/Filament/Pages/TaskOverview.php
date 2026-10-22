@@ -6,6 +6,7 @@ use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Modules\Tasks\Services\TaskDashboard;
+use UnitEnum;
 
 /**
  * The task overview: totals, what is due, and how the work breaks down.
@@ -13,6 +14,8 @@ use Modules\Tasks\Services\TaskDashboard;
 class TaskOverview extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPresentationChartBar;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Tasks';
 
     protected static ?string $navigationLabel = 'Task overview';
 

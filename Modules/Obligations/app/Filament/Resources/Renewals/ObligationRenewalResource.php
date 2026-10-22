@@ -14,6 +14,7 @@ use Modules\Obligations\Filament\Resources\Obligations\ObligationResource;
 use Modules\Obligations\Filament\Resources\Renewals\Pages\ListObligationRenewals;
 use Modules\Obligations\Models\Obligation;
 use Modules\Obligations\Models\ObligationRenewal;
+use UnitEnum;
 
 /**
  * The renewal history across every obligation the viewer can see, read-only.
@@ -26,6 +27,8 @@ class ObligationRenewalResource extends Resource
     protected static ?string $modelLabel = 'obligation renewal';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowPath;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Obligations';
 
     protected static ?string $navigationLabel = 'Obligation renewals';
 

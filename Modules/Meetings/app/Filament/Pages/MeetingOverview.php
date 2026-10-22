@@ -6,6 +6,7 @@ use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Modules\Meetings\Services\MeetingInsights;
+use UnitEnum;
 
 /**
  * The meeting overview: what is coming up, what minutes are waiting, what is late.
@@ -13,6 +14,8 @@ use Modules\Meetings\Services\MeetingInsights;
 class MeetingOverview extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPresentationChartBar;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Meetings';
 
     protected static ?string $navigationLabel = 'Meeting overview';
 

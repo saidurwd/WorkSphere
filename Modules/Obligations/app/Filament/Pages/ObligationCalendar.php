@@ -8,6 +8,7 @@ use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Modules\Obligations\Models\Obligation;
 use Modules\Tasks\Models\Task;
+use UnitEnum;
 
 /**
  * A month grid of obligation expiries and the due dates of tasks filed against
@@ -16,6 +17,8 @@ use Modules\Tasks\Models\Task;
 class ObligationCalendar extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Obligations';
 
     protected static ?string $navigationLabel = 'Obligation calendar';
 

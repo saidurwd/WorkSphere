@@ -9,6 +9,7 @@ use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
 use Modules\Todos\Models\Todo;
+use UnitEnum;
 
 /**
  * Open To-Dos by due date, as a week or a month.
@@ -19,6 +20,8 @@ use Modules\Todos\Models\Todo;
 class TodoCalendar extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
+
+    protected static string|UnitEnum|null $navigationGroup = 'To-Dos';
 
     protected static ?string $navigationLabel = 'Calendar';
 

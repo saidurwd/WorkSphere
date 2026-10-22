@@ -118,9 +118,7 @@ class RouteParityTest extends TestCase
     public function test_the_report_routes_are_exactly_what_phase_ten_declared(): void
     {
         $expected = [
-            'reports.tasks',
             'reports.tasks.export',
-            'reports.workload',
             'reports.workload.export',
             'reports.distribution.export',
         ];

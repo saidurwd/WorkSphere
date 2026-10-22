@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Modules\Obligations\Filament\Resources\Obligations\ObligationResource;
 use Modules\Tasks\Filament\Resources\Tasks\TaskResource;
 use Modules\Tasks\Models\Task;
+use UnitEnum;
 
 /**
  * Tasks raised against obligations that I created or am responsible for.
@@ -31,6 +32,8 @@ class MyObligationTasks extends Page implements HasActions, HasSchemas, HasTable
     use InteractsWithActions, InteractsWithSchemas, InteractsWithTable;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentCheck;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Obligations';
 
     protected static ?string $navigationLabel = 'My obligation tasks';
 

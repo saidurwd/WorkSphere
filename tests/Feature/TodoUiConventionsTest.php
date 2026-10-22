@@ -62,14 +62,6 @@ class TodoUiConventionsTest extends TestCase
         }
     }
 
-    public function test_the_shared_datatable_no_longer_double_paginates(): void
-    {
-        $source = (string) file_get_contents(base_path('resources/views/components/datatable.blade.php'));
-
-        $this->assertStringContainsString("'paging' => false", $source, 'The shared datatable must default client-side paging OFF.');
-        $this->assertStringContainsString("'info' => false", $source, 'And it must not render its own "showing N of M" footer.');
-    }
-
     public function test_every_icon_only_control_has_an_accessible_name(): void
     {
         $offenders = [];
@@ -191,25 +183,5 @@ class TodoUiConventionsTest extends TestCase
         $this->assertSame('High', StatusBadge::label(Priority::High));
         $this->assertSame('Team', StatusBadge::label(Visibility::Team));
         $this->assertSame('—', StatusBadge::label(null));
-    }
-
-    public function test_the_navigation_node_exists(): void
-    {
-        $flat = [];
-
-        $tree = config('navigation');
-
-        array_walk_recursive(
-            $tree,
-            function ($value, $key) use (&$flat): void {
-                if ($key === 'route') {
-                    $flat[] = $value;
-                }
-            },
-        );
-
-        foreach (['filament.workspace.resources.todos.index', 'filament.workspace.pages.todo-calendar', 'filament.workspace.pages.todo-reports'] as $route) {
-            $this->assertContains($route, $flat, "{$route} is missing from the navigation tree.");
-        }
     }
 }

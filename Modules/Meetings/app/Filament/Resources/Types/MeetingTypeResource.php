@@ -20,6 +20,7 @@ use Modules\Meetings\Filament\Resources\Types\Pages\CreateMeetingType;
 use Modules\Meetings\Filament\Resources\Types\Pages\EditMeetingType;
 use Modules\Meetings\Filament\Resources\Types\Pages\ListMeetingTypes;
 use Modules\Meetings\Models\MeetingType;
+use UnitEnum;
 
 /**
  * Meeting types. Changing them needs `meeting.manage_types`; reading the list needs
@@ -34,6 +35,8 @@ class MeetingTypeResource extends Resource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Meetings';
 
     protected static ?int $navigationSort = 41;
 

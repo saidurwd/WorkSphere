@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Modules\Obligations\Filament\Resources\NotificationLogs\Pages\ListObligationNotificationLogs;
 use Modules\Obligations\Models\NotificationLog;
+use UnitEnum;
 
 /**
  * Delivery log for obligation notifications. Viewing is
@@ -29,6 +30,8 @@ class ObligationNotificationLogResource extends Resource
     protected static ?string $modelLabel = 'obligation notification';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBell;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Obligations';
 
     protected static ?string $navigationLabel = 'Obligation notifications';
 

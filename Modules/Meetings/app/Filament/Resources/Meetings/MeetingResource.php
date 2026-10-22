@@ -36,6 +36,7 @@ use Modules\Meetings\Filament\Resources\Meetings\RelationManagers\DecisionsRelat
 use Modules\Meetings\Filament\Resources\Meetings\RelationManagers\ParticipantsRelationManager;
 use Modules\Meetings\Models\Meeting;
 use Modules\Meetings\Models\MeetingType;
+use UnitEnum;
 
 /**
  * Meetings in the Filament workspace panel.
@@ -50,6 +51,8 @@ class MeetingResource extends Resource
     protected static ?string $recordTitleAttribute = 'title';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Meetings';
 
     protected static ?int $navigationSort = 40;
 
