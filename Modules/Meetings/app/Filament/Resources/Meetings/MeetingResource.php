@@ -29,6 +29,11 @@ use Modules\Meetings\Filament\Resources\Meetings\Pages\CreateMeeting;
 use Modules\Meetings\Filament\Resources\Meetings\Pages\EditMeeting;
 use Modules\Meetings\Filament\Resources\Meetings\Pages\ListMeetings;
 use Modules\Meetings\Filament\Resources\Meetings\Pages\ViewMeeting;
+use Modules\Meetings\Filament\Resources\Meetings\RelationManagers\ActionItemsRelationManager;
+use Modules\Meetings\Filament\Resources\Meetings\RelationManagers\AgendasRelationManager;
+use Modules\Meetings\Filament\Resources\Meetings\RelationManagers\AttachmentsRelationManager;
+use Modules\Meetings\Filament\Resources\Meetings\RelationManagers\DecisionsRelationManager;
+use Modules\Meetings\Filament\Resources\Meetings\RelationManagers\ParticipantsRelationManager;
 use Modules\Meetings\Models\Meeting;
 use Modules\Meetings\Models\MeetingType;
 
@@ -175,6 +180,17 @@ class MeetingResource extends Resource
                 DeleteAction::make()
                     ->hidden(fn (Meeting $record): bool => in_array($record->status, ['completed', 'approved'], true)),
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            AgendasRelationManager::class,
+            ParticipantsRelationManager::class,
+            DecisionsRelationManager::class,
+            ActionItemsRelationManager::class,
+            AttachmentsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

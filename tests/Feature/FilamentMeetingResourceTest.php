@@ -3,10 +3,17 @@
 namespace Tests\Feature;
 
 use Database\Factories\MeetingFactory;
+use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
+use Modules\Meetings\Events\ActionItemAssigned;
+use Modules\Meetings\Events\ActionItemCompleted;
+use Modules\Meetings\Events\ActionItemCreated;
 use Modules\Meetings\Events\MeetingCancelled;
 use Modules\Meetings\Events\MeetingCompleted;
 use Modules\Meetings\Events\MeetingCreated;
@@ -16,9 +23,17 @@ use Modules\Meetings\Filament\Resources\Meetings\Pages\CreateMeeting;
 use Modules\Meetings\Filament\Resources\Meetings\Pages\EditMeeting;
 use Modules\Meetings\Filament\Resources\Meetings\Pages\ListMeetings;
 use Modules\Meetings\Filament\Resources\Meetings\Pages\ViewMeeting;
+use Modules\Meetings\Filament\Resources\Meetings\RelationManagers\ActionItemsRelationManager;
+use Modules\Meetings\Filament\Resources\Meetings\RelationManagers\AgendasRelationManager;
+use Modules\Meetings\Filament\Resources\Meetings\RelationManagers\AttachmentsRelationManager;
+use Modules\Meetings\Filament\Resources\Meetings\RelationManagers\DecisionsRelationManager;
+use Modules\Meetings\Filament\Resources\Meetings\RelationManagers\ParticipantsRelationManager;
 use Modules\Meetings\Models\Meeting;
+use Modules\Meetings\Models\MeetingActionItem;
+use Modules\Meetings\Models\MeetingAttachment;
 use Modules\Meetings\Models\MeetingParticipant;
 use Modules\Meetings\Models\MeetingType;
+use Modules\Tasks\Models\Task;
 use Tests\InteractsWithRoles;
 use Tests\TestCase;
 
@@ -203,5 +218,152 @@ class FilamentMeetingResourceTest extends TestCase
 
         $this->assertFalse(Meeting::query()->whereKey($open->id)->exists());
         $this->assertModelExists($done);
+    }
+
+    private function manager(string $class, Meeting $meeting): Testable
+    {
+        return Livewire::test($class, ['ownerRecord' => $meeting, 'pageClass' => ViewMeeting::class]);
+    }
+
+    private function organised(): array
+    {
+        $organizer = $this->userWithPermissions(['meeting.create']);
+
+        return [$organizer, MeetingFactory::new()->create(['organizer_id' => $organizer->id])];
+    }
+
+    public function test_agenda_participants_and_decisions_can_be_added_and_removed_by_the_organizer(): void
+    {
+        [$organizer, $meeting] = $this->organised();
+        $guest = $this->plainUser();
+        $this->actingAs($organizer);
+
+        $this->manager(AgendasRelationManager::class, $meeting)
+            ->callAction(TestAction::make('create')->table(), ['agenda_no' => 1, 'title' => 'Budget', 'status' => 'pending']);
+        $this->assertTrue($meeting->agendas()->where('title', 'Budget')->exists());
+
+        $this->manager(ParticipantsRelationManager::class, $meeting)
+            ->callAction(TestAction::make('create')->table(), ['user_id' => $guest->id, 'participant_type' => 'member', 'attendance_status' => 'invited']);
+        $participant = $meeting->participants()->where('user_id', $guest->id)->firstOrFail();
+        $this->assertNotNull($participant->invited_at);
+
+        $this->manager(DecisionsRelationManager::class, $meeting)
+            ->callAction(TestAction::make('create')->table(), ['decision_no' => 1, 'decision_title' => 'Approve budget', 'decision_type' => 'approved', 'decision_status' => 'active']);
+        $decision = $meeting->decisions()->firstOrFail();
+        $this->assertSame($organizer->id, $decision->created_by);
+
+        $this->manager(ParticipantsRelationManager::class, $meeting)
+            ->callAction(TestAction::make('delete')->table($participant));
+        $this->assertModelMissing($participant);
+    }
+
+    public function test_a_participant_cannot_change_the_meetings_agenda_participants_or_decisions(): void
+    {
+        $participantUser = $this->userWithPermissions(['meeting.create']);
+        $meeting = MeetingFactory::new()->create();
+        MeetingParticipant::factory()->create(['meeting_id' => $meeting->id, 'user_id' => $participantUser->id]);
+        $this->actingAs($participantUser);
+
+        foreach ([AgendasRelationManager::class, ParticipantsRelationManager::class, DecisionsRelationManager::class, AttachmentsRelationManager::class, ActionItemsRelationManager::class] as $class) {
+            $this->manager($class, $meeting)->assertActionHidden(TestAction::make('create')->table());
+        }
+    }
+
+    public function test_a_valid_decision_needs_a_title_and_type(): void
+    {
+        [$organizer, $meeting] = $this->organised();
+        $this->actingAs($organizer);
+
+        $this->manager(DecisionsRelationManager::class, $meeting)
+            ->callAction(TestAction::make('create')->table(), ['decision_no' => 1, 'decision_title' => '', 'decision_type' => null])
+            ->assertHasFormErrors(['decision_title' => 'required', 'decision_type' => 'required']);
+    }
+
+    public function test_an_attachment_is_stored_and_mirrored_to_the_shared_table(): void
+    {
+        Storage::fake('public');
+
+        [$organizer, $meeting] = $this->organised();
+        $this->actingAs($organizer);
+
+        $this->manager(AttachmentsRelationManager::class, $meeting)
+            ->callAction(TestAction::make('create')->table(), ['file' => UploadedFile::fake()->create('pack.pdf', 15, 'application/pdf')]);
+
+        $attachment = MeetingAttachment::query()->where('meeting_id', $meeting->id)->firstOrFail();
+        $this->assertSame($organizer->id, $attachment->uploaded_by);
+        $this->assertTrue(Storage::disk('public')->exists($attachment->file_path));
+        $this->assertDatabaseHas('attachments', ['attachable_id' => $meeting->id, 'original_name' => $attachment->file_name]);
+    }
+
+    public function test_action_items_fire_created_assigned_and_completed_events(): void
+    {
+        Event::fake([ActionItemCreated::class, ActionItemAssigned::class, ActionItemCompleted::class]);
+
+        [$organizer, $meeting] = $this->organised();
+        $assignee = $this->plainUser();
+        $this->actingAs($organizer);
+
+        $this->manager(ActionItemsRelationManager::class, $meeting)
+            ->callAction(TestAction::make('create')->table(), ['action_no' => 1, 'title' => 'Send minutes', 'priority' => 'high', 'status' => 'open']);
+        Event::assertDispatched(ActionItemCreated::class);
+
+        $item = MeetingActionItem::query()->where('meeting_id', $meeting->id)->firstOrFail();
+
+        $this->manager(ActionItemsRelationManager::class, $meeting)
+            ->callAction(TestAction::make('edit')->table($item), ['assigned_to' => $assignee->id, 'status' => 'completed']);
+
+        Event::assertDispatched(ActionItemAssigned::class);
+        Event::assertDispatched(ActionItemCompleted::class);
+    }
+
+    public function test_the_assignee_may_update_their_own_item_but_not_delete_or_link_tasks(): void
+    {
+        $assignee = $this->userWithPermissions(['meeting.view']);
+        $meeting = MeetingFactory::new()->create();
+        $item = MeetingActionItem::factory()->create(['meeting_id' => $meeting->id, 'assigned_to' => $assignee->id, 'task_id' => null]);
+        $this->actingAs($assignee);
+
+        $this->manager(ActionItemsRelationManager::class, $meeting)
+            ->assertTableActionVisible('edit', $item)
+            ->assertTableActionHidden('delete', $item)
+            ->assertTableActionHidden('createTask', $item)
+            ->assertTableActionHidden('linkTask', $item);
+    }
+
+    public function test_a_task_can_be_created_linked_and_unlinked_by_someone_who_may_assign(): void
+    {
+        [$organizer, $meeting] = $this->organised();
+        $item = MeetingActionItem::factory()->create(['meeting_id' => $meeting->id, 'task_id' => null, 'priority' => 'high', 'title' => 'Fix the lift']);
+        $this->actingAs($organizer);
+
+        $this->manager(ActionItemsRelationManager::class, $meeting)
+            ->callAction(TestAction::make('createTask')->table($item), ['title' => 'Fix the lift', 'priority' => 'high']);
+
+        $task = Task::query()->where('title', 'Fix the lift')->firstOrFail();
+        $this->assertSame($task->id, $item->fresh()->task_id);
+        $this->assertSame($organizer->id, $task->user_id);
+
+        $this->manager(ActionItemsRelationManager::class, $meeting)
+            ->callAction(TestAction::make('unlinkTask')->table($item->fresh()));
+        $this->assertNull($item->fresh()->task_id);
+
+        $mine = Task::factory()->create(['user_id' => $organizer->id, 'responsible_user_id' => $organizer->id, 'priority' => 'medium']);
+        $this->manager(ActionItemsRelationManager::class, $meeting)
+            ->callAction(TestAction::make('linkTask')->table($item->fresh()), ['task_id' => $mine->id]);
+        $this->assertSame($mine->id, $item->fresh()->task_id);
+    }
+
+    public function test_linking_a_task_the_user_cannot_see_is_refused(): void
+    {
+        [$organizer, $meeting] = $this->organised();
+        $item = MeetingActionItem::factory()->create(['meeting_id' => $meeting->id, 'task_id' => null]);
+        $foreign = Task::factory()->create(['priority' => 'medium']);
+        $this->actingAs($organizer);
+
+        $this->manager(ActionItemsRelationManager::class, $meeting)
+            ->callAction(TestAction::make('linkTask')->table($item), ['task_id' => $foreign->id])
+            ->assertHasFormErrors(['task_id']);
+
+        $this->assertNull($item->fresh()->task_id);
     }
 }
