@@ -6,14 +6,19 @@ use Database\Factories\ObligationFactory;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Modules\Obligations\Filament\Pages\MyObligationTasks;
 use Modules\Obligations\Filament\Pages\ObligationCalendar;
 use Modules\Obligations\Filament\Pages\ObligationOverview;
 use Modules\Obligations\Filament\Pages\ObligationReports;
+use Modules\Obligations\Filament\Resources\Documents\Pages\ListObligationDocuments;
 use Modules\Obligations\Filament\Resources\NotificationLogs\Pages\ListObligationNotificationLogs;
+use Modules\Obligations\Filament\Resources\Renewals\Pages\ListObligationRenewals;
 use Modules\Obligations\Filament\Resources\Vendors\Pages\CreateVendor;
 use Modules\Obligations\Filament\Resources\Vendors\Pages\EditVendor;
 use Modules\Obligations\Filament\Resources\Vendors\Pages\ListVendors;
 use Modules\Obligations\Models\NotificationLog;
+use Modules\Obligations\Models\ObligationDocument;
+use Modules\Obligations\Models\ObligationRenewal;
 use Modules\Obligations\Models\Vendor;
 use Modules\Tasks\Models\Task;
 use Tests\InteractsWithRoles;
@@ -193,5 +198,41 @@ class FilamentObligationAdminScreensTest extends TestCase
             ->assertDontSee('Hidden certificate')
             ->call('shift', 1)
             ->assertDontSee('Boiler certificate');
+    }
+
+    public function test_the_document_and_renewal_lists_cover_only_visible_obligations(): void
+    {
+        $user = $this->userWithPermissions(['obligation.create']);
+        $mine = ObligationFactory::new()->create(['owner_user_id' => $user->id]);
+        $theirs = ObligationFactory::new()->create();
+        $myDoc = ObligationDocument::factory()->create(['obligation_id' => $mine->id]);
+        $theirDoc = ObligationDocument::factory()->create(['obligation_id' => $theirs->id]);
+        $myRenewal = ObligationRenewal::factory()->create(['obligation_id' => $mine->id]);
+        $theirRenewal = ObligationRenewal::factory()->create(['obligation_id' => $theirs->id]);
+        $this->actingAs($user);
+
+        Livewire::test(ListObligationDocuments::class)
+            ->assertCanSeeTableRecords([$myDoc])
+            ->assertCanNotSeeTableRecords([$theirDoc]);
+
+        Livewire::test(ListObligationRenewals::class)
+            ->assertCanSeeTableRecords([$myRenewal])
+            ->assertCanNotSeeTableRecords([$theirRenewal]);
+    }
+
+    public function test_my_obligation_tasks_lists_only_my_tasks_on_obligations(): void
+    {
+        $user = $this->userWithPermissions(['obligation.create']);
+        $obligation = ObligationFactory::new()->create();
+        $mine = Task::factory()->create(['obligation_id' => $obligation->id, 'responsible_user_id' => $user->id, 'priority' => 'medium']);
+        $others = Task::factory()->create(['obligation_id' => $obligation->id, 'priority' => 'medium']);
+        $unlinked = Task::factory()->create(['obligation_id' => null, 'responsible_user_id' => $user->id, 'priority' => 'medium']);
+        $this->actingAs($user);
+
+        Livewire::test(MyObligationTasks::class)
+            ->assertCanSeeTableRecords([$mine])
+            ->assertCanNotSeeTableRecords([$others, $unlinked])
+            ->filterTable('priority', 'high')
+            ->assertCanNotSeeTableRecords([$mine]);
     }
 }
