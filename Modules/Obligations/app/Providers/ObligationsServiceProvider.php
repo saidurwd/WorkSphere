@@ -2,9 +2,11 @@
 
 namespace Modules\Obligations\Providers;
 
-use Nwidart\Modules\Support\ModuleServiceProvider;
-use Illuminate\Support\Facades\View;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Support\Facades\View;
+use Modules\Obligations\Console\Commands\BackfillObligationDocumentsCommand;
+use Modules\Obligations\Console\Commands\ProcessObligationsCommand;
+use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class ObligationsServiceProvider extends ModuleServiceProvider
 {
@@ -27,7 +29,8 @@ class ObligationsServiceProvider extends ModuleServiceProvider
      * @var string[]
      */
     protected array $commands = [
-        \Modules\Obligations\Console\Commands\ProcessObligationsCommand::class,
+        ProcessObligationsCommand::class,
+        BackfillObligationDocumentsCommand::class,
     ];
 
     /**
@@ -42,8 +45,8 @@ class ObligationsServiceProvider extends ModuleServiceProvider
 
     /**
      * Define module schedules.
-     * 
-     * @param $schedule
+     *
+     * @param  $schedule
      */
     // protected function configureSchedules(Schedule $schedule): void
     // {

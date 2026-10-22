@@ -25,6 +25,9 @@ use Modules\Meetings\Listeners\SendMinutesApprovedNotification;
 use Modules\Meetings\Listeners\SendMinutesPublishedNotification;
 use Modules\Meetings\Listeners\SendMinutesReturnedNotification;
 use Modules\Meetings\Listeners\SendMinutesSubmittedNotification;
+use Modules\Meetings\Listeners\SyncActionItemsFromTask;
+use Modules\Tasks\Events\TaskCompleted;
+use Modules\Tasks\Events\TaskUpdated;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -34,6 +37,12 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
+        TaskCompleted::class => [
+            SyncActionItemsFromTask::class,
+        ],
+        TaskUpdated::class => [
+            SyncActionItemsFromTask::class,
+        ],
         MeetingCreated::class => [
             SendMeetingInvitations::class,
         ],

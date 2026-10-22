@@ -18,10 +18,12 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Gate;
+use InvalidArgumentException;
 use Modules\Meetings\Events\ActionItemAssigned;
 use Modules\Meetings\Events\ActionItemCompleted;
 use Modules\Meetings\Events\ActionItemCreated;
 use Modules\Meetings\Models\MeetingActionItem;
+use Modules\Meetings\Services\MeetingActionTaskService;
 use Modules\Tasks\Filament\Resources\Tasks\TaskResource;
 use Modules\Tasks\Models\Task;
 
@@ -138,13 +140,12 @@ class ActionItemsRelationManager extends RelationManager
                     ->action(function (array $data, MeetingActionItem $record): void {
                         abort_unless(Gate::allows('linkTask', $record), 403);
 
-                        $task = Task::create($data + [
-                            'status' => 'pending',
+                        // The service builds the task from the action item and links the
+                        // two in one transaction; what the person edited overrides it.
+                        app(MeetingActionTaskService::class)->createTask($record, $data + [
                             'user_id' => auth()->id(),
                             'task_no' => 'TASK-'.str_pad((string) (Task::count() + 1), 4, '0', STR_PAD_LEFT),
                         ]);
-
-                        $record->update(['task_id' => $task->id]);
 
                         Notification::make()->title('Task created and linked')->success()->send();
                     }),
@@ -164,7 +165,19 @@ class ActionItemsRelationManager extends RelationManager
                         // cannot be used to attach (and so reveal) someone else's.
                         abort_unless(TaskResource::getEloquentQuery()->whereKey($data['task_id'])->exists(), 403);
 
-                        $record->update(['task_id' => $data['task_id']]);
+                        $service = app(MeetingActionTaskService::class);
+
+                        try {
+                            $service->linkTask($record, Task::query()->findOrFail($data['task_id']));
+                        } catch (InvalidArgumentException $e) {
+                            Notification::make()->title($e->getMessage())->danger()->send();
+
+                            return;
+                        }
+
+                        // Take on the task's state straight away, so a task that is
+                        // already done does not leave an open action item behind.
+                        $service->syncStatus($record->refresh());
 
                         Notification::make()->title('Task linked')->success()->send();
                     }),

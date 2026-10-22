@@ -90,12 +90,15 @@ class MeetingActionTaskService
         $actionItem->update($updates);
     }
 
-    private function mapPriority(string $meetingPriority): string
+    /**
+     * Tasks carry low, medium or high. Action items use low/medium/high/critical
+     * (older rows normal/urgent), so the top two both become high rather than a
+     * critical follow-up arriving as a medium task.
+     */
+    private function mapPriority(?string $actionPriority): string
     {
-        return match ($meetingPriority) {
-            'urgent' => 'high',
-            'high' => 'high',
-            'normal' => 'medium',
+        return match ($actionPriority) {
+            'critical', 'urgent', 'high' => 'high',
             'low' => 'low',
             default => 'medium',
         };

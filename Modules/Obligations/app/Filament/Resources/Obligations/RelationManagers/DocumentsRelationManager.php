@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Storage;
 use Modules\Obligations\Models\Obligation;
 use Modules\Obligations\Models\ObligationDocument;
 use Modules\Obligations\Services\ObligationActivitySynchroniser;
+use Modules\Obligations\Services\ObligationDocumentSynchroniser;
 
 /**
  * Files attached to an obligation. Uploading and deleting need `manageDocuments`
@@ -84,6 +85,10 @@ class DocumentsRelationManager extends RelationManager
                             'expiry_date' => $data['expiry_date'] ?? null,
                             'uploaded_by' => auth()->id(),
                         ]);
+
+                        // Dual-write: the shared attachments table is what makes the
+                        // upload findable across modules.
+                        app(ObligationDocumentSynchroniser::class)->mirror($obligation, $document);
 
                         $this->record($obligation, 'DOCUMENT_UPLOADED', null, $document->toArray(), 'Document uploaded: '.$data['document_type']);
 

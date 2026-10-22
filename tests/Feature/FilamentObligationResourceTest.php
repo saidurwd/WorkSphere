@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Attachment;
 use App\Models\Company;
 use App\Models\Department;
 use Database\Factories\ObligationFactory;
@@ -198,6 +199,8 @@ class FilamentObligationResourceTest extends TestCase
         $this->assertSame($owner->id, $document->uploaded_by);
         $this->assertTrue(Storage::disk('public')->exists($document->file_path));
         $this->assertDatabaseHas('obligation_activity_logs', ['obligation_id' => $obligation->id, 'action' => 'DOCUMENT_UPLOADED']);
+        // Dual-written onto the shared attachments table.
+        $this->assertDatabaseHas('attachments', ['attachable_id' => $obligation->id, 'path' => $document->file_path, 'original_name' => $document->file_name]);
 
         Livewire::test(DocumentsRelationManager::class, ['ownerRecord' => $obligation, 'pageClass' => ViewObligation::class])
             ->callAction(TestAction::make('delete')->table($document));
@@ -316,5 +319,35 @@ class FilamentObligationResourceTest extends TestCase
         $obligation = ObligationFactory::new()->create();
 
         $this->get("/workspace/obligations/{$obligation->id}")->assertRedirect('/workspace/login');
+    }
+
+    public function test_the_backfill_command_mirrors_older_documents_and_is_idempotent(): void
+    {
+        $obligation = ObligationFactory::new()->create();
+        $document = ObligationDocument::factory()->create(['obligation_id' => $obligation->id]);
+
+        $this->artisan('obligations:backfill-documents')->expectsOutputToContain('Mirrored 1')->assertSuccessful();
+        $this->artisan('obligations:backfill-documents')->assertSuccessful();
+
+        $this->assertSame(1, Attachment::query()->where('path', $document->file_path)->count());
+    }
+
+    public function test_a_renewal_certificate_is_mirrored_too(): void
+    {
+        Storage::fake('public');
+
+        $owner = $this->userWithPermissions(['obligation.create']);
+        $obligation = ObligationFactory::new()->create(['owner_user_id' => $owner->id, 'start_date' => now()->subYear()]);
+        $this->actingAs($owner);
+
+        Livewire::test(ViewObligation::class, ['record' => $obligation->getKey()])
+            ->callAction('renew', [
+                'new_start_date' => now()->toDateString(),
+                'new_expiry_date' => now()->addYear()->toDateString(),
+                'document' => UploadedFile::fake()->create('certificate.pdf', 10, 'application/pdf'),
+            ]);
+
+        $certificate = $obligation->documents()->where('document_type', 'RENEWAL_CERTIFICATE')->firstOrFail();
+        $this->assertDatabaseHas('attachments', ['attachable_id' => $obligation->id, 'path' => $certificate->file_path]);
     }
 }

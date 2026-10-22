@@ -18,6 +18,7 @@ use Modules\Obligations\Models\Obligation;
 use Modules\Obligations\Models\ObligationRenewal;
 use Modules\Obligations\Models\Vendor;
 use Modules\Obligations\Services\ObligationActivitySynchroniser;
+use Modules\Obligations\Services\ObligationDocumentSynchroniser;
 use Modules\Obligations\Services\ObligationRecurrenceService;
 
 class ViewObligation extends ViewRecord
@@ -88,7 +89,7 @@ class ViewObligation extends ViewRecord
                     if (! empty($data['document'])) {
                         $disk = Storage::disk('public');
 
-                        $record->documents()->create([
+                        $certificate = $record->documents()->create([
                             'document_type' => 'RENEWAL_CERTIFICATE',
                             'file_name' => $data['document_name'] ?? basename($data['document']),
                             'file_path' => $data['document'],
@@ -96,6 +97,8 @@ class ViewObligation extends ViewRecord
                             'file_size' => $disk->size($data['document']),
                             'uploaded_by' => auth()->id(),
                         ]);
+
+                        app(ObligationDocumentSynchroniser::class)->mirror($record, $certificate);
                     }
 
                     $record->update([

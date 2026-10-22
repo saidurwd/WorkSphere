@@ -33,6 +33,9 @@ use Modules\Meetings\Models\MeetingActionItem;
 use Modules\Meetings\Models\MeetingAttachment;
 use Modules\Meetings\Models\MeetingParticipant;
 use Modules\Meetings\Models\MeetingType;
+use Modules\Meetings\Services\MeetingActionTaskService;
+use Modules\Tasks\Events\TaskCompleted;
+use Modules\Tasks\Events\TaskUpdated;
 use Modules\Tasks\Models\Task;
 use Tests\InteractsWithRoles;
 use Tests\TestCase;
@@ -453,5 +456,59 @@ class FilamentMeetingResourceTest extends TestCase
 
         $this->actingAs($this->userWithPermissions(['meeting.view']));
         $this->get(route('meetings.print', $meeting))->assertOk();
+    }
+
+    public function test_linking_a_finished_task_marks_the_action_item_completed(): void
+    {
+        [$organizer, $meeting] = $this->organised();
+        $item = MeetingActionItem::factory()->create(['meeting_id' => $meeting->id, 'task_id' => null, 'status' => 'open']);
+        $done = Task::factory()->create([
+            'user_id' => $organizer->id, 'responsible_user_id' => $organizer->id,
+            'status' => 'completed', 'completed_at' => now(), 'priority' => 'medium',
+        ]);
+        $this->actingAs($organizer);
+
+        $this->manager(ActionItemsRelationManager::class, $meeting)
+            ->callAction(TestAction::make('linkTask')->table($item), ['task_id' => $done->id]);
+
+        $this->assertSame('completed', $item->fresh()->status);
+        $this->assertNotNull($item->fresh()->completed_at);
+    }
+
+    public function test_completing_the_linked_task_completes_the_action_item_and_announces_it_once(): void
+    {
+        Event::fake([ActionItemCompleted::class]);
+
+        [, $meeting] = $this->organised();
+        $task = Task::factory()->create(['status' => 'in_progress', 'priority' => 'medium']);
+        $item = MeetingActionItem::factory()->create(['meeting_id' => $meeting->id, 'task_id' => $task->id, 'status' => 'in_progress']);
+
+        $task->update(['status' => 'completed', 'completed_at' => now()]);
+        event(new TaskCompleted($task->fresh()));
+        event(new TaskUpdated($task->fresh()));
+
+        $this->assertSame('completed', $item->fresh()->status);
+        Event::assertDispatchedTimes(ActionItemCompleted::class, 1);
+    }
+
+    public function test_a_deferred_task_leaves_the_action_item_as_it_was(): void
+    {
+        [, $meeting] = $this->organised();
+        $task = Task::factory()->create(['status' => 'on_hold', 'priority' => 'medium']);
+        $item = MeetingActionItem::factory()->create(['meeting_id' => $meeting->id, 'task_id' => $task->id, 'status' => 'in_progress']);
+
+        event(new TaskUpdated($task->fresh()));
+
+        $this->assertSame('in_progress', $item->fresh()->status);
+    }
+
+    public function test_action_item_priorities_map_onto_task_priorities(): void
+    {
+        $service = app(MeetingActionTaskService::class);
+        $map = new \ReflectionMethod($service, 'mapPriority');
+
+        foreach (['critical' => 'high', 'urgent' => 'high', 'high' => 'high', 'medium' => 'medium', 'normal' => 'medium', 'low' => 'low', null => 'medium'] as $from => $to) {
+            $this->assertSame($to, $map->invoke($service, $from === '' ? null : $from), "{$from} should map to {$to}");
+        }
     }
 }
