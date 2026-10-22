@@ -13,6 +13,6 @@
         <li><strong>Due Date:</strong> {{ $actionItem->due_date ? $actionItem->due_date->format('M d, Y') : 'N/A' }}</li>
         <li><strong>Priority:</strong> {{ ucfirst($actionItem->priority) }}</li>
     </ul>
-    <p><a href="{{ route('meetings.action-items.show', $actionItem) }}">View Action Item</a></p>
+    <p><a href="{{ route('filament.workspace.resources.meetings.view', $actionItem->meeting_id) }}">View Action Item</a></p>
 </body>
 </html>

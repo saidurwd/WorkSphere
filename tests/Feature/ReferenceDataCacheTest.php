@@ -323,11 +323,11 @@ class ReferenceDataCacheTest extends TestCase
         Department::factory()->count(4)->create();
         User::factory()->count(4)->create();
 
-        $cold = $this->countTableQueries(fn () => $this->actingAs($viewer)->get('/meetings/create')->assertOk());
+        $cold = $this->countTableQueries(fn () => $this->actingAs($viewer)->get('/workspace/meetings/create')->assertOk());
 
         // The second render of the same page. Before the cache the user and
         // department lists were re-queried here; now they are not.
-        $warm = $this->countTableQueries(fn () => $this->actingAs($viewer)->get('/meetings/create')->assertOk());
+        $warm = $this->countTableQueries(fn () => $this->actingAs($viewer)->get('/workspace/meetings/create')->assertOk());
 
         $this->assertGreaterThanOrEqual(
             1,

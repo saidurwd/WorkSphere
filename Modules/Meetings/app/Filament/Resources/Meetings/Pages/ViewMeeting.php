@@ -23,6 +23,12 @@ class ViewMeeting extends ViewRecord
     {
         return [
             EditAction::make(),
+            Action::make('print')
+                ->label('Print')
+                ->icon('heroicon-o-printer')
+                ->color('gray')
+                ->authorize('print')
+                ->url(fn (Meeting $record): string => route('meetings.print', $record), true),
             $this->lifecycleAction('start', 'Start', 'heroicon-o-play', 'success', ['scheduled', 'postponed'], MeetingStarted::class),
             $this->lifecycleAction('complete', 'Complete', 'heroicon-o-check', 'success', ['in_progress'], MeetingCompleted::class),
             $this->lifecycleAction('cancel', 'Cancel meeting', 'heroicon-o-x-mark', 'danger', ['scheduled', 'in_progress', 'postponed'], MeetingCancelled::class),

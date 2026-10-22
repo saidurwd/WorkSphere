@@ -286,8 +286,15 @@ class PermissionCatalogTest extends TestCase
             // wildcard silently matched the two levels below the base and nothing
             // deeper — and an empty file list makes the assertion vacuous.
             app_path('Http/Controllers'),
+            // The Filament resources and pages decide access too, so a permission
+            // named there has to exist just as one named in a controller does.
+            app_path('Filament'),
             ...array_map(
                 fn (string $module): string => $module.'/app/Http/Controllers',
+                glob(base_path('Modules/*')) ?: [],
+            ),
+            ...array_map(
+                fn (string $module): string => $module.'/app/Filament',
                 glob(base_path('Modules/*')) ?: [],
             ),
         ]);

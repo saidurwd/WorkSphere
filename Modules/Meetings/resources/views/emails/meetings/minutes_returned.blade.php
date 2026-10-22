@@ -15,6 +15,6 @@
     <p><strong>Reviewer Comments:</strong></p>
     <p>{{ $comments }}</p>
     @endif
-    <p><a href="{{ route('meetings.show', $meeting) }}">Edit Minutes</a></p>
+    <p><a href="{{ route('filament.workspace.resources.meetings.view', $meeting) }}">Edit Minutes</a></p>
 </body>
 </html>

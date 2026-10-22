@@ -207,7 +207,7 @@ class WidgetCacheSerializationTest extends TestCase
         // and `task_distribution` put a `WorkItemStatus` enum in its `status` key.
         // `cacheable()` only flattens Collections and arrays, so both objects went
         // into the database store and came back as `__PHP_Incomplete_Class` — the
-        // second dashboard view of any user then died inside `route('meetings.show')`.
+        // second dashboard view of any user then died inside `the meeting view route`.
         //
         // The loop above could not see either: with no meetings and no tasks seeded,
         // both widgets resolved to an EMPTY collection, and an empty collection
@@ -224,7 +224,7 @@ class WidgetCacheSerializationTest extends TestCase
         $this->assertHoldsNoObjects($meetings, 'upcoming_meetings');
 
         $this->assertSame('Board review', $meetings[0]['title']);
-        $this->assertSame(route('meetings.show', $meetings[0]['id']), $meetings[0]['url']);
+        $this->assertSame(route('filament.workspace.resources.meetings.view', $meetings[0]['id']), $meetings[0]['url']);
 
         $distribution = $this->cachedPayload($user, 'task_distribution');
 

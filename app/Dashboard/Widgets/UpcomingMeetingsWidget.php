@@ -68,7 +68,7 @@ class UpcomingMeetingsWidget implements DashboardWidget
                 'date' => $meeting->meeting_date?->format('M d, Y'),
                 'time' => $meeting->start_time?->format('H:i'),
                 'location' => $meeting->location,
-                'url' => route('meetings.show', $meeting->id),
+                'url' => route('filament.workspace.resources.meetings.view', $meeting->id),
             ]);
     }
 

@@ -410,4 +410,48 @@ class FilamentMeetingResourceTest extends TestCase
 
         $this->assertSame('prepared', $meeting->fresh()->minutes_status);
     }
+
+    public function test_a_participant_may_view_but_not_edit_and_a_super_admin_may_do_both(): void
+    {
+        $attendee = $this->userWithPermissions(['meeting.create']);
+        $meeting = MeetingFactory::new()->create();
+        MeetingParticipant::factory()->create(['meeting_id' => $meeting->id, 'user_id' => $attendee->id]);
+
+        $this->actingAs($attendee);
+        $this->get("/workspace/meetings/{$meeting->id}")->assertOk();
+        $this->get("/workspace/meetings/{$meeting->id}/edit")->assertForbidden();
+        Livewire::test(ViewMeeting::class, ['record' => $meeting->getKey()])
+            ->assertActionHidden('start')
+            ->assertActionHidden('cancel');
+
+        $this->actingAs($this->superAdmin());
+        Livewire::test(EditMeeting::class, ['record' => $meeting->getKey()])
+            ->fillForm(['title' => 'Admin edit'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+        $this->assertSame('Admin edit', $meeting->fresh()->title);
+    }
+
+    public function test_meeting_view_alone_does_not_grant_edit_or_delete(): void
+    {
+        $meeting = MeetingFactory::new()->create();
+        $this->actingAs($this->userWithPermissions(['meeting.view']));
+
+        $this->get("/workspace/meetings/{$meeting->id}")->assertOk();
+        $this->get("/workspace/meetings/{$meeting->id}/edit")->assertForbidden();
+        Livewire::test(ListMeetings::class)->assertTableActionHidden('delete', $meeting);
+    }
+
+    public function test_an_anonymous_visitor_is_sent_to_sign_in_and_a_stranger_cannot_print(): void
+    {
+        $meeting = MeetingFactory::new()->create();
+
+        $this->get("/workspace/meetings/{$meeting->id}")->assertRedirect('/workspace/login');
+
+        $this->actingAs($this->userWithPermissions(['meeting.create']));
+        $this->get(route('meetings.print', $meeting))->assertForbidden();
+
+        $this->actingAs($this->userWithPermissions(['meeting.view']));
+        $this->get(route('meetings.print', $meeting))->assertOk();
+    }
 }

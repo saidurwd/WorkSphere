@@ -12,6 +12,6 @@
         <li><strong>Date:</strong> {{ $meeting->meeting_date->format('M d, Y') }}</li>
         <li><strong>Minutes Status:</strong> {{ ucwords(str_replace('_', ' ', $meeting->minutes_status)) }}</li>
     </ul>
-    <p><a href="{{ route('meetings.show', $meeting) }}">Review Minutes</a></p>
+    <p><a href="{{ route('filament.workspace.resources.meetings.view', $meeting) }}">Review Minutes</a></p>
 </body>
 </html>

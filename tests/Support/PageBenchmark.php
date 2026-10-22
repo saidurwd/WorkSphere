@@ -59,15 +59,15 @@ class PageBenchmark
             // Dashboards — the pages that aggregate the most and are hit hardest.
             ['label' => 'dashboard', 'uri' => '/dashboard', 'kind' => 'web', 'budget' => 90, 'needs' => []],
             ['label' => 'tasks dashboard', 'uri' => '/workspace/task-overview', 'kind' => 'web', 'budget' => 30, 'needs' => []],
-            ['label' => 'meetings dashboard', 'uri' => '/meetings/dashboard', 'kind' => 'web', 'budget' => 30, 'needs' => []],
+            ['label' => 'meetings dashboard', 'uri' => '/workspace/meeting-overview', 'kind' => 'web', 'budget' => 30, 'needs' => []],
             ['label' => 'obligations dashboard', 'uri' => '/workspace/obligation-overview', 'kind' => 'web', 'budget' => 30, 'needs' => []],
 
             // Index pages.
             ['label' => 'todos index', 'uri' => '/workspace/todos', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'todos calendar', 'uri' => '/workspace/todo-calendar', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'tasks index', 'uri' => '/workspace/tasks', 'kind' => 'web', 'budget' => 20, 'needs' => []],
-            ['label' => 'meetings index', 'uri' => '/meetings', 'kind' => 'web', 'budget' => 20, 'needs' => []],
-            ['label' => 'meetings action items', 'uri' => '/meetings/action-items', 'kind' => 'web', 'budget' => 20, 'needs' => []],
+            ['label' => 'meetings index', 'uri' => '/workspace/meetings', 'kind' => 'web', 'budget' => 20, 'needs' => []],
+            ['label' => 'meetings action items', 'uri' => '/workspace/meeting-action-items', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'obligations index', 'uri' => '/workspace/obligations', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'obligations my tasks', 'uri' => '/workspace/my-obligation-tasks', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'projects index', 'uri' => '/workspace/projects', 'kind' => 'web', 'budget' => 20, 'needs' => []],
@@ -77,9 +77,8 @@ class PageBenchmark
             // Reports — the aggregation-heavy reads.
             ['label' => 'tasks report', 'uri' => '/reports/tasks', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'task workload report', 'uri' => '/reports/task-workload', 'kind' => 'web', 'budget' => 20, 'needs' => []],
-            ['label' => 'meetings overdue report', 'uri' => '/meetings/reports/overdue', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'todos report', 'uri' => '/workspace/todo-reports', 'kind' => 'web', 'budget' => 20, 'needs' => []],
-            ['label' => 'meetings report', 'uri' => '/meetings/reports', 'kind' => 'web', 'budget' => 20, 'needs' => []],
+            ['label' => 'meetings report', 'uri' => '/workspace/meeting-reports', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'obligations report', 'uri' => '/workspace/obligation-reports', 'kind' => 'web', 'budget' => 20, 'needs' => []],
 
             // Detail pages — the N+1 risk, since one parent renders a collection.
@@ -87,11 +86,7 @@ class PageBenchmark
             ['label' => 'task show', 'uri' => '/workspace/tasks/{task}', 'kind' => 'web', 'budget' => 25, 'needs' => ['task']],
             ['label' => 'todos notification log', 'uri' => '/workspace/todo-notification-logs', 'kind' => 'web', 'budget' => 20, 'needs' => []],
             ['label' => 'tasks notification log', 'uri' => '/workspace/task-notification-logs', 'kind' => 'web', 'budget' => 20, 'needs' => []],
-            ['label' => 'meeting show', 'uri' => '/meetings/{meeting}', 'kind' => 'web', 'budget' => 30, 'needs' => ['meeting']],
-            ['label' => 'meeting participants', 'uri' => '/meetings/{meeting}/participants', 'kind' => 'web', 'budget' => 20, 'needs' => ['meeting']],
-            ['label' => 'meeting agendas', 'uri' => '/meetings/{meeting}/agendas', 'kind' => 'web', 'budget' => 20, 'needs' => ['meeting']],
-            ['label' => 'meeting decisions', 'uri' => '/meetings/{meeting}/decisions', 'kind' => 'web', 'budget' => 20, 'needs' => ['meeting']],
-            ['label' => 'meeting attachments', 'uri' => '/meetings/{meeting}/attachments', 'kind' => 'web', 'budget' => 20, 'needs' => ['meeting']],
+            ['label' => 'meeting show', 'uri' => '/workspace/meetings/{meeting}', 'kind' => 'web', 'budget' => 30, 'needs' => ['meeting']],
             ['label' => 'meeting print', 'uri' => '/meetings/{meeting}/print', 'kind' => 'web', 'budget' => 20, 'needs' => ['meeting']],
             ['label' => 'obligation show', 'uri' => '/workspace/obligations/{obligation}', 'kind' => 'web', 'budget' => 30, 'needs' => ['obligation']],
             ['label' => 'obligation renewals', 'uri' => '/workspace/obligation-renewals', 'kind' => 'web', 'budget' => 20, 'needs' => []],

@@ -145,39 +145,24 @@ return [
             'label' => 'Meetings',
             'icon' => 'journal-text',
             'section' => 'Governance',
-            'active' => ['meetings.*'],
+            'active' => ['filament.workspace.resources.meetings.*', 'filament.workspace.resources.meeting-*', 'filament.workspace.pages.meeting-*', 'meetings.print'],
             'permission' => 'meeting.view',
             'children' => [
-                ['label' => 'Overview', 'icon' => 'speedometer2', 'route' => 'meetings.dashboard'],
-                ['label' => 'Register', 'icon' => 'calendar-week', 'route' => 'meetings.index', 'active' => ['meetings.index', 'meetings.show', 'meetings.create', 'meetings.edit', 'meetings.print']],
-                ['label' => 'Calendar', 'icon' => 'calendar3', 'route' => 'meetings.calendar'],
-                ['label' => 'Action Items', 'icon' => 'list-check', 'route' => 'meetings.action-items.index', 'active' => ['meetings.action-items.*']],
-                // Wired in Phase 8 and reachable only by typing the URL until now.
-                ['label' => 'Templates', 'icon' => 'clipboard-check', 'route' => 'meetings.templates.index', 'active' => ['meetings.templates.*'], 'permission' => 'meeting.manage_templates'],
-                [
-                    'label' => 'Reports',
-                    'icon' => 'bar-chart-line',
-                    'active' => ['meetings.reports.*'],
-                    'permission' => 'meeting.view_reports',
-                    'children' => [
-                        ['label' => 'Overview', 'icon' => 'grid', 'route' => 'meetings.reports.index'],
-                        ['label' => 'Meetings', 'icon' => 'calendar-week', 'route' => 'meetings.reports.meetings'],
-                        ['label' => 'Action Items', 'icon' => 'list-check', 'route' => 'meetings.reports.actions'],
-                        ['label' => 'Overdue Actions', 'icon' => 'exclamation-triangle', 'route' => 'meetings.reports.overdue'],
-                        ['label' => 'Person Wise', 'icon' => 'person', 'route' => 'meetings.reports.person-wise'],
-                        ['label' => 'Department Wise', 'icon' => 'diagram-3', 'route' => 'meetings.reports.department-wise'],
-                        ['label' => 'Decisions', 'icon' => 'check2-square', 'route' => 'meetings.reports.decisions'],
-                    ],
-                ],
+                ['label' => 'Overview', 'icon' => 'speedometer2', 'route' => 'filament.workspace.pages.meeting-overview'],
+                ['label' => 'Register', 'icon' => 'calendar-week', 'route' => 'filament.workspace.resources.meetings.index', 'active' => ['filament.workspace.resources.meetings.*', 'meetings.print']],
+                ['label' => 'Calendar', 'icon' => 'calendar3', 'route' => 'filament.workspace.pages.meeting-calendar'],
+                ['label' => 'Action Items', 'icon' => 'list-check', 'route' => 'filament.workspace.resources.meeting-action-items.index', 'active' => ['filament.workspace.resources.meeting-action-items.*']],
+                ['label' => 'Decisions', 'icon' => 'check2-square', 'route' => 'filament.workspace.resources.meeting-decisions.index', 'active' => ['filament.workspace.resources.meeting-decisions.*']],
+                ['label' => 'Templates', 'icon' => 'clipboard-check', 'route' => 'filament.workspace.resources.meeting-templates.index', 'active' => ['filament.workspace.resources.meeting-templates.*'], 'permission' => 'meeting.manage_templates'],
+                ['label' => 'Reports', 'icon' => 'bar-chart-line', 'route' => 'filament.workspace.pages.meeting-reports', 'permission' => 'meeting.view_reports'],
                 // `Setup` rather than `Configuration`: it is a pair of dropdowns,
-                // not a settings surface, and the previous name implied pages that
-                // do not exist.
+                // not a settings surface.
                 [
                     'label' => 'Setup',
                     'icon' => 'sliders',
                     'children' => [
-                        ['label' => 'Meeting Types', 'icon' => 'tags', 'route' => 'meetings.types.index', 'active' => ['meetings.types.*'], 'permission' => 'meeting.manage_types'],
-                        ['label' => 'Tags', 'icon' => 'tag', 'route' => 'meetings.tags.index', 'active' => ['meetings.tags.*'], 'permission' => 'meeting.manage_tags'],
+                        ['label' => 'Meeting Types', 'icon' => 'tags', 'route' => 'filament.workspace.resources.meeting-types.index', 'active' => ['filament.workspace.resources.meeting-types.*'], 'permission' => 'meeting.manage_types'],
+                        ['label' => 'Tags', 'icon' => 'tag', 'route' => 'filament.workspace.resources.meeting-tags.index', 'active' => ['filament.workspace.resources.meeting-tags.*'], 'permission' => 'meeting.manage_tags'],
                     ],
                 ],
             ],
@@ -250,7 +235,7 @@ return [
             'children' => [
                 ['label' => 'To-Do Notifications', 'icon' => 'check2-square', 'route' => 'filament.workspace.resources.todo-notification-logs.index', 'active' => ['filament.workspace.resources.todo-notification-logs.*'], 'permission' => 'todos.view_all'],
                 ['label' => 'Task Notifications', 'icon' => 'list-task', 'route' => 'filament.workspace.resources.task-notification-logs.index', 'active' => ['filament.workspace.resources.task-notification-logs.*'], 'permission' => 'task.view_notification_logs'],
-                ['label' => 'Meeting Notifications', 'icon' => 'journal-text', 'route' => 'meetings.notification-logs.index', 'active' => ['meetings.notification-logs.*'], 'permission' => 'meeting.view_notification_logs'],
+                ['label' => 'Meeting Notifications', 'icon' => 'journal-text', 'route' => 'filament.workspace.resources.meeting-notification-logs.index', 'active' => ['filament.workspace.resources.meeting-notification-logs.*'], 'permission' => 'meeting.view_notification_logs'],
                 ['label' => 'Obligation Notifications', 'icon' => 'file-earmark-text', 'route' => 'filament.workspace.resources.obligation-notifications.index', 'active' => ['filament.workspace.resources.obligation-notifications.*'], 'permission' => 'obligation.view_notification_logs'],
             ],
         ],

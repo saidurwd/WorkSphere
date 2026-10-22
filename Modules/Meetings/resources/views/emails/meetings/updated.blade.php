@@ -13,6 +13,6 @@
         <li><strong>Time:</strong> {{ $meeting->start_time->format('H:i') }} - {{ $meeting->end_time->format('H:i') }}</li>
         <li><strong>Location:</strong> {{ $meeting->location ?? 'N/A' }}</li>
     </ul>
-    <p><a href="{{ route('meetings.show', $meeting) }}">View Meeting Details</a></p>
+    <p><a href="{{ route('filament.workspace.resources.meetings.view', $meeting) }}">View Meeting Details</a></p>
 </body>
 </html>

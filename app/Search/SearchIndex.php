@@ -129,7 +129,7 @@ final class SearchIndex
                 'model' => Meeting::class,
                 'fields' => ['title', 'description'],
                 'permission' => 'meeting.view',
-                'route' => 'meetings.show',
+                'route' => 'filament.workspace.resources.meetings.view',
                 'label' => 'Meetings',
                 'titleColumn' => 'title',
                 'statusColumn' => 'status',

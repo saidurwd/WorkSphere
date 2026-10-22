@@ -2,9 +2,9 @@
 
 namespace Modules\Meetings\Filament\Resources\Meetings;
 
-use App\Models\Department;
 use App\Models\User;
 use App\Policies\MeetingPolicy;
+use App\Support\ReferenceData;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -95,14 +95,14 @@ class MeetingResource extends Resource
                 ->required(),
             Select::make('priority')->options(self::PRIORITIES)->default('normal')->required(),
             Select::make('organizer_id')->label('Organizer')
-                ->options(fn (): array => User::query()->orderBy('name')->pluck('name', 'id')->all())
+                ->options(fn (): array => app(ReferenceData::class)->users()->pluck('name', 'id')->all())
                 ->default(fn (): ?int => auth()->id())
                 ->searchable()->required(),
             Select::make('chairperson_id')->label('Chairperson')
-                ->options(fn (): array => User::query()->orderBy('name')->pluck('name', 'id')->all())
+                ->options(fn (): array => app(ReferenceData::class)->users()->pluck('name', 'id')->all())
                 ->searchable(),
             Select::make('department_id')->label('Department')
-                ->options(fn (): array => Department::query()->orderBy('department_name')->pluck('department_name', 'id')->all())
+                ->options(fn (): array => app(ReferenceData::class)->departments()->pluck('department_name', 'id')->all())
                 ->searchable(),
             TextInput::make('location')->maxLength(255),
             DatePicker::make('meeting_date')->required(),
@@ -118,7 +118,7 @@ class MeetingResource extends Resource
             Repeater::make('participants')
                 ->schema([
                     Select::make('user_id')->label('Person')
-                        ->options(fn (): array => User::query()->orderBy('name')->pluck('name', 'id')->all())
+                        ->options(fn (): array => app(ReferenceData::class)->users()->pluck('name', 'id')->all())
                         ->searchable()->required(),
                     Select::make('participant_type')->options(self::PARTICIPANT_TYPES)->default('member')->required(),
                     Select::make('attendance_status')->options(self::ATTENDANCE)->default('invited')->required(),

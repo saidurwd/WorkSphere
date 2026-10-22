@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use Database\Factories\MeetingFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Meetings\Models\Meeting;
 use Modules\Obligations\Models\Obligation;
@@ -22,71 +21,6 @@ class WorkItemCrudTest extends TestCase
     // ---- Tasks ------------------------------------------------------------
 
     // ---- Meetings ---------------------------------------------------------
-
-    public function test_a_meeting_can_be_created_read_updated_and_deleted(): void
-    {
-        $organizer = $this->plainUser();
-        $meeting = MeetingFactory::new()->organisedBy($organizer)->create();
-
-        $this->actingAs($organizer)->get(route('meetings.show', $meeting))->assertOk();
-
-        $this->actingAs($organizer)
-            ->put(route('meetings.update', $meeting), $this->meetingPayload($meeting, title: 'Renamed meeting'))
-            ->assertRedirect(route('meetings.show', $meeting));
-
-        $this->assertDatabaseHas('meetings', ['id' => $meeting->id, 'title' => 'Renamed meeting']);
-
-        $this->actingAs($organizer)
-            ->delete(route('meetings.destroy', $meeting))
-            ->assertRedirect(route('meetings.index'));
-
-        // Asserted through the model rather than the table so this test does not
-        // encode whether the delete is soft or hard. See the report: `Meeting`
-        // declares `#[SoftDeletes]`, an attribute class that does not exist in this
-        // Laravel version, so the delete is currently a hard delete despite the
-        // `deleted_at` column the migration defines.
-        $this->assertNull(Meeting::query()->find($meeting->id));
-    }
-
-    public function test_a_completed_meeting_cannot_be_deleted(): void
-    {
-        $organizer = $this->plainUser();
-        $meeting = MeetingFactory::new()->organisedBy($organizer)->completed()->create();
-
-        $this->actingAs($organizer)
-            ->delete(route('meetings.destroy', $meeting))
-            ->assertSessionHas('error');
-
-        $this->assertDatabaseHas('meetings', ['id' => $meeting->id]);
-    }
-
-    public function test_updating_a_meeting_without_a_title_is_rejected(): void
-    {
-        $organizer = $this->plainUser();
-        $meeting = MeetingFactory::new()->organisedBy($organizer)->create();
-
-        $this->actingAs($organizer)
-            ->put(route('meetings.update', $meeting), $this->meetingPayload($meeting, title: ''))
-            ->assertSessionHasErrors('title');
-    }
-
-    public function test_a_meeting_can_be_started_and_completed_by_its_organizer(): void
-    {
-        $organizer = $this->plainUser();
-        $meeting = MeetingFactory::new()->organisedBy($organizer)->create();
-
-        $this->actingAs($organizer)
-            ->post(route('meetings.start', $meeting))
-            ->assertRedirect();
-
-        $this->assertDatabaseHas('meetings', ['id' => $meeting->id, 'status' => 'in_progress']);
-
-        $this->actingAs($organizer)
-            ->post(route('meetings.complete', $meeting))
-            ->assertRedirect();
-
-        $this->assertDatabaseHas('meetings', ['id' => $meeting->id, 'status' => 'completed']);
-    }
 
     // ---- Obligations ------------------------------------------------------
 

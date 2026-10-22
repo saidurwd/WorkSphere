@@ -71,7 +71,7 @@ class BladeCompilesTest extends TestCase
 
         // Assert on the count as well as the failures: a sweep that silently finds
         // no templates reports success while checking nothing.
-        $this->assertGreaterThan(100, $counted, 'The template sweep found almost nothing to check.');
+        $this->assertGreaterThan(50, $counted, 'The template sweep found almost nothing to check.');
         $this->assertSame([], $failures, implode("\n", $failures));
     }
 

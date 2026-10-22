@@ -12,6 +12,6 @@
         <li><strong>Date:</strong> {{ $meeting->meeting_date->format('M d, Y') }}</li>
         <li><strong>Published At:</strong> {{ $meeting->published_at->format('M d, Y H:i') }}</li>
     </ul>
-    <p><a href="{{ route('meetings.show', $meeting) }}">View Minutes</a></p>
+    <p><a href="{{ route('filament.workspace.resources.meetings.view', $meeting) }}">View Minutes</a></p>
 </body>
 </html>

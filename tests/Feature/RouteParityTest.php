@@ -189,33 +189,6 @@ class RouteParityTest extends TestCase
         $this->assertContains('auth', $route->gatherMiddleware());
     }
 
-    public function test_the_meeting_template_routes_are_exactly_what_was_declared(): void
-    {
-        $expected = [
-            'meetings.templates.index',
-            'meetings.templates.create',
-            'meetings.templates.store',
-            'meetings.templates.show',
-            'meetings.templates.edit',
-            'meetings.templates.update',
-            'meetings.templates.destroy',
-            'meetings.templates.schedule',
-        ];
-
-        $actual = [];
-
-        foreach (Route::getRoutes() as $route) {
-            if (str_starts_with((string) $route->getName(), 'meetings.templates.')) {
-                $actual[] = $route->getName();
-            }
-        }
-
-        sort($expected);
-        sort($actual);
-
-        $this->assertSame($expected, $actual);
-    }
-
     public function test_the_todo_surface_is_only_the_cross_module_links(): void
     {
         // The Blade To-Do screens are gone; what remains under `todos.` is the

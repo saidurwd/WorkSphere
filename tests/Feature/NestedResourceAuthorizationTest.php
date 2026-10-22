@@ -2,13 +2,7 @@
 
 namespace Tests\Feature;
 
-use Database\Factories\MeetingFactory;
-use Database\Factories\TaskFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Modules\Meetings\Models\MeetingActionItem;
-use Modules\Meetings\Models\MeetingAgenda;
-use Modules\Meetings\Models\MeetingNotificationLog;
-use Modules\Meetings\Models\MeetingParticipant;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\InteractsWithRoles;
 use Tests\TestCase;
@@ -23,183 +17,6 @@ class NestedResourceAuthorizationTest extends TestCase
     use InteractsWithRoles, RefreshDatabase;
 
     // ---- Meeting sub-resources -------------------------------------------
-
-    public function test_an_unrelated_user_cannot_create_a_meeting_agenda_item(): void
-    {
-        $meeting = MeetingFactory::new()->create();
-
-        $this->actingAs($this->plainUser())
-            ->post(route('meetings.agendas.store', $meeting), $this->agendaPayload())
-            ->assertForbidden();
-
-        $this->assertDatabaseCount('meeting_agendas', 0);
-    }
-
-    public function test_an_unrelated_user_cannot_update_a_meeting_agenda_item(): void
-    {
-        $meeting = MeetingFactory::new()->create();
-        $agenda = MeetingAgenda::query()->create([
-            'meeting_id' => $meeting->id,
-            'agenda_no' => 1,
-            'title' => 'Item',
-            'status' => 'pending',
-        ]);
-
-        $this->actingAs($this->plainUser())
-            ->put(route('meetings.agendas.update', [$meeting, $agenda]), $this->agendaPayload())
-            ->assertForbidden();
-
-        $this->assertDatabaseHas('meeting_agendas', ['id' => $agenda->id, 'title' => 'Item']);
-    }
-
-    public function test_an_unrelated_user_cannot_delete_a_meeting_agenda_item(): void
-    {
-        $meeting = MeetingFactory::new()->create();
-        $agenda = MeetingAgenda::query()->create([
-            'meeting_id' => $meeting->id,
-            'agenda_no' => 1,
-            'title' => 'Item',
-            'status' => 'pending',
-        ]);
-
-        $this->actingAs($this->plainUser())
-            ->delete(route('meetings.agendas.destroy', [$meeting, $agenda]))
-            ->assertForbidden();
-
-        $this->assertDatabaseHas('meeting_agendas', ['id' => $agenda->id]);
-    }
-
-    public function test_the_organizer_can_manage_meeting_agenda_items(): void
-    {
-        $organizer = $this->plainUser();
-        $meeting = MeetingFactory::new()->organisedBy($organizer)->create();
-
-        $this->actingAs($organizer)
-            ->post(route('meetings.agendas.store', $meeting), $this->agendaPayload())
-            ->assertRedirect(route('meetings.show', $meeting));
-
-        $this->assertDatabaseHas('meeting_agendas', ['meeting_id' => $meeting->id, 'title' => 'Budget review']);
-    }
-
-    public function test_an_unrelated_user_cannot_add_a_meeting_participant(): void
-    {
-        $meeting = MeetingFactory::new()->create();
-
-        $this->actingAs($this->plainUser())
-            ->post(route('meetings.participants.store', $meeting), [
-                'user_id' => $this->plainUser()->id,
-                'participant_type' => 'member',
-            ])
-            ->assertForbidden();
-
-        $this->assertDatabaseCount('meeting_participants', 0);
-    }
-
-    public function test_an_unrelated_user_cannot_remove_a_meeting_participant(): void
-    {
-        $meeting = MeetingFactory::new()->create();
-        $participant = MeetingParticipant::query()->create([
-            'meeting_id' => $meeting->id,
-            'user_id' => $this->plainUser()->id,
-            'participant_type' => 'member',
-        ]);
-
-        $this->actingAs($this->plainUser())
-            ->delete(route('meetings.participants.destroy', [$meeting, $participant]))
-            ->assertForbidden();
-
-        $this->assertDatabaseHas('meeting_participants', ['id' => $participant->id]);
-    }
-
-    public function test_an_unrelated_user_cannot_transition_meeting_minutes(): void
-    {
-        $meeting = MeetingFactory::new()->create();
-
-        foreach (['prepare', 'submit', 'approve', 'publish', 'return'] as $action) {
-            $this->actingAs($this->plainUser())
-                ->post(route("meetings.minutes.$action", $meeting), ['comments' => 'no'])
-                ->assertForbidden();
-        }
-
-        $this->assertDatabaseHas('meetings', ['id' => $meeting->id, 'minutes_status' => 'draft']);
-    }
-
-    public function test_an_unrelated_user_cannot_create_a_meeting_action_item(): void
-    {
-        $meeting = MeetingFactory::new()->create();
-
-        $this->actingAs($this->plainUser())
-            ->post(route('meetings.action-items.store', $meeting), $this->actionItemPayload())
-            ->assertForbidden();
-
-        $this->assertDatabaseCount('meeting_action_items', 0);
-    }
-
-    public function test_an_unrelated_user_cannot_link_a_task_to_someone_elses_action_item(): void
-    {
-        $meeting = MeetingFactory::new()->create();
-        $actionItem = MeetingActionItem::query()->create([
-            'meeting_id' => $meeting->id,
-            'action_no' => 1,
-            'title' => 'Theirs',
-            'priority' => 'high',
-            'status' => 'open',
-        ]);
-        $task = TaskFactory::new()->create();
-
-        $this->actingAs($this->plainUser())
-            ->post(route('meetings.action-items.tasks.link', [$meeting, $actionItem]), ['task_id' => $task->id])
-            ->assertForbidden();
-
-        $this->assertDatabaseHas('meeting_action_items', ['id' => $actionItem->id, 'task_id' => null]);
-    }
-
-    public function test_an_unrelated_user_cannot_manage_meeting_tags(): void
-    {
-        $this->actingAs($this->plainUser())
-            ->post(route('meetings.tags.store'), ['name' => 'Budget', 'color' => '#ff0000'])
-            ->assertForbidden();
-
-        $this->assertDatabaseCount('meeting_tags', 0);
-    }
-
-    public function test_an_unrelated_user_cannot_manage_meeting_types(): void
-    {
-        $this->actingAs($this->plainUser())
-            ->post(route('meetings.types.store'), ['name' => 'Board', 'code' => 'BRD'])
-            ->assertForbidden();
-
-        $this->assertDatabaseCount('meeting_types', 0);
-    }
-
-    public function test_a_user_with_manage_tags_permission_can_manage_tags(): void
-    {
-        $this->actingAs($this->userWithPermissions(['meeting.manage_tags']))
-            ->post(route('meetings.tags.store'), ['name' => 'Budget', 'color' => '#ff0000'])
-            ->assertSessionHasNoErrors();
-
-        $this->assertDatabaseHas('meeting_tags', ['name' => 'Budget']);
-    }
-
-    public function test_only_a_super_admin_can_delete_meeting_notification_logs(): void
-    {
-        $log = MeetingNotificationLog::query()->create([
-            'meeting_id' => MeetingFactory::new()->create()->id,
-            'notification_type' => 'reminder',
-            'channel' => 'mail',
-            'subject' => 'Test',
-        ]);
-
-        $this->actingAs($this->userWithPermissions(['meeting.view']))
-            ->delete(route('meetings.notification-logs.destroy', $log))
-            ->assertForbidden();
-
-        $this->actingAs($this->superAdmin())
-            ->delete(route('meetings.notification-logs.destroy', $log))
-            ->assertRedirect();
-
-        $this->assertDatabaseMissing('meeting_notification_logs', ['id' => $log->id]);
-    }
 
     // ---- Notification logs: reading is permissioned, deleting is role-gated --
 
@@ -217,7 +34,7 @@ class NestedResourceAuthorizationTest extends TestCase
                 ['task.view'],
             ],
             'meeting' => [
-                '/meetings/notification-logs',
+                '/workspace/meeting-notification-logs',
                 'meeting.view_notification_logs',
                 ['meeting.view'],
             ],
