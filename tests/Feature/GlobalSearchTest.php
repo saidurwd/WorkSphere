@@ -94,10 +94,10 @@ class GlobalSearchTest extends TestCase
             'description' => 'A zebra appears in the results.',
         ]);
 
-        $this->actingAs($user)->get(route('search'))->assertOk()->assertSee('Nothing searched yet');
+        $this->actingAs($user)->get(route('filament.workspace.pages.search'))->assertOk()->assertSee('Nothing searched yet');
 
         $this->actingAs($user)
-            ->get(route('search', ['q' => 'zebra']))
+            ->get(route('filament.workspace.pages.search', ['q' => 'zebra']))
             ->assertOk()
             ->assertSee('Zebra');
     }
@@ -106,16 +106,16 @@ class GlobalSearchTest extends TestCase
     {
         $user = $this->userWithPermissions($this->everyPermission());
 
-        $this->actingAs($user)->get(route('search'))->assertSee('Nothing searched yet');
+        $this->actingAs($user)->get(route('filament.workspace.pages.search'))->assertSee('Nothing searched yet');
 
         $this->actingAs($user)
-            ->get(route('search', ['q' => 'nothingmatchesthis']))
+            ->get(route('filament.workspace.pages.search', ['q' => 'nothingmatchesthis']))
             ->assertSee('Nothing matched');
     }
 
     public function test_search_requires_authentication(): void
     {
-        $this->get(route('search'))->assertRedirect(route('login'));
+        $this->get(route('filament.workspace.pages.search'))->assertRedirect('/workspace/login');
     }
 
     // ---- 1. Permission filtering -------------------------------------------
@@ -237,7 +237,7 @@ class GlobalSearchTest extends TestCase
         $user = $this->userWithPermissions($this->everyPermission());
 
         $this->actingAs($user)
-            ->get(route('search', ['q' => "'; DROP TABLE todos; --"]))
+            ->get(route('filament.workspace.pages.search', ['q' => "'; DROP TABLE todos; --"]))
             ->assertOk();
 
         $this->assertTrue(Schema::hasTable('todos'));
@@ -252,7 +252,7 @@ class GlobalSearchTest extends TestCase
             'description' => 'Contains <script>alert(1)</script> inline.',
         ]);
 
-        $response = $this->actingAs($user)->get(route('search', ['q' => 'numbat']));
+        $response = $this->actingAs($user)->get(route('filament.workspace.pages.search', ['q' => 'numbat']));
 
         $response->assertOk();
         // The excerpt is the one place raw HTML is emitted, because it wraps the
@@ -310,7 +310,7 @@ class GlobalSearchTest extends TestCase
             'description' => 'Also <script>alert(8)</script> here.',
         ]);
 
-        $response = $this->actingAs($user)->get(route('search', ['q' => 'quokka']));
+        $response = $this->actingAs($user)->get(route('filament.workspace.pages.search', ['q' => 'quokka']));
 
         $response->assertOk();
         $response->assertDontSee('<script>alert(9)</script>', false);
@@ -339,9 +339,9 @@ class GlobalSearchTest extends TestCase
         $user = $this->userWithPermissions($this->everyPermission());
 
         $this->actingAs($user)
-            ->get(route('search', ['modules' => ['not_a_module']]))
-            ->assertRedirect()
-            ->assertSessionHasErrors('modules.0');
+            ->get(route('filament.workspace.pages.search', ['q' => 'zebra', 'modules' => ['not_a_module']]))
+            ->assertOk()
+            ->assertSee('is invalid');
     }
 
     public function test_a_sort_column_is_never_accepted(): void
@@ -351,7 +351,7 @@ class GlobalSearchTest extends TestCase
         // There is no sort parameter at all: the ordering is fixed per entity, so
         // there is nothing for a caller to inject into.
         $this->actingAs($user)
-            ->get(route('search', ['q' => 'numbat', 'sort' => 'password']))
+            ->get(route('filament.workspace.pages.search', ['q' => 'numbat', 'sort' => 'password']))
             ->assertOk();
 
         $this->assertStringNotContainsString(
@@ -365,9 +365,9 @@ class GlobalSearchTest extends TestCase
         $user = $this->userWithPermissions($this->everyPermission());
 
         $this->actingAs($user)
-            ->get(route('search', ['q' => str_repeat('a', 200)]))
-            ->assertRedirect()
-            ->assertSessionHasErrors('q');
+            ->get(route('filament.workspace.pages.search', ['q' => str_repeat('a', 200)]))
+            ->assertOk()
+            ->assertSee('greater than 120 characters');
     }
 
     // ---- 4. SQLite / MySQL parity ------------------------------------------
@@ -439,7 +439,7 @@ class GlobalSearchTest extends TestCase
 
         $this->assertCount(0, $this->service->search($user, '+*'));
 
-        $this->actingAs($user)->get(route('search', ['q' => '+*']))->assertOk();
+        $this->actingAs($user)->get(route('filament.workspace.pages.search', ['q' => '+*']))->assertOk();
     }
 
     // ---- Facets -------------------------------------------------------------
@@ -520,7 +520,7 @@ class GlobalSearchTest extends TestCase
         $user = $this->userWithPermissions(['todos.view']);
         Todo::factory()->count(2)->createdBy($user)->create(['title' => 'Quokka logged']);
 
-        $this->actingAs($user)->get(route('search', ['q' => 'quokka logged']))->assertOk();
+        $this->actingAs($user)->get(route('filament.workspace.pages.search', ['q' => 'quokka logged']))->assertOk();
 
         $entry = ActivityLog::query()
             ->where('action', 'searched')
@@ -537,7 +537,7 @@ class GlobalSearchTest extends TestCase
     {
         $user = $this->userWithPermissions(['todos.view']);
 
-        $this->actingAs($user)->get(route('search', ['q' => 'ab']))->assertOk();
+        $this->actingAs($user)->get(route('filament.workspace.pages.search', ['q' => 'ab']))->assertOk();
 
         $this->assertSame(
             0,
@@ -550,7 +550,7 @@ class GlobalSearchTest extends TestCase
         $user = $this->userWithPermissions(['todos.view']);
         Todo::factory()->createdBy($user)->create(['title' => 'Quokka private', 'description' => 'Secret body']);
 
-        $this->actingAs($user)->get(route('search', ['q' => 'quokka private']))->assertOk();
+        $this->actingAs($user)->get(route('filament.workspace.pages.search', ['q' => 'quokka private']))->assertOk();
 
         $entry = ActivityLog::query()->where('action', 'searched')->firstOrFail();
 

@@ -181,7 +181,7 @@ class SecurityHardeningTest extends TestCase
 
         for ($attempt = 0; $attempt < 62; $attempt++) {
             $statuses[] = $this->actingAs($user)
-                ->get(route('search', ['q' => 'anything']))
+                ->get(route('filament.workspace.pages.search', ['q' => 'anything']))
                 ->getStatusCode();
         }
 

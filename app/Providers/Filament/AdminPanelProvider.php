@@ -3,7 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Auth\Login;
-use Filament\Http\Middleware\Authenticate;
+use App\Http\Middleware\AuthenticateFilamentUser;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -58,7 +58,7 @@ class AdminPanelProvider extends PanelProvider
                 'throttle:admin',
             ])
             ->authMiddleware([
-                Authenticate::class,
+                AuthenticateFilamentUser::class,
             ]);
     }
 }

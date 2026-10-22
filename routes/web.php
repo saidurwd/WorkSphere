@@ -4,8 +4,6 @@ use App\Http\Controllers\Admin\System\HealthController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\ReportController;
-use App\Http\Controllers\SearchController;
-use App\Http\Controllers\SearchSuggestController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -29,11 +27,9 @@ Route::middleware(['web', 'auth'])->post('logout', [AuthenticatedSessionControll
 */
 
 Route::middleware(['web', 'auth'])->group(function (): void {
-    Route::get('search', SearchController::class)->middleware('throttle:search')->name('search');
 
     // Type-ahead for the navbar box. JSON, so the client never has to trust a
     // server-rendered fragment it would have to inject as HTML.
-    Route::get('search/suggest', SearchSuggestController::class)->middleware('throttle:search')->name('search.suggest');
 });
 
 /*

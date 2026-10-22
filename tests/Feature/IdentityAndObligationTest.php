@@ -87,7 +87,7 @@ class IdentityAndObligationTest extends TestCase
         $user->update(['status' => 'inactive']);
 
         $this->actingAs($user)
-            ->get(route('notifications.index'))
+            ->get('/workspace/notifications')
             ->assertRedirect(route('login'));
 
         $this->assertGuest();
@@ -95,23 +95,23 @@ class IdentityAndObligationTest extends TestCase
 
     public function test_an_active_account_is_unaffected(): void
     {
-        $user = User::factory()->create(['status' => 'active']);
+        $user = User::factory()->create(['status' => 'active'])->fresh();
 
-        $this->actingAs($user)->get(route('notifications.index'))->assertOk();
+        $this->actingAs($user)->get('/workspace/notifications')->assertOk();
     }
 
     public function test_a_new_user_defaults_to_an_unblocked_status(): void
     {
         // `users.status` is NOT NULL with a default, so "no status" cannot be
         // written; the meaningful case is that the default is not a blocked value.
-        $user = User::factory()->create();
+        $user = User::factory()->create()->fresh();
 
         $this->assertNotContains(
             strtolower((string) $user->status),
             ['inactive', 'suspended', 'disabled'],
         );
 
-        $this->actingAs($user)->get(route('notifications.index'))->assertOk();
+        $this->actingAs($user)->get('/workspace/notifications')->assertOk();
     }
 
     public function test_each_blocked_status_is_refused(): void
@@ -121,7 +121,7 @@ class IdentityAndObligationTest extends TestCase
             $user->update(['status' => $status]);
 
             $this->actingAs($user)
-                ->get(route('notifications.index'))
+                ->get('/workspace/notifications')
                 ->assertRedirect(route('login'), "Status '{$status}' was allowed through.");
         }
     }

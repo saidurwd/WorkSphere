@@ -4,13 +4,14 @@ namespace App\Providers\Filament;
 
 use App\Filament\Auth\Login;
 use App\Filament\Workspace\Pages\WorkspaceDashboard;
-use Filament\Http\Middleware\Authenticate;
+use App\Http\Middleware\AuthenticateFilamentUser;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -28,6 +29,7 @@ class WorkspacePanelProvider extends PanelProvider
             ->login(Login::class)
             ->passwordReset()
             ->brandName('WorkSphere')
+            ->renderHook(PanelsRenderHook::GLOBAL_SEARCH_BEFORE, fn (): string => view('filament.workspace.search-box')->render())
             ->colors([
                 'primary' => Color::Indigo,
             ])
@@ -57,7 +59,7 @@ class WorkspacePanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
-                Authenticate::class,
+                AuthenticateFilamentUser::class,
             ]);
     }
 }

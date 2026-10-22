@@ -43,7 +43,8 @@ class FilamentUserResourceTest extends TestCase
         $user = $this->superAdmin();
         $user->update(['status' => 'inactive']);
 
-        $this->actingAs($user)->get('/admin')->assertForbidden();
+        $this->actingAs($user)->get('/admin')->assertRedirect(route('login'));
+        $this->assertGuest();
     }
 
     public function test_a_user_can_be_created_with_roles(): void

@@ -49,7 +49,7 @@
                  unreachable on a phone. This keeps it one tap away. --}}
             @auth
                 <li class="nav-item d-md-none">
-                    <a href="{{ route('search') }}" class="nav-link" aria-label="Search">
+                    <a href="{{ route('filament.workspace.pages.search') }}" class="nav-link" aria-label="Search">
                         <i class="bi bi-search"></i>
                     </a>
                 </li>
@@ -63,8 +63,8 @@
         @auth
             <div class="navbar-search flex-grow-1 d-none d-md-flex justify-content-center px-3">
                 <div class="position-relative w-100" style="max-width: 520px;" data-search-box
-                     data-search-endpoint="{{ route('search.suggest') }}">
-                    <form action="{{ route('search') }}" method="GET" role="search" class="d-flex">
+                     data-search-endpoint="{{ '' }}">
+                    <form action="{{ route('filament.workspace.pages.search') }}" method="GET" role="search" class="d-flex">
                         <label for="navbar-search" class="visually-hidden">Search</label>
                         <div class="input-group input-group-sm">
                             <span class="input-group-text bg-body border-end-0">

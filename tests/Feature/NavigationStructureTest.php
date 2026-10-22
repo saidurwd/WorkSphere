@@ -595,12 +595,12 @@ class NavigationStructureTest extends TestCase
 
     public function test_section_headings_only_appear_with_something_under_them(): void
     {
-        $plain = $this->actingAs($this->plainUser())->get('/notifications')->assertOk()->getContent();
+        $plain = $this->actingAs($this->userWithPermissions(['report.view']))->get('/reports/tasks')->assertOk()->getContent();
 
         // A heading with nothing beneath it is a rule on the page with no label.
         $this->assertStringNotContainsString('nav-section-title', $plain);
 
-        $admin = $this->actingAs($this->superAdmin(['user.manage']))->get('/notifications')->assertOk()->getContent();
+        $admin = $this->actingAs($this->superAdmin(['user.manage', 'report.view']))->get('/reports/tasks')->assertOk()->getContent();
 
         $this->assertStringContainsString('nav-section-title', $admin);
     }

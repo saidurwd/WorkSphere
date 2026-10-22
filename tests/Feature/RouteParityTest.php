@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use Filament\Http\Middleware\Authenticate;
+use App\Http\Middleware\AuthenticateFilamentUser;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
@@ -75,45 +75,14 @@ class RouteParityTest extends TestCase
     }
 
     /**
-     * Phase 8 GAP-028 wired meeting templates, which had models and two tables and
-     * no route at all. Pinned for the same reason as the other sets.
+     * Global search is a workspace page; the old `search` routes and the navbar
+     * type-ahead endpoint are gone.
      */
-    /**
-     * Phase 9 added global search. Pinned like every other deliberate addition.
-     */
-    public function test_the_search_route_is_exactly_what_phase_nine_declared(): void
+    public function test_search_is_a_workspace_page(): void
     {
-        $names = [];
-
-        foreach (Route::getRoutes() as $route) {
-            if ($route->getName() === 'search') {
-                $names[] = 'search';
-            }
-        }
-
-        $this->assertSame(['search'], $names);
-    }
-
-    /**
-     * Phase 9 added the navbar type-ahead endpoint alongside the search page.
-     */
-    public function test_the_search_routes_are_exactly_what_phase_nine_declared(): void
-    {
-        $expected = ['search', 'search.suggest'];
-        $actual = [];
-
-        foreach (Route::getRoutes() as $route) {
-            $name = (string) $route->getName();
-
-            if (in_array($name, $expected, true)) {
-                $actual[] = $name;
-            }
-        }
-
-        sort($expected);
-        sort($actual);
-
-        $this->assertSame($expected, $actual);
+        $this->assertTrue(Route::has('filament.workspace.pages.search'));
+        $this->assertFalse(Route::has('search'));
+        $this->assertFalse(Route::has('search.suggest'));
     }
 
     /**
@@ -139,7 +108,7 @@ class RouteParityTest extends TestCase
             }
 
             $this->assertContains(
-                Authenticate::class,
+                AuthenticateFilamentUser::class,
                 $route->gatherMiddleware(),
                 "{$name} is not behind the panel's authentication.",
             );
@@ -183,10 +152,11 @@ class RouteParityTest extends TestCase
 
     public function test_search_is_authenticated(): void
     {
-        $route = collect(Route::getRoutes())->first(fn ($candidate): bool => $candidate->getName() === 'search');
+        $route = collect(Route::getRoutes())->first(fn ($candidate): bool => $candidate->getName() === 'filament.workspace.pages.search');
 
         $this->assertNotNull($route);
-        $this->assertContains('auth', $route->gatherMiddleware());
+        $this->assertContains(AuthenticateFilamentUser::class, $route->gatherMiddleware());
+        $this->assertContains('throttle:search', $route->gatherMiddleware());
     }
 
     public function test_the_todo_surface_is_only_the_cross_module_links(): void
