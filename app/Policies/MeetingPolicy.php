@@ -20,7 +20,9 @@ class MeetingPolicy
 
     public function view(User $user, Meeting $meeting): bool
     {
-        return $this->isVisibleTo($user, $meeting) || $user->hasPermission('meeting.view');
+        // The permission is an in-memory lookup; `isVisibleTo()` can query the
+        // participants table, so a list asking once per row checks it first.
+        return $user->hasPermission('meeting.view') || $this->isVisibleTo($user, $meeting);
     }
 
     public function create(User $user): bool

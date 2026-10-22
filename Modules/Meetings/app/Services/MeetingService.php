@@ -2,10 +2,11 @@
 
 namespace Modules\Meetings\Services;
 
-use Modules\Meetings\Models\Meeting;
-use Modules\Meetings\Models\MeetingVersion;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Modules\Meetings\Models\Meeting;
+use Modules\Meetings\Models\MeetingVersion;
 
 class MeetingService
 {
@@ -20,7 +21,9 @@ class MeetingService
                 ]));
             }
 
-            $meeting = new Meeting($data);
+            // Participants and agendas are related rows, not columns; passing them
+            // through the constructor asks Eloquent to mass-assign what does not exist.
+            $meeting = new Meeting(Arr::except($data, ['participants', 'agendas']));
             $meeting->created_by = Auth::id();
             $meeting->save();
 
@@ -46,7 +49,7 @@ class MeetingService
     public function update(Meeting $meeting, array $data): Meeting
     {
         return DB::transaction(function () use ($meeting, $data) {
-            $meeting->update($data);
+            $meeting->update(Arr::except($data, ['participants', 'agendas']));
 
             if (array_key_exists('participants', $data)) {
                 $meeting->participants()->delete();

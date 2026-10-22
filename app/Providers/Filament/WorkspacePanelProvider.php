@@ -36,10 +36,12 @@ class WorkspacePanelProvider extends PanelProvider
             ->discoverResources(in: base_path('Modules/Tasks/app/Filament/Resources'), for: 'Modules\Tasks\Filament\Resources')
             ->discoverResources(in: base_path('Modules/Projects/app/Filament/Resources'), for: 'Modules\Projects\Filament\Resources')
             ->discoverResources(in: base_path('Modules/Obligations/app/Filament/Resources'), for: 'Modules\Obligations\Filament\Resources')
+            ->discoverResources(in: base_path('Modules/Meetings/app/Filament/Resources'), for: 'Modules\Meetings\Filament\Resources')
 
             ->discoverPages(in: base_path('Modules/Todos/app/Filament/Pages'), for: 'Modules\\Todos\\Filament\\Pages')
             ->discoverPages(in: base_path('Modules/Tasks/app/Filament/Pages'), for: 'Modules\\Tasks\\Filament\\Pages')
             ->discoverPages(in: base_path('Modules/Obligations/app/Filament/Pages'), for: 'Modules\\Obligations\\Filament\\Pages')
+            ->discoverPages(in: base_path('Modules/Meetings/app/Filament/Pages'), for: 'Modules\\Meetings\\Filament\\Pages')
             ->pages([
                 Dashboard::class,
             ])

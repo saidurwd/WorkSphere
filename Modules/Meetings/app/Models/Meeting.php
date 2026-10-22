@@ -9,6 +9,7 @@ use App\Models\Location;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -63,6 +64,24 @@ class Meeting extends Model
             'approved_at' => 'datetime',
             'published_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Narrow to the meetings a user may see: everything for `meeting.view` or a
+     * super-admin, otherwise the ones they organise or take part in.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeVisibleTo(Builder $query, User $user): void
+    {
+        if ($user->hasPermission('meeting.view') || $user->hasRole('super-admin')) {
+            return;
+        }
+
+        $query->where(function (Builder $inner) use ($user): void {
+            $inner->where($inner->qualifyColumn('organizer_id'), $user->id)
+                ->orWhereHas('participants', fn (Builder $p): Builder => $p->where('user_id', $user->id));
+        });
     }
 
     public function type(): BelongsTo
