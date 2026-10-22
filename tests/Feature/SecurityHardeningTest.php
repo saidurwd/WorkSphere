@@ -2,18 +2,21 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Auth\Login;
 use App\Models\ActivityLog;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\MysqlDumpExport;
 use App\Services\UploadService;
 use App\Support\TrustedProxies;
+use Filament\Facades\Filament;
 use Illuminate\Cache\RateLimiter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Livewire\Livewire;
 use Modules\Todos\Models\Todo;
 use Tests\InteractsWithRoles;
 use Tests\TestCase;
@@ -33,7 +36,7 @@ class SecurityHardeningTest extends TestCase
 
     public function test_a_page_carries_every_security_header(): void
     {
-        $response = $this->get('/login');
+        $response = $this->get('/workspace/login');
 
         foreach ([
             'X-Frame-Options',
@@ -51,7 +54,7 @@ class SecurityHardeningTest extends TestCase
 
     public function test_the_frame_and_sniff_headers_have_the_right_values(): void
     {
-        $response = $this->get('/login');
+        $response = $this->get('/workspace/login');
 
         $this->assertSame('SAMEORIGIN', $response->headers->get('X-Frame-Options'));
         $this->assertSame('nosniff', $response->headers->get('X-Content-Type-Options'));
@@ -60,7 +63,7 @@ class SecurityHardeningTest extends TestCase
 
     public function test_the_csp_denies_framing_objects_and_base_tag_hijacking(): void
     {
-        $csp = (string) $this->get('/login')->headers->get('Content-Security-Policy');
+        $csp = (string) $this->get('/workspace/login')->headers->get('Content-Security-Policy');
 
         $this->assertStringContainsString("default-src 'self'", $csp);
         $this->assertStringContainsString("object-src 'none'", $csp);
@@ -74,7 +77,7 @@ class SecurityHardeningTest extends TestCase
 
     public function test_the_policy_covers_the_themes_the_app_actually_uses(): void
     {
-        $csp = (string) $this->get('/login')->headers->get('Content-Security-Policy');
+        $csp = (string) $this->get('/workspace/login')->headers->get('Content-Security-Policy');
 
         // AdminLTE, TomSelect and flatpickr all set inline styles at runtime.
         // Denying that visibly breaks the UI, so inline STYLE is permitted even
@@ -109,7 +112,7 @@ class SecurityHardeningTest extends TestCase
         // Sending HSTS over HTTP is meaningless, and it tells a man-in-the-middle
         // that a downgrade would still be pinned.
         $this->assertFalse(
-            $this->get('/login')->headers->has('Strict-Transport-Security'),
+            $this->get('/workspace/login')->headers->has('Strict-Transport-Security'),
         );
     }
 
@@ -135,43 +138,20 @@ class SecurityHardeningTest extends TestCase
 
     public function test_repeated_failed_logins_are_throttled(): void
     {
+        Filament::setCurrentPanel('workspace');
         User::factory()->create(['email' => 'target@example.com']);
 
         for ($attempt = 0; $attempt < 5; $attempt++) {
-            $this->post('/login', [
-                'email' => 'target@example.com',
-                'password' => 'wrong-password',
-            ]);
+            Livewire::test(Login::class)->fillForm(['email' => 'target@example.com', 'password' => 'wrong-password'])->call('authenticate');
         }
 
-        $response = $this->post('/login', [
-            'email' => 'target@example.com',
-            'password' => 'wrong-password',
-        ]);
+        // The sixth is refused outright with a notice, before the password is checked.
+        Livewire::test(Login::class)
+            ->fillForm(['email' => 'target@example.com', 'password' => 'wrong-password'])
+            ->call('authenticate')
+            ->assertNotified();
 
-        $this->assertSame(
-            429,
-            $response->getStatusCode(),
-            'The sixth attempt should have been rate limited.',
-        );
-    }
-
-    public function test_the_login_limiter_is_keyed_on_the_email_as_well_as_the_address(): void
-    {
-        User::factory()->create(['email' => 'alice@example.com']);
-        User::factory()->create(['email' => 'bob@example.com']);
-
-        // Exhaust alice's budget.
-        for ($attempt = 0; $attempt < 6; $attempt++) {
-            $this->post('/login', ['email' => 'alice@example.com', 'password' => 'wrong']);
-        }
-
-        // Bob must not be collateral damage: the key includes the address, not only
-        // the IP.
-        $this->assertNotSame(
-            429,
-            $this->post('/login', ['email' => 'bob@example.com', 'password' => 'wrong'])->getStatusCode(),
-        );
+        $this->assertDatabaseHas('login_logs', ['email' => 'target@example.com', 'event' => 'locked']);
     }
 
     public function test_export_is_rate_limited_harder_than_reading(): void

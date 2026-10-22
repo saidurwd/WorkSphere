@@ -2,8 +2,6 @@
 
 use App\Http\Controllers\Admin\System\HealthController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\NewPasswordController;
-use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReportController;
@@ -17,17 +15,11 @@ use Illuminate\Support\Facades\Route;
 //     return view('welcome');
 // });
 
-Route::redirect('/', '/login');
+Route::redirect('/', '/workspace');
 
-Route::middleware('guest')->group(function () {
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])->middleware('throttle:60,1')->name('login');
-    Route::post('login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:login')->name('login.store');
-
-    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
-    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('throttle:login')->name('password.email');
-    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
-    Route::post('reset-password', [NewPasswordController::class, 'store'])->name('password.update');
-});
+// Sign-in lives in the Filament panels (one page, App\Filament\Auth\Login). The
+// name stays because the `auth` middleware redirects guests to `route('login')`.
+Route::get('login', fn () => redirect('/workspace/login'))->name('login');
 
 Route::middleware(['web', 'auth'])->post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 

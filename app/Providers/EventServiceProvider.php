@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Listeners\RecordLogout;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 /**
@@ -21,7 +23,11 @@ class EventServiceProvider extends ServiceProvider
     /**
      * @var array<class-string, array<int, class-string>>
      */
-    protected $listen = [];
+    protected $listen = [
+        Logout::class => [
+            RecordLogout::class,
+        ],
+    ];
 
     /**
      * Domain modules declare their own explicit mappings, so the application

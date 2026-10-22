@@ -3,45 +3,20 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
-use App\Services\LoginLogService;
+use App\Listeners\RecordLogout;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
-use Illuminate\View\View;
 
+/**
+ * Sign-out for the pages that still use the application layout. The logout is
+ * written to the login log by {@see RecordLogout}, so it is recorded
+ * the same way whichever screen the person signed out from.
+ */
 class AuthenticatedSessionController extends Controller
 {
-    public function __construct(private readonly LoginLogService $loginLogs) {}
-
-    public function create(): View
-    {
-        return view('auth.login');
-    }
-
-    public function store(LoginRequest $request): RedirectResponse
-    {
-        try {
-            $request->authenticate();
-        } catch (ValidationException $e) {
-            $request->recordFailure($this->loginLogs);
-            throw $e;
-        }
-
-        $this->loginLogs->recordLogin($request, $request->user());
-
-        $request->session()->regenerate();
-
-        return redirect()->intended(route('dashboard.index'));
-    }
-
     public function destroy(Request $request): RedirectResponse
     {
-        $user = $request->user();
-
-        $this->loginLogs->recordLogout($request, $user, (string) $request->session()->get('auth.email', $user?->email ?? 'unknown'));
-
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

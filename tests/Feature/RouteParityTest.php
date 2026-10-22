@@ -134,7 +134,7 @@ class RouteParityTest extends TestCase
         foreach (Route::getRoutes() as $route) {
             $name = (string) $route->getName();
 
-            if (! str_starts_with($name, 'filament.admin.') || str_contains($name, '.auth.login')) {
+            if (! str_starts_with($name, 'filament.admin.') || str_contains($name, '.auth.login') || str_contains($name, '.auth.password-reset')) {
                 continue;
             }
 
