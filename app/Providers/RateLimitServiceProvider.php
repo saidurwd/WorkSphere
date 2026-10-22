@@ -6,7 +6,6 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
 
 /**
  * Named rate limiters — GAP-009.
@@ -21,31 +20,12 @@ class RateLimitServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        $this->login();
         $this->api();
         $this->apiWrites();
         $this->admin();
         $this->export();
         $this->search();
         $this->mutations();
-    }
-
-    /**
-     * Sign-in attempts.
-     *
-     * Keyed on the transliterated email AND the address, so one attacker cannot
-     * lock a known account out by guessing its email from elsewhere, and one
-     * account cannot be sprayed from many addresses.
-     */
-    protected function login(): void
-    {
-        RateLimiter::for('login', function (Request $request): Limit {
-            $email = Str::transliterate(
-                Str::lower((string) $request->input('email')),
-            );
-
-            return Limit::perMinute(5)->by('login|'.$email.'|'.$request->ip());
-        });
     }
 
     /**
